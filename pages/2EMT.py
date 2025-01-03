@@ -358,7 +358,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
-                temp_image_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT result.png'
+                temp_image_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.png'
                 result_image.save(temp_image_path)
                 
                 try:
