@@ -85,7 +85,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 파일의 업로드 및 파악
     if uploaded_files:
         st.write(f"총 {len(uploaded_files)}개의 파일이 선택되었습니다.")
-        if not user_name:
+        if not name:
             st.error("이름이 입력되지 않았습니다.")
         else:
             # 임시 디렉토리 생성
