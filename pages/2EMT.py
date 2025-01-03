@@ -13,63 +13,52 @@ from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 
-def initialize_firebase():
-    """Firebase 초기화 함수"""
-    if not firebase_admin._apps:
-        cred = credentials.Certificate({
-            "type": "service_account",
-            "project_id": st.secrets["project_id"],
-            "private_key_id": st.secrets["private_key_id"],
-            "private_key": st.secrets["private_key"].replace('\\n', '\n'),
-            "client_email": st.secrets["client_email"],
-            "client_id": st.secrets["client_id"],
-            "auth_uri": st.secrets["auth_uri"],
-            "token_uri": st.secrets["token_uri"],
-            "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
-            "client_x509_cert_url": st.secrets["client_x509_cert_url"],
-            "universe_domain": st.secrets["universe_domain"]
-        })
-        firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-    return storage.bucket('amcgi-bulletin.appspot.com')
+# Set page to wide mode
+st.set_page_config(page_title="EMT_skill_evaluation", layout="wide")
 
-st.set_page_config(page_title="EMT_skill_evaluation")
-bucket = initialize_firebase()
+if "logged_in" in st.session_state and st.session_state['logged_in']:
+    # 세션에서 사용자 정보 가져오기
+    name = st.session_state['name']
+    position = st.session_state['position']
 
-st.markdown("<h1>EMT_skill_evaluation</h1>", unsafe_allow_html=True)
-st.markdown("이 페이지는 EGD simulator을 대상으로 한 EMT 검사 수행의 적절성을 평가하는 페이지입니다.")
-st.markdown("합격 판정이 나오면 추가로 파일을 올리지 마세요. 올릴 때마다 이전기록이 삭제됩니다.")
-st.write("---")
 
-user_name = st.text_input("본인의 성명을 한글로 입력해 주세요 (예: 홍길동):")
-position = st.selectbox("Select Position", ["", "Staff", "F1", "F2", "R3", "Student"])  
+    def initialize_firebase():
+        """Firebase 초기화 함수"""
+        if not firebase_admin._apps:
+            cred = credentials.Certificate({
+                "type": "service_account",
+                "project_id": st.secrets["project_id"],
+                "private_key_id": st.secrets["private_key_id"],
+                "private_key": st.secrets["private_key"].replace('\\n', '\n'),
+                "client_email": st.secrets["client_email"],
+                "client_id": st.secrets["client_id"],
+                "auth_uri": st.secrets["auth_uri"],
+                "token_uri": st.secrets["token_uri"],
+                "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+                "client_x509_cert_url": st.secrets["client_x509_cert_url"],
+                "universe_domain": st.secrets["universe_domain"]
+            })
+            firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
+        return storage.bucket('amcgi-bulletin.appspot.com')
 
-st.write("---")
+    bucket = initialize_firebase()
 
-def is_korean(text):
-    # 한글 유니코드 범위: AC00-D7A3 (가-힣)
-    return all('\uAC00' <= char <= '\uD7A3' for char in text if char.strip())
+    st.markdown("<h1>EMT_skill_evaluation</h1>", unsafe_allow_html=True)
+    st.markdown("이 페이지는 EGD simulator을 대상으로 한 EMT 검사 수행의 적절성을 평가하는 페이지입니다.")
+    st.markdown("합격 판정이 나오면 추가로 파일을 올리지 마세요. 올릴 때마다 이전기록이 삭제됩니다.")
+    st.write("---")
 
-# 입력값 검증
-is_valid = True
-if not user_name:
-    st.error("한글 이름을 입력해 주세요 (예; 이진혁)")
-    is_valid = False
-if position == "Select Position" or not position:
-    st.error("position을 선택해 주세요")
-    is_valid = False
-elif not is_korean(user_name):
-    st.error("한글 이름을 입력해 주세요 (예; 이진혁)")
-    is_valid = False
-
-st.write("---")
-
-if is_valid:
-
+    # 로그아웃 버튼
+    if "logged_in" in st.session_state and st.session_state['logged_in']:
+        if st.sidebar.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.success("로그아웃 되었습니다.")
+   
     st.subheader("합격 동영상 예시")
     st.write("EMT 합격한 동영상 예시를 올립니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('EMT_skill_evaluation/EMT_pass_demo/EMT_pass_demo.avi')
+        demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_pass_demo/EMT_pass_demo.avi')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
@@ -374,19 +363,19 @@ if is_valid:
                 st.subheader("- 이미지 전송 과정 -")
                 
                 # 임시 디렉토리 생성
-                os.makedirs('EMT_skill_evaluation/test_results', exist_ok=True)
+                os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
                 
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
-                temp_image_path = f'EMT_skill_evaluation/test_results/{user_name}.png'
+                temp_image_path = f'Simulator_training/EMT/EMT_result/{postion}*{name}*EMT result.png'
                 result_image.save(temp_image_path)
                 
                 try:
                     if str3 == "Pass":
                         # Firebase Storage에 업로드
-                        result_blob = bucket.blob(f'EMT_skill_evaluation/test_results/{user_name}.png')
+                        result_blob = bucket.blob(f'Simulator_training/EMT/EMT_result/{postion}*{name}*EMT result.png')
                         result_blob.upload_from_filename(temp_image_path)
-                        st.success(f"이미지가 성공적으로 전송되었습니다: {user_name}.png")
+                        st.success(f"이미지가 성공적으로 전송되었습니다: {name}.png")
                     else:
                         st.warning("평가 결과가 'fail'이므로 업로드하지 않습니다.")
                     
@@ -400,3 +389,6 @@ if is_valid:
                         
         st.divider() 
         st.success("평가가 완료되었습니다.")
+
+else:
+    st.warning('Please log in to read more.')
