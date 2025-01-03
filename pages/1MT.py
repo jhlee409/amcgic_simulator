@@ -49,7 +49,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.session_state.download_clicked = False
 
     # Add download button for EGD procedure document
-    st.subheader("EGD 시행 동작 순서 Bx 포함 2024.docx")
+    st.subheader("EGD 시행 동작 순서 파일")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         method_blob = bucket.blob('Simulator_training/MT/EGD 시행 동작 순서 Bx 포함 2024.docx')
