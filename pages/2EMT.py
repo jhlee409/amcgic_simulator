@@ -354,17 +354,17 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 st.subheader("- 이미지 전송 과정 -")
                 
                 # 임시 디렉토리 생성
-                os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
+                os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
                 
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
-                temp_image_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT result.png'
+                temp_image_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT result.png'
                 result_image.save(temp_image_path)
                 
                 try:
                     if str3 == "Pass":
                         # Firebase Storage에 업로드
-                        result_blob = bucket.blob(f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT result.png')
+                        result_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT result.png')
                         result_blob.upload_from_filename(temp_image_path)
                         st.success(f"이미지가 성공적으로 전송되었습니다: {name}.png")
                     else:
