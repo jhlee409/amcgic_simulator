@@ -30,21 +30,6 @@ password = st.text_input("Password", type="password")
 # 입력 검증
 show_login_button = True
 
-if not name.strip():
-    st.error("한글 이름을 입력해 주세요")
-    show_login_button = False
-elif not any(0xAC00 <= ord(char) <= 0xD7A3 for char in name):
-    st.error("한글 이름을 입력해 주세요")
-    show_login_button = False
-
-if not position.strip():
-    st.error("position을 선택해 주세요")
-    show_login_button = False
-
-if not password.strip():
-    st.error("비밀번호를 입력해 주세요")
-    show_login_button = False
-
 # 모든 조건이 충족되면 로그인 버튼 표시
 if show_login_button:
     if st.button("Login"):
