@@ -1,0 +1,9 @@
+streamlit
+python-docx
+openai
+python-dotenv
+pillow
+firebase-admin
+pandas
+supabase
+uuid
