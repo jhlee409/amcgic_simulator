@@ -38,94 +38,91 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("---")
 
     # Add download button for EGD procedure document
-    if is_valid:
-        st.subheader("EGD 시행 동작 순서 Bx 포함 2024.docx")
-        try:
-            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-            narration_blob = bucket.blob('Simulator_training/MT/EGD 시행 동작 순서 Bx 포함 2024.docx')
-            if narration_blob.exists():
-                narration_url = narration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-                if st.download_button(
-                    label="EGD 시행 순서 다운로드",
-                    data=narration_blob.download_as_bytes(),
-                    file_name="EGD 시행 동작 순서 Bx 포함 2024.docx",
-                    mime="application/msword",
-                ):
-                    st.write("")
-                    # Log download to Firebase
-                    bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                    log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{position}*{user_name}*'MT_doc_downloaded'")
-                    log_blob.upload_from_string(position + "_" + user_name + "_MT_doc_downloaded" + "_" + datetime.now().strftime('%Y-%m-%d'))
-            else:
-                st.error("검사과정설명 문서를 찾을 수 없습니다..")
-        except Exception as e:
-            st.error(f"검사과정설명 문서 파일 다운로드 중 오류가 발생했습니다.: {e}")
+    st.subheader("EGD 시행 동작 순서 Bx 포함 2024.docx")
+    try:
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+        narration_blob = bucket.blob('Simulator_training/MT/EGD 시행 동작 순서 Bx 포함 2024.docx')
+        if narration_blob.exists():
+            narration_url = narration_blob.generate_signed_url(expiration=timedelta(minutes=15))
+            if st.download_button(
+                label="EGD 시행 순서 다운로드",
+                data=narration_blob.download_as_bytes(),
+                file_name="EGD 시행 동작 순서 Bx 포함 2024.docx",
+                mime="application/msword",
+            ):
+                st.write("")
+                # Log download to Firebase
+                bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{position}*{user_name}*'MT_doc_downloaded'")
+                log_blob.upload_from_string(position + "_" + user_name + "_MT_doc_downloaded" + "_" + datetime.now().strftime('%Y-%m-%d'))
+        else:
+            st.error("검사과정설명 문서를 찾을 수 없습니다..")
+    except Exception as e:
+        st.error(f"검사과정설명 문서 파일 다운로드 중 오류가 발생했습니다.: {e}")
 
     # Add narration download button
-    if is_valid:
-        st.write("---")
-        st.subheader("나레이션 mp3 다운로드")
-        try:
-            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-            narration_blob = bucket.blob('Simulator_training/MT/memory test narration 13분.mp3')
-            if narration_blob.exists():
-                narration_url = narration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-                if st.download_button(
-                    label="나레이션 mp3 다운로드",
-                    data=narration_blob.download_as_bytes(),
-                    file_name="memory_test_narration.mp3",
-                    mime="audio/mpeg"
-                ):
-                    st.write("")
-            else:
-                st.error("나레이션 파일을 찾을 수 없습니다.")
-        except Exception as e:
-            st.error(f"나레이션 파일 다운로드 중 오류가 발생했습니다: {e}")
+    st.write("---")
+    st.subheader("나레이션 mp3 다운로드")
+    try:
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+        narration_blob = bucket.blob('Simulator_training/MT/memory test narration 13분.mp3')
+        if narration_blob.exists():
+            narration_url = narration_blob.generate_signed_url(expiration=timedelta(minutes=15))
+            if st.download_button(
+                label="나레이션 mp3 다운로드",
+                data=narration_blob.download_as_bytes(),
+                file_name="memory_test_narration.mp3",
+                mime="audio/mpeg"
+            ):
+                st.write("")
+        else:
+            st.error("나레이션 파일을 찾을 수 없습니다.")
+    except Exception as e:
+        st.error(f"나레이션 파일 다운로드 중 오류가 발생했습니다: {e}")
 
     st.write("---")
 
     # Add mp4 download button
-    if is_valid:
-        st.subheader("전문가 EGD 수행 해설 동영상 다운로드")
-        try:
-            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-            demonstration1_blob = bucket.blob('EGD_variation/B1.mp4')
-            if demonstration1_blob.exists():
-                demonstration_url = demonstration1_blob.generate_signed_url(expiration=timedelta(minutes=15))
-                if st.download_button(
-                    label="EGD 해설 동영상 1 다운로드",
-                    data=demonstration1_blob.download_as_bytes(),
-                    file_name="B1.mp4",
-                    mime="video/mp4"
-                ):
-                    st.write("")
-            else:
-                st.error("EGD 해설 동영상 1 파일을 찾을 수 없습니다.")
-        
-            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-            demonstration2_blob = bucket.blob('EGD_variation/B2.mp4')
-            if demonstration2_blob.exists():
-                demonstration2_url = demonstration2_blob.generate_signed_url(expiration=timedelta(minutes=15))
-                if st.download_button(
-                    label="EGD 해설 동영상 2 다운로드",
-                    data=demonstration2_blob.download_as_bytes(),
-                    file_name="B2.mp4",
-                    mime="video/mp4"
-                ):
-                    st.write("")
-            else:
-                st.error("EGD 해설 동영상 2 파일을 찾을 수 없습니다.")
 
-        except Exception as e:
-            st.error(f"EGD 해설 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+    st.subheader("전문가 EGD 수행 해설 동영상 다운로드")
+    try:
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+        demonstration1_blob = bucket.blob('EGD_variation/B1.mp4')
+        if demonstration1_blob.exists():
+            demonstration_url = demonstration1_blob.generate_signed_url(expiration=timedelta(minutes=15))
+            if st.download_button(
+                label="EGD 해설 동영상 1 다운로드",
+                data=demonstration1_blob.download_as_bytes(),
+                file_name="B1.mp4",
+                mime="video/mp4"
+            ):
+                st.write("")
+        else:
+            st.error("EGD 해설 동영상 1 파일을 찾을 수 없습니다.")
+    
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+        demonstration2_blob = bucket.blob('EGD_variation/B2.mp4')
+        if demonstration2_blob.exists():
+            demonstration2_url = demonstration2_blob.generate_signed_url(expiration=timedelta(minutes=15))
+            if st.download_button(
+                label="EGD 해설 동영상 2 다운로드",
+                data=demonstration2_blob.download_as_bytes(),
+                file_name="B2.mp4",
+                mime="video/mp4"
+            ):
+                st.write("")
+        else:
+            st.error("EGD 해설 동영상 2 파일을 찾을 수 없습니다.")
+
+    except Exception as e:
+        st.error(f"EGD 해설 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
     st.write("---")
 
     # File uploader - only show if inputs are valid
     uploaded_file = None
-    if is_valid:
-        st.subheader("암기 영상 업로드")
-        uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
+    st.subheader("암기 영상 업로드")
+    uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
 
     if uploaded_file:
         try:
