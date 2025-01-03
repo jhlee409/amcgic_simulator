@@ -62,10 +62,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 mime="application/msword",
             ):
                 st.write("")
-                # Log download to Firebase
-                bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{position}*{name}*MT_doc_downloaded")
-                log_blob.upload_from_string(position + "_" + name + "_MT_doc_downloaded" + "_" + datetime.now().strftime('%Y-%m-%d'))
         else:
             st.error("검사과정설명 문서를 찾을 수 없습니다..")
     except Exception as e:
