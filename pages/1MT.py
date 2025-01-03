@@ -149,7 +149,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # Generate file names
                 extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
-                video_file_name = f"{position}_{name}{extension}"
+                video_file_name = f"{position}*{name}*MT_result{extension}"
 
                 # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')

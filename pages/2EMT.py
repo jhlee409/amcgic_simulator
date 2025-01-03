@@ -257,16 +257,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # 결과의 일관성을 위해 랜덤 시드 설정
                 np.random.seed(42)
-
-                # # 기준 데이터 로드 (x_train.csv가 없으면 생성)
-                # if not os.path.exists('x_train.csv'):
-                #     # 초기 기준 데이터 설정
-                #     x_train = np.array([
-                #         [0.2, 0.15],  # 예시 기준값 1
-                #         [0.3, 0.18],  # 예시 기준값 2
-                #         [0.25, 0.16]  # 예시 기준값 3
-                #     ])
-                #     np.savetxt('x_train.csv', x_train, delimiter=',')
                 
                 # 기존 훈련 데이터 로드
                 x_train = np.loadtxt('x_train.csv', delimiter=',')
