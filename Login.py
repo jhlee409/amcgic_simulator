@@ -6,29 +6,8 @@ import tempfile
 from datetime import datetime
 from pytz import timezone
 
-st.set_page_config(page_title="AMC GI C")
+st.set_page_config(page_title="amcgic_simulator", layout="wide")
 
-# Firebase 초기화
-if not firebase_admin._apps:
-    # Streamlit Secrets에서 Firebase 설정 정보 로드
-    cred = credentials.Certificate({
-        "type": "service_account",
-        "project_id": st.secrets["project_id"],
-        "private_key_id": st.secrets["private_key_id"],
-        "private_key": st.secrets["private_key"].replace('\\n', '\n'),
-        "client_email": st.secrets["client_email"],
-        "client_id": st.secrets["client_id"],
-        "auth_uri": st.secrets["auth_uri"],
-        "token_uri": st.secrets["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["client_x509_cert_url"],
-        "universe_domain": st.secrets["universe_domain"]
-    })
-    firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-
-# Firebase Storage 버킷 참조
-bucket_name = 'amcgi-bulletin.appspot.com'
-bucket = storage.bucket(bucket_name)  # 항상 사용할 수 있도록 초기화
 
 # Streamlit 페이지 설정
 st.title("AMC GI 상부 Simulator training")
@@ -72,26 +51,6 @@ if show_login_button:
         if password == "3180":
             st.success(f"로그인에 성공하셨습니다. 이제 왼쪽의 메뉴를 이용하실 수 있습니다.")
             st.session_state['logged_in'] = True
-            # st.session_state['user_position'] = position
-            # st.session_state['user_name'] = name           
-            
-            # # 날짜와 사용자 이름 기반 텍스트 파일 생성
-            # current_date = datetime.now(timezone('Asia/Seoul')).strftime("%Y-%m-%d")
-            # filename = f"{position}*{name}*bulletin"
-            # file_content = f"{position}*{name}*bulletin\n"
-
-            # # 임시 디렉토리에 파일 저장
-            # with tempfile.TemporaryDirectory() as temp_dir:
-            #     temp_file_path = os.path.join(temp_dir, filename)
-            #     with open(temp_file_path, "w", encoding="utf-8") as file:
-            #         file.write(file_content)
-
-            #     # Firebase Storage에 업로드
-            #     try:
-            #         blob = bucket.blob(f"log_bulletin/{filename}")
-            #         blob.upload_from_filename(temp_file_path)
-            #     except Exception as e:
-            #         st.error("로그 자료 업로드 중 오류가 발생했습니다: " + str(e))
         else:
             st.error("로그인에 실패했습니다. 비밀번호를 확인하세요.")
 
