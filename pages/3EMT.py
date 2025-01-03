@@ -52,7 +52,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.markdown("<h1>EMT_skill_evaluation</h1>", unsafe_allow_html=True)
     st.markdown("이 페이지는 EGD simulator을 대상으로 한 EMT 검사 수행의 적절성을 평가하는 페이지입니다.")
-    st.markdown("합격 판정이 나오면 추가로 파일을 올리지 마세요. 올릴 때마다 이전기록이 삭제됩니다.")
+    st.markdown("합격 판정이 나오면 추가로 파일을 더 올리지 마세요. 올릴 때마다 이전기록이 삭제됩니다.")
     st.write("---")
    
     st.subheader("합격 동영상 예시")
