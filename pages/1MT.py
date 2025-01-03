@@ -149,7 +149,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                video_blob = bucket.blob(f"Simulator_training/MT/log_MT/{position}*{name}*MT_result/{video_file_name}")
+                video_blob = bucket.blob(f"Simulator_training/MT/log_MT_result/{position}*{name}*MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
 
                 # Success message
