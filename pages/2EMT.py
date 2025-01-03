@@ -21,6 +21,13 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     name = st.session_state['name']
     position = st.session_state['position']
 
+    # 로그아웃 버튼
+    if "logged_in" in st.session_state and st.session_state['logged_in']:
+        if st.sidebar.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.success("로그아웃 되었습니다.")
+
+
 
     def initialize_firebase():
         """Firebase 초기화 함수"""
@@ -374,11 +381,5 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.divider() 
         st.success("평가가 완료되었습니다.")
         
-        # 로그아웃 버튼
-        if "logged_in" in st.session_state and st.session_state['logged_in']:
-            if st.sidebar.button("Logout"):
-                st.session_state['logged_in'] = False
-                st.success("로그아웃 되었습니다.")
-
 else:
     st.warning('Please log in to read more.')
