@@ -163,23 +163,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             # Error message
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
-    # Only show file list after successful upload
-    if st.session_state.show_file_list:
-        st.write("---")
-        st.subheader("업로드된 파일 목록")
-
-        try:
-            # Get bucket and list files
-            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-            blobs = bucket.list_blobs(prefix="Simulator_training/MT/MT_result/")
-            
-            # Create a list of files
-            for blob in blobs:
-                if blob.name != "Simulator_training/MT/MT_result/":  # Skip the directory itself
-                    st.write(f" {os.path.basename(blob.name)}")
-        except Exception as e:
-            st.error(f"파일 목록을 불러오는 중 오류가 발생했습니다: {e}")
-
     # 로그아웃 버튼
     if "logged_in" in st.session_state and st.session_state['logged_in']:
         if st.sidebar.button("Logout"):
