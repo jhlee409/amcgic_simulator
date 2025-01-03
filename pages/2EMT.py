@@ -47,12 +47,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.markdown("이 페이지는 EGD simulator을 대상으로 한 EMT 검사 수행의 적절성을 평가하는 페이지입니다.")
     st.markdown("합격 판정이 나오면 추가로 파일을 올리지 마세요. 올릴 때마다 이전기록이 삭제됩니다.")
     st.write("---")
-
-    # 로그아웃 버튼
-    if "logged_in" in st.session_state and st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.success("로그아웃 되었습니다.")
    
     st.subheader("합격 동영상 예시")
     st.write("EMT 합격한 동영상 예시를 올립니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
@@ -379,6 +373,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                         
         st.divider() 
         st.success("평가가 완료되었습니다.")
+        
+        # 로그아웃 버튼
+        if "logged_in" in st.session_state and st.session_state['logged_in']:
+            if st.sidebar.button("Logout"):
+                st.session_state['logged_in'] = False
+                st.success("로그아웃 되었습니다.")
 
 else:
     st.warning('Please log in to read more.')
