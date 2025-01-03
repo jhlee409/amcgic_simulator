@@ -31,7 +31,7 @@ bucket_name = 'amcgi-bulletin.appspot.com'
 bucket = storage.bucket(bucket_name)  # 항상 사용할 수 있도록 초기화
 
 # Streamlit 페이지 설정
-st.title("서울 아산병원 GI 상부 Simulator training")
+st.title("AMC GI 상부 Simulator training")
 st.header("Login page")
 st.markdown(
     '''
