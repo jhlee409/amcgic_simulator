@@ -6,7 +6,7 @@ import tempfile
 from datetime import datetime
 from pytz import timezone
 
-st.set_page_config(page_title="amcgic_simulator", layout="wide")
+st.set_page_config(page_title="amcgic_simulator")
 
 
 # Streamlit 페이지 설정

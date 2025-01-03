@@ -6,7 +6,7 @@ from firebase_admin import credentials, storage
 import tempfile
 
 # Set page to wide mode
-st.set_page_config(page_title="MT")
+st.set_page_config(page_title="MT", layout="wide")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
 
