@@ -14,7 +14,7 @@ import firebase_admin
 from firebase_admin import credentials, storage
 
 # Set page to wide mode
-st.set_page_config(page_title="SHT_skill_evaluation")
+st.set_page_config(page_title="SHT_training")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기
@@ -26,8 +26,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if st.sidebar.button("Logout"):
             st.session_state['logged_in'] = False
             st.success("로그아웃 되었습니다.")
-
-
 
     def initialize_firebase():
         """Firebase 초기화 함수"""
@@ -76,8 +74,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.write("---")
    
-    st.subheader("전문가의 SHT 동영상 예시")
-    st.write("전문가가 수행한 SHT의 동영상입니다. 다운받아서 보세오.")
+    st.subheader("전문가의 SHT 시범 동영상")
+    st.write("전문가가 수행한 SHT의 시범 동영상입니다. 다운받아서 보세오.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_demo.avi')

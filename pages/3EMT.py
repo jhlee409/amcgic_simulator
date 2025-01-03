@@ -27,8 +27,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             st.session_state['logged_in'] = False
             st.success("로그아웃 되었습니다.")
 
-
-
     def initialize_firebase():
         """Firebase 초기화 함수"""
         if not firebase_admin._apps:
