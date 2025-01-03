@@ -72,26 +72,26 @@ if show_login_button:
         if password == "3180":
             st.success(f"로그인에 성공하셨습니다. 이제 왼쪽의 메뉴를 이용하실 수 있습니다.")
             st.session_state['logged_in'] = True
-            st.session_state['user_position'] = position
-            st.session_state['user_name'] = name           
+            # st.session_state['user_position'] = position
+            # st.session_state['user_name'] = name           
             
-            # 날짜와 사용자 이름 기반 텍스트 파일 생성
-            current_date = datetime.now(timezone('Asia/Seoul')).strftime("%Y-%m-%d")
-            filename = f"{position}*{name}*bulletin"
-            file_content = f"{position}*{name}*bulletin\n"
+            # # 날짜와 사용자 이름 기반 텍스트 파일 생성
+            # current_date = datetime.now(timezone('Asia/Seoul')).strftime("%Y-%m-%d")
+            # filename = f"{position}*{name}*bulletin"
+            # file_content = f"{position}*{name}*bulletin\n"
 
-            # 임시 디렉토리에 파일 저장
-            with tempfile.TemporaryDirectory() as temp_dir:
-                temp_file_path = os.path.join(temp_dir, filename)
-                with open(temp_file_path, "w", encoding="utf-8") as file:
-                    file.write(file_content)
+            # # 임시 디렉토리에 파일 저장
+            # with tempfile.TemporaryDirectory() as temp_dir:
+            #     temp_file_path = os.path.join(temp_dir, filename)
+            #     with open(temp_file_path, "w", encoding="utf-8") as file:
+            #         file.write(file_content)
 
-                # Firebase Storage에 업로드
-                try:
-                    blob = bucket.blob(f"log_bulletin/{filename}")
-                    blob.upload_from_filename(temp_file_path)
-                except Exception as e:
-                    st.error("로그 자료 업로드 중 오류가 발생했습니다: " + str(e))
+            #     # Firebase Storage에 업로드
+            #     try:
+            #         blob = bucket.blob(f"log_bulletin/{filename}")
+            #         blob.upload_from_filename(temp_file_path)
+            #     except Exception as e:
+            #         st.error("로그 자료 업로드 중 오류가 발생했습니다: " + str(e))
         else:
             st.error("로그인에 실패했습니다. 비밀번호를 확인하세요.")
 
