@@ -37,6 +37,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.write("암기할 때는 웹카메라를 응시하면서 말해야 합니다. 자꾸 다른 쪽으로 시선을 돌리면 부정행위로 분류될 수 있습니다.")
     st.write("---")
 
+        # Initialize session state
+    if 'name_selected' not in st.session_state:
+        st.session_state.name_selected = False
+    if 'show_file_list' not in st.session_state:
+        st.session_state.show_file_list = False
+    if 'download_clicked' not in st.session_state:
+        st.session_state.download_clicked = False
+
     # Add download button for EGD procedure document
     st.subheader("EGD 시행 동작 순서 Bx 포함 2024.docx")
     try:
