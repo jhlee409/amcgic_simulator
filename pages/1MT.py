@@ -179,6 +179,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     st.write(f" {os.path.basename(blob.name)}")
         except Exception as e:
             st.error(f"파일 목록을 불러오는 중 오류가 발생했습니다: {e}")
+
+    # 로그아웃 버튼
+    if "logged_in" in st.session_state and st.session_state['logged_in']:
+        if st.sidebar.button("Logout"):
+            st.session_state['logged_in'] = False
+            st.success("로그아웃 되었습니다.")
     
 else:
     st.warning('Please log in to read more.')
