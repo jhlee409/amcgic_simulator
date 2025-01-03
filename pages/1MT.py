@@ -9,6 +9,9 @@ import tempfile
 st.set_page_config(page_title="MT", layout="wide")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
+    # 세션에서 사용자 정보 가져오기
+    name = st.session_state['name']
+    position = st.session_state['position']
 
     # Initialize Firebase only if it hasn't been initialized
     if not firebase_admin._apps:
@@ -62,7 +65,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # Log download to Firebase
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
                 log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{position}*{name}*'MT_doc_downloaded'")
-                log_blob.upload_from_string(position + "_" + user_name + "_MT_doc_downloaded" + "_" + datetime.now().strftime('%Y-%m-%d'))
+                log_blob.upload_from_string(position + "_" + name + "_MT_doc_downloaded" + "_" + datetime.now().strftime('%Y-%m-%d'))
         else:
             st.error("검사과정설명 문서를 찾을 수 없습니다..")
     except Exception as e:

@@ -49,10 +49,13 @@ if not password.strip():
 if show_login_button:
     if st.button("Login"):
         if password == "3180":
-            st.success(f"로그인에 성공하셨습니다. 이제 왼쪽의 메뉴를 이용하실 수 있습니다.")
             st.session_state['logged_in'] = True
+            st.session_state['name'] = name
+            st.session_state['position'] = position
+            st.success("로그인 성공!")
+            st.rerun()
         else:
-            st.error("로그인에 실패했습니다. 비밀번호를 확인하세요.")
+            st.error("비밀번호가 틀렸습니다")
 
 # 로그아웃 버튼
 if "logged_in" in st.session_state and st.session_state['logged_in']:
