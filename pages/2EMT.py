@@ -364,9 +364,9 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 try:
                     if str3 == "Pass":
                         # Firebase Storage에 업로드
-                        result_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT result.png')
+                        result_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.png')
                         result_blob.upload_from_filename(temp_image_path)
-                        st.success(f"이미지가 성공적으로 전송되었습니다: {name}.png")
+                        st.success(f"이미지가 성공적으로 전송되었습니다.")
                     else:
                         st.warning("평가 결과가 'fail'이므로 업로드하지 않습니다.")
                     
