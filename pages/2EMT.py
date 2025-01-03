@@ -14,7 +14,7 @@ import firebase_admin
 from firebase_admin import credentials, storage
 
 # Set page to wide mode
-st.set_page_config(page_title="EMT_skill_evaluation", layout="wide")
+st.set_page_config(page_title="EMT_skill_evaluation")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기
