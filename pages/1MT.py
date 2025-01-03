@@ -41,12 +41,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.subheader("EGD 시행 동작 순서 Bx 포함 2024.docx")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        narration_blob = bucket.blob('Simulator_training/MT/EGD 시행 동작 순서 Bx 포함 2024.docx')
-        if narration_blob.exists():
-            narration_url = narration_blob.generate_signed_url(expiration=timedelta(minutes=15))
+        method_blob = bucket.blob('Simulator_training/MT/EGD 시행 동작 순서 Bx 포함 2024.docx')
+        if method_blob.exists():
+            method_url = method_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
                 label="EGD 시행 순서 다운로드",
-                data=narration_blob.download_as_bytes(),
+                data=method_blob.download_as_bytes(),
                 file_name="EGD 시행 동작 순서 Bx 포함 2024.docx",
                 mime="application/msword",
             ):
@@ -138,7 +138,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # Generate file names
                 extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
-                video_file_name = f"{position}_{user_name}{extension}"
+                video_file_name = f"{position}_{name}{extension}"
 
                 # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
