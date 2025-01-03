@@ -48,8 +48,9 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     bucket = initialize_firebase()
 
-    st.markdown("<h1>SHT_skill_evaluation</h1>", unsafe_allow_html=True)
-    st.markdown("이 페이지는 EGD simulator을 대상으로 한 SHT 검사 수행의 적절성을 평가하는 페이지입니다.")
+    st.markdown("<h1>SHT_training/h1>", unsafe_allow_html=True)
+    st.markdown("이 페이지는 EGD simulator을 대상으로 한 SHT training 홈 페이지입니다.")
+    st.markdown("설명과 시범 동영상이 이전 구 모델을 대상으로 한 것입니다. 이후 업그레이드가 될 예정입니다.")
     st.write("---")
 
     st.subheader("SHT 설명 동영상")
