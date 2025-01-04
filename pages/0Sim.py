@@ -83,41 +83,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 except Exception as e:
                     # Error message
                     st.error(f"업로드 중 오류가 발생했습니다: {e}")
-
         else:
             st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
     except Exception as e:
         st.error(f"simulation center 오리엔테이션 파일 다운로드 중 오류가 발생했습니다.: {e}")
 
     st.write("---")
-
-    if uploaded_file:
-        try:
-            # Create a temporary directory to store the video file
-            with tempfile.TemporaryDirectory() as temp_dir:
-                # Save the uploaded file temporarily
-                temp_video_path = os.path.join(temp_dir, uploaded_file.name)
-                with open(temp_video_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-
-                # Get current date
-                current_date = datetime.now().strftime("%Y-%m-%d")
-
-                # Generate file names
-                extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
-                video_file_name = f"{position}*{name}*sim_orientation{extension}"
-
-                # Firebase Storage upload for video
-                bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                video_blob = bucket.blob(f"Simulator_training/sim_orientation/log_sim_orientation/{video_file_name}")
-                video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-
-                # Success message
-                st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
-                st.session_state.show_file_list = True
-        except Exception as e:
-            # Error message
-            st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
     # 로그아웃 버튼
     if "logged_in" in st.session_state and st.session_state['logged_in']:
