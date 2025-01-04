@@ -57,7 +57,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.markdown("검사 소요시간과 사진 장수가 맞아야 평가에 들어갈 수 있습니다. 합격 판정이 나면 자동적으로 결과 이미지 파일이 감독 선생님에게 전송됩니다.")
     st.write("---")
 
-    st.subheader("EMT orientation 동영상 다운로드")
+    st.subheader("EMT orientation 동영상")
     st.write("EMT orientation 동영상을 다운 받아 미리 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
@@ -79,7 +79,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.write("---")
    
-    st.subheader("합격 동영상 예시")
+    st.subheader("전문가 시범 동영상")
     st.write("전문가가 수행한 EMT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
@@ -101,7 +101,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.write("---")
 
-    st.subheader("- 파일 업로드 및 파악 과정 -")
+    st.subheader("수행 동영상 파일 업로드, 분석 및 최종 평가서 전송")
 
     uploaded_files = st.file_uploader("분석할 파일들(avi, mp4, bmp)을 탐색기에서 찾아 모두 선택해주세요 단 동영상은 한개만 선택할 수 있습니다.", 
                                     accept_multiple_files=True,
@@ -296,7 +296,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 clf.fit(x_train_scaled)
 
                 st.write("---")
-                st.subheader("-최종 판정-")
+                st.subheader("최종 판정")
 
                 y_pred_test = clf.predict(x_test_scaled)
                 str4 = str(round(clf.decision_function(x_test_scaled)[0], 4))
@@ -375,7 +375,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 draw.text((x, y), text, fill=text_color, font=font, align="left")
 
                 st.divider()
-                st.subheader("- 이미지 전송 과정 -")
+                st.subheader("이미지 전송 과정")
                 
                 # 임시 디렉토리 생성
                 os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
