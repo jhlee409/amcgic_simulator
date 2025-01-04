@@ -33,7 +33,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.title("Memory test")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.write("이 페이지는 Memory test 필요 자료를 다운 받고, 암기 동영상을 업로드하는 웹페이지입니다.")
-        st.write("설명 문서 다운로드 버튼을 눌러 암기할 검사과정을 설명한 docx 문서를 다운받으세요.")
+        st.write("설명 문서 다운로드 버튼을 눌러, 검사과정을 설명한 docx 문서를 다운받으세요.")
         st.write("나레이션 mp3 다운로드 버튼을 눌러 설명을 읽어준 나레이션 파일을 다운 받으세요.")
         st.write("그냥 외우려고 하면 막연해서 잘 안 외어 집니다. EGD 수행 해설 동영상 2개를 시청하면 암기하는데 도움이됩니다.")
         st.write("충분하다고 판단되면 웹카메라로 암기하는 동영상을 만든 후 여기에 올려 주세요 단 동영상 형식은 mp4, 크기는 100 MB 이하로 해주세요.")
