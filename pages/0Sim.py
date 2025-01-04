@@ -56,22 +56,32 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 file_name="simulation_center_orientation.mp4",
                 mime="video/mp4",
             ):
-                # 다운로드 버튼 클릭 시 로그 파일 생성 및 업로드
                 try:
-                    # Generate file names
-                    extension = os.path.splitext(file_name)[1]  # Extract file extension
-                    video_file_name = f"{position}*{name}*sim_orientation{extension}"
+                    # 현재 날짜 가져오기
+                    current_date = datetime.now().strftime("%Y-%m-%d")
+                    
+                    # 로그 파일 이름 생성
+                    log_file_name = f"{position}*{name}*sim_orientation"
+                    
+                    # 임시 파일 생성
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                        log_content = f"Orientation file downloaded by {name} ({position}) on {current_date}"
+                        temp_file.write(log_content)
+                        temp_file_path = temp_file.name
 
-                    # Firebase Storage upload for video
+                    # Firebase Storage에 로그 파일 업로드
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                    video_blob = bucket.blob(f"Simulator_training/sim_orientation/log_sim_orientation/{video_file_name}")
+                    log_blob = bucket.blob(f"Simulator_training/sim_orientation/log_sim_orientation/{log_file_name}")
+                    log_blob.upload_from_filename(temp_file_path)
 
-                    # Success message
-                    st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
+                    # 임시 파일 삭제
+                    os.unlink(temp_file_path)
+
+                    # 성공 메시지 표시
+                    st.success(f"오리엔테이션 파일 다운로드 완료 및 로그가 저장되었습니다!")
                     st.session_state.show_file_list = True
                 except Exception as e:
-                    # Error message
-                    st.error(f"업로드 중 오류가 발생했습니다: {e}")
+                    st.error(f"로그 파일 업로드 중 오류가 발생했습니다: {e}")
         else:
             st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
     except Exception as e:
