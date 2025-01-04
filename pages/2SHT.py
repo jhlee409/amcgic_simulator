@@ -54,8 +54,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.markdown("설명과 시범 동영상이 이전 구 모델을 대상으로 한 것입니다. 이후 업그레이드가 될 예정입니다.")
     st.write("---")
 
-    st.subheader("SHT 설명 동영상")
-    st.write("SHT 훈련 요령을 설명한 동영상입니다. 실습전에 다운받아서 예습하세요.")
+    st.subheader("SHT 설명 및 시범 동영상")
+    st.write("SHT 훈련 요령을 설명한 동영상입니다. 마지막에는 전문가의 시범 동영상이 있습니다. 실습전에 다운받아서 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_orientation.mp4')
@@ -73,28 +73,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     except Exception as e:
         st.error(f"SHT 설명 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
-
-    st.write("---")
-   
-    st.subheader("전문가의 SHT 시범 동영상")
-    st.write("전문가가 수행한 SHT의 시범 동영상입니다. 다운받아서 보세오.")
-    try:
-        bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_demo.avi')
-        if demonstration_blob.exists():
-            demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="SHT_demo.avi",
-                mime="video/avi"
-            ):
-                st.write("")
-        else:
-            st.error("SHT 시범 동영상 파일을 찾을 수 없습니다.")
-
-    except Exception as e:
-        st.error(f"SHT 시범 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
     st.write("---")
 
