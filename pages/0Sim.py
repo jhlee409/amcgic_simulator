@@ -76,16 +76,17 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                     # 임시 파일 삭제
                     os.unlink(temp_file_path)
-                    
+
                 except Exception as e:
                     st.error(f"로그 파일 업로드 중 오류가 발생했습니다: {e}")
+
+                # 성공 메시지 표시
+                st.success(f"오리엔테이션 파일 다운로드 완료 및 로그가 저장되었습니다!")
+                st.session_state.show_file_list = True
+
         else:
             st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
-
-        # 성공 메시지 표시
-        st.success(f"오리엔테이션 파일 다운로드 완료 및 로그가 저장되었습니다!")
-        st.session_state.show_file_list = True
-
+        
     except Exception as e:
         st.error(f"simulation center 오리엔테이션 파일 다운로드 중 오류가 발생했습니다.: {e}")
 
