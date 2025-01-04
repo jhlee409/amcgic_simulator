@@ -58,14 +58,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("SHT 훈련 요령을 설명한 동영상입니다. 실습전에 다운받아서 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_orientation.avi')
+        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_orientation.mp4')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
                 label="동영상 다운로드",
                 data=demonstration_blob.download_as_bytes(),
-                file_name="SHT_orientation.avi",
-                mime="video/avi"
+                file_name="SHT_orientation.mp4",
+                mime="video/mp4"
             ):
                 st.write("")
         else:
