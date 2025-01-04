@@ -6,7 +6,7 @@ from firebase_admin import credentials, storage
 import tempfile
 
 # Set page to wide mode
-st.set_page_config(page_title="Sim")
+st.set_page_config(page_title="Sim", layout="wide")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기
@@ -56,11 +56,38 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 file_name="simulation_center_orientation.mp4",
                 mime="video/mp4",
             ):
-                st.write("")
+                # 다운로드 버튼 클릭 시 로그 파일 생성 및 업로드
+                try:
+                    # Create a temporary directory to store the video file
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        # Save the uploaded file temporarily
+                        temp_video_path = os.path.join(temp_dir, uploaded_file.name)
+                        with open(temp_video_path, "wb") as f:
+                            f.write(uploaded_file.getbuffer())
+
+                        # Get current date
+                        current_date = datetime.now().strftime("%Y-%m-%d")
+
+                        # Generate file names
+                        extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
+                        video_file_name = f"{position}*{name}*sim_orientation{extension}"
+
+                        # Firebase Storage upload for video
+                        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                        video_blob = bucket.blob(f"Simulator_training/sim_orientation/log_sim_orientation/{video_file_name}")
+                        video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
+
+                        # Success message
+                        st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
+                        st.session_state.show_file_list = True
+                except Exception as e:
+                    # Error message
+                    st.error(f"업로드 중 오류가 발생했습니다: {e}")
+
         else:
-            st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다..")
+            st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
     except Exception as e:
-        st.error(f"imulation center 오리엔테이션 파일 다운로드 중 오류가 발생했습니다.: {e}")
+        st.error(f"simulation center 오리엔테이션 파일 다운로드 중 오류가 발생했습니다.: {e}")
 
     st.write("---")
 
@@ -97,6 +124,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if st.sidebar.button("Logout"):
             st.session_state['logged_in'] = False
             st.success("로그아웃 되었습니다.")
-    
+
 else:
     st.warning('Please log in to read more.')
