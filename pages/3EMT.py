@@ -80,7 +80,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("---")
    
     st.subheader("합격 동영상 예시")
-    st.write("EMT 합격한 동영상 예시를 올립니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
+    st.write("전문가가 수행한 EMT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_pass_demo/EMT_pass_demo.avi')
@@ -94,10 +94,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             ):
                 st.write("")
         else:
-            st.error("EMT 합격 동영상 파일을 찾을 수 없습니다.")
+            st.error("EMT 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"EMT 합격 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"EMT 시범 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
     st.write("---")
 
