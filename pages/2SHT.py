@@ -58,7 +58,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("SHT 훈련 요령을 설명한 동영상입니다. 마지막에는 전문가의 시범 동영상이 있습니다. 실습전에 다운받아서 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_video/SHT_orientation.mp4')
+        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_orientation.mp4')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
@@ -99,8 +99,24 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                video_blob = bucket.blob(f"Simulator_training/SHT/log_SHT_result/{video_file_name}")
+                video_blob = bucket.blob(f"Simulator_training/SHT/SHT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
+
+                # Generate log file name
+                log_file_name = f"{position}*{name}*SHT_result"
+
+                # Create log file
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                    log_content = f"SHT_result video uploaded by {name} ({position}) on {current_date}"
+                    temp_file.write(log_content)
+                    temp_file_path = temp_file.name
+
+                # Firebase Storage upload for log file
+                log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT_result/{log_file_name}")
+                log_blob.upload_from_filename(temp_file_path)
+
+                # Remove temporary log file
+                os.unlink(temp_file_path)
 
                 # Success message
                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
