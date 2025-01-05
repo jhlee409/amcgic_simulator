@@ -149,8 +149,24 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                video_blob = bucket.blob(f"Simulator_training/MT/log_MT_result/{video_file_name}")
+                video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
+
+                # Generate log file name
+                log_file_name = f"{position}*{name}*MT_result"
+
+                # Create log file
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                    log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
+                    temp_file.write(log_content)
+                    temp_file_path = temp_file.name
+
+                # Firebase Storage upload for log file
+                log_blob = bucket.blob(f"Simulator_training/MT/log_MT_result/{log_file_name}")
+                log_blob.upload_from_filename(temp_file_path)
+
+                # Remove temporary log file
+                os.unlink(temp_file_path)
 
                 # Success message
                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
