@@ -380,6 +380,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
                 os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
                 
+                # 결과 이미지 크기 조정
+                width, height = result_image.size
+                result_image = result_image.resize((width // 2, height // 2), Image.ANTIALIAS)
+                
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
                 temp_image_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png'
