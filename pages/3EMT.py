@@ -384,14 +384,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 width, height = result_image.size
                 result_image = result_image.resize((width // 2, height // 2), Image.Resampling.LANCZOS)
                 
-                # 결과 이미지 저장 - 파일명에서 '*' 제거하고 '_'로 변경
-                temp_image_path = f'Simulator_training/EMT/EMT_result/{position}_{name}_EMT_result.png'
+                # 결과 이미지 저장 - 하이픈(-)을 구분자로 사용
+                temp_image_path = f'Simulator_training/EMT/EMT_result/{position}-{name}-EMT_result.png'
                 result_image.save(temp_image_path, format='PNG')
                 
                 try:
                     if str3 == "Pass":
-                        # Firebase Storage에 업로드 - 경로에서 '*' 제거
-                        firebase_path = f'Simulator_training/EMT/EMT_result/{position}_{name}_EMT_result.png'
+                        # Firebase Storage에 업로드
+                        firebase_path = f'Simulator_training/EMT/EMT_result/{position}-{name}-EMT_result.png'
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(temp_image_path, content_type='image/png')
                         st.success(f"이미지가 성공적으로 전송되었습니다.")
