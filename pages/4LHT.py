@@ -102,6 +102,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.subheader("수행 동영상 파일 업로드")
 
+    uploaded_file = None
+
     uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4, avi)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4", "avi"])
 
     if uploaded_file:
