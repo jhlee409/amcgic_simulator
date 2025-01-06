@@ -52,8 +52,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.markdown("이 페이지는 EMT simulator을 대상으로 한 EMT 검사 수행에 도움이 되는 자료를 제공하고, 수행의 적절성을 평가하는 페이지입니다.")
         st.markdown("먼저 EMT orientation 동영상을 다운받아 예습하세요.")
-        st.markdown("합격 동영상을 잘 보고 미러링을 열심히 하시기 바랍니다.")
-        st.markdown("수행에 자신이 생기면 동영상을 녹화하여, 아필 업로드 및 파악 과정에 올리시면 즉석에서 pass or fail을 판정합니다.")
+        st.markdown("시범 동영상을 잘 보고 미러링을 열심히 하시기 바랍니다.")
+        st.markdown("수행에 자신이 생기면 동영상을 녹화하여, 업로드 및 파악 과정에 올리시면 즉석에서 pass or fail을 판정합니다.")
         st.markdown("검사 소요시간과 사진 장수가 맞아야 평가에 들어갈 수 있습니다. 합격 판정이 나면 자동적으로 결과 이미지 파일이 감독 선생님에게 전송됩니다.")
     st.write("---")
 
