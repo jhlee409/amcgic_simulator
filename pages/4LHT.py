@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+import tempfile
 
 # Set page to wide mode
 st.set_page_config(page_title="LHT_skill_evaluation", layout="wide")
@@ -22,10 +23,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     position = st.session_state['position']
 
     # 로그아웃 버튼
-    if "logged_in" in st.session_state and st.session_state['logged_in']:
-        if st.sidebar.button("Logout"):
-            st.session_state['logged_in'] = False
-            st.success("로그아웃 되었습니다.")
+    if st.sidebar.button("Logout", key="logout_button"):
+        st.session_state['logged_in'] = False
+        st.success("로그아웃 되었습니다.")
+        st.stop()
 
     def initialize_firebase():
         """Firebase 초기화 함수"""
@@ -149,12 +150,5 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         except Exception as e:
             # Error message
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
-
-        # 로그아웃 버튼
-        if "logged_in" in st.session_state and st.session_state['logged_in']:
-            if st.sidebar.button("Logout"):
-                st.session_state['logged_in'] = False
-                st.success("로그아웃 되었습니다.")
-        
 else:
     st.warning('Please log in to read more.')
