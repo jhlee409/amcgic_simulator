@@ -382,7 +382,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
                 # 결과 이미지 크기 조정
                 width, height = result_image.size
-                result_image = result_image.resize((width // 2, height // 2), Image.ANTIALIAS)
+                result_image = result_image.resize((width // 2, height // 2), Image.Resampling.LANCZOS)
                 
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
