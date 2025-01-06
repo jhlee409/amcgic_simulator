@@ -83,13 +83,13 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("전문가가 수행한 EMT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_pass_demo/EMT_pass_demo.avi')
+        demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_expert_demo.avi')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
                 label="동영상 다운로드",
                 data=demonstration_blob.download_as_bytes(),
-                file_name="EMT_pass_demo.avi",
+                file_name="EMT_expert_demo.avi",
                 mime="video/avi"
             ):
                 st.write("")
@@ -378,29 +378,40 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 st.subheader("이미지 전송 과정")
                 
                 # 임시 디렉토리 생성
+                os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
                 os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
                 
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
-                temp_image_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.png'
+                temp_image_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png'
                 result_image.save(temp_image_path)
                 
                 try:
                     if str3 == "Pass":
                         # Firebase Storage에 업로드
-                        result_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.png')
+                        result_blob = bucket.blob(f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png')
                         result_blob.upload_from_filename(temp_image_path)
                         st.success(f"이미지가 성공적으로 전송되었습니다.")
                     else:
                         st.warning("평가 결과가 'fail'이므로 업로드하지 않습니다.")
                     
                     st.image(temp_image_path, use_container_width=True)
+                    
+                    # 로그 파일 생성
+                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    log_file_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.log'
+                    with open(log_file_path, 'w') as f:
+                        f.write(log_text)
+                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.log')
+                    log_blob.upload_from_filename(log_file_path)
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
                 finally:
                     # 임시 파일 삭제
                     if os.path.exists(temp_image_path):
                         os.remove(temp_image_path)
+                    if os.path.exists(log_file_path):
+                        os.remove(log_file_path)
                         
         st.divider() 
         st.success("평가가 완료되었습니다.")
