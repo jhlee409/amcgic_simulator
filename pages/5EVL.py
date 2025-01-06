@@ -70,7 +70,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     temp_file_path = temp_file.name
 
                 # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/EVL/{position}*{name}*EVL")
+                log_blob = bucket.blob(f"Simulator_training/EVL/log_EVL/{position}*{name}*EVL")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
         else:
