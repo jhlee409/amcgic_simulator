@@ -399,10 +399,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     
                     # 로그 파일 생성
                     log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.log'
+                    log_file_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result'
                     with open(log_file_path, 'w') as f:
                         f.write(log_text)
-                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result.log')
+                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
                     log_blob.upload_from_filename(log_file_path)
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
