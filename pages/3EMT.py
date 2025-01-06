@@ -373,7 +373,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
                 # 텍스트 그리기
                 draw.text((x, y), text, fill=text_color, font=font, align="left")
-
                 st.divider()
                 st.subheader("이미지 전송 과정")
                 
@@ -384,7 +383,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # 결과 이미지 저장
                 # current_time = datetime.now().strftime('%Y%m%d')
                 temp_image_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png'
-                result_image.save(temp_image_path)
+                result_image.save(temp_image_path, compress_level=6, optimize=True)
                 
                 try:
                     if str3 == "Pass":
