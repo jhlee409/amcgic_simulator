@@ -45,7 +45,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.markdown("이 페이지는 EVL simulator을 대상으로 한 EVL 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
         st.write("우리 병원에서는 Cook medical에서 생산되는 6 shooter multiband를  사용하고 있습니다.")
         st.write("이 multiband 사용 방법과 마지막에 expert의 시범 동영상을 예습하세요.")
-        st.markdown("EVL multiband 사용방법 및 demo.mp4 동영상을 다운받아 예습하세요.")
     st.write("---")
    
     st.subheader("EVL multiband 사용방법 및 demo")
