@@ -15,7 +15,7 @@ from firebase_admin import credentials, storage
 import tempfile
 
 # Set page to wide mode
-st.set_page_config(page_title="SHT_training")
+st.set_page_config(page_title="SHT_training", layout="wide")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기
