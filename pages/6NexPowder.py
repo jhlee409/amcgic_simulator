@@ -43,7 +43,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.header("NexPowder")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.markdown("이 페이지는 NexPowder 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-        st.markdown("먼저 NexPowder 사용법 동영상을 다운받아 시청하세요.")
+        st.markdown("NexPowder 사용법 동영상과 cases를 다운받아 시청하세요.")
     st.write("---")
    
     st.subheader("NexPowder")
