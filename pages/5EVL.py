@@ -42,26 +42,25 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     st.header("EVL_skill_evaluation")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-        st.markdown("이 페이지는 EVL simulator을 대상으로 한 EVL 검사 수행에 도움이 되는 자료를 제공하고, 수행의 적절성을 평가하는 페이지입니다.")
-        st.markdown("먼저 EVL orientation 동영상을 다운받아 예습하세요.")
-        st.markdown("시범 동영상을 잘 보고 미러링을 열심히 하시기 바랍니다.")
-        st.markdown("수행에 자신이 생기면 동영상을 녹화하여 업로드하세요.")
+        st.markdown("이 페이지는 EVL simulator을 대상으로 한 EVL 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+        st.markdown("EVL multiband 사용방법 및 demo.mp4 동영상을 다운받아 예습하세요.")
     st.write("---")
    
-    st.subheader("전문가 시범 동영상")
-    st.write("전문가가 수행한 EVL 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
+    st.subheader("EVL multiband 사용방법 및 demo")
+    st.write("우리 병원에서는 Cook medical에서 생산되는 6 shooter multiband를  사용하고 있습니다.")
+    st.write("이 multiband 사용 방법과 마지막에 expert의 시범 동영상을 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/EVL/EVL_expert_demo.mp4')
+        demonstration_blob = bucket.blob('Simulator_training/EVL/EVL multiband 사용방법 및 demo.mp4')
         if demonstration_blob.exists():
             if st.download_button(
                 label="동영상 다운로드",
                 data=demonstration_blob.download_as_bytes(),
-                file_name="EVL_expert_demo.mp4",
+                file_name="EVL_multiband 사용방법 및 demo.mp4",
                 mime="video/mp4",
                 key="expert_demo_download"
             ):
-                st.success("EVL 전문가 시범 동영상이 다운로드되었습니다.")
+                st.success("EVL multiband 사용방법 및 demo 동영상이 다운로드되었습니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
