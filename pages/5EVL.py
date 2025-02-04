@@ -40,7 +40,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     bucket = initialize_firebase()
 
-    st.header("EVL_skill_evaluation")
+    st.header("EVL simulator training")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.markdown("이 페이지는 EVL simulator을 대상으로 한 EVL 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
         st.write("우리 병원에서는 Cook medical에서 생산되는 6 shooter multiband를  사용하고 있습니다.")
