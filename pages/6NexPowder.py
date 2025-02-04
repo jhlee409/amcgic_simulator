@@ -50,7 +50,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("NexPowder를 장착하고 shooting 하는 방법을 보여주는 동영상입니다. 참고하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/NexPowder/NexNexpowder 사용법과 cases.mp4')
+        demonstration_blob = bucket.blob('Simulator_training/NexPowder/Nexpowder 사용법과 cases.mp4')
         if demonstration_blob.exists():
             if st.download_button(
                 label="동영상 다운로드",
