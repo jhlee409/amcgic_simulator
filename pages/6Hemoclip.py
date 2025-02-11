@@ -56,7 +56,24 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 label="동영상 시청",
                 key="expert_demo_view"
             ):
-                st.video(demonstration_blob.download_as_bytes(), format="video/mp4")
+                # 동영상 데이터를 base64로 인코딩
+                import base64
+                video_bytes = demonstration_blob.download_as_bytes()
+                video_base64 = base64.b64encode(video_bytes).decode()
+                
+                # HTML5 비디오 플레이어 (다운로드 방지 옵션 포함)
+                video_html = f"""
+                    <video 
+                        width="100%" 
+                        controls 
+                        controlsList="nodownload" 
+                        oncontextmenu="return false;"
+                        style="max-width: 100%;">
+                        <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                """
+                st.markdown(video_html, unsafe_allow_html=True)
                 st.success("Hemoclip simulator orientation 동영상이 재생됩니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
