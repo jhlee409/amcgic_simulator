@@ -55,61 +55,46 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if demonstration_blob.exists():
             # 동영상 시청 버튼
             if st.button("동영상 시청", key="expert_demo_view"):
-                # 동영상 데이터를 임시 파일로 저장하고 URL 생성
-                signed_url = demonstration_blob.generate_signed_url(
-                    version="v4",
-                    expiration=timedelta(minutes=30),
-                    method="GET"
-                )
+                # 동영상 데이터를 바이트로 읽기
+                video_bytes = demonstration_blob.download_as_bytes()
                 
                 # HTML5 비디오 플레이어 구현
-                video_player = f"""
-                <style>
-                    .video-container {{
-                        position: relative;
-                        width: 100%;
-                        margin: 0 auto;
-                    }}
-                    video {{
-                        width: 100%;
-                        max-height: 80vh;
-                    }}
-                    video::-webkit-media-controls-download-button {{
-                        display: none;
-                    }}
-                    video::-webkit-media-controls-enclosure {{
-                        overflow: hidden;
-                    }}
-                    video::-webkit-media-controls-panel {{
-                        width: calc(100% + 30px);
-                    }}
-                </style>
-                <div class="video-container">
-                    <video 
-                        controls 
-                        controlsList="nodownload" 
-                        oncontextmenu="return false;"
-                        disablePictureInPicture
-                    >
-                        <source src="{signed_url}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                <script>
-                    document.addEventListener('contextmenu', function(e) {{
-                        if (e.target.tagName === 'VIDEO') {{
-                            e.preventDefault();
-                        }}
-                    }}, false);
-                    
-                    document.addEventListener('keydown', function(e) {{
-                        if (e.key === 's' && (e.ctrlKey || e.metaKey)) {{
-                            e.preventDefault();
-                        }}
-                    }});
-                </script>
-                """
-                st.markdown(video_player, unsafe_allow_html=True)
+                st.markdown("""
+                    <style>
+                        .stVideo {
+                            position: relative;
+                            width: 100%;
+                        }
+                        .stVideo > video {
+                            width: 100%;
+                            max-height: 80vh;
+                        }
+                        /* 다운로드 버튼 숨기기 */
+                        .stVideo > video::-webkit-media-controls-download-button {
+                            display: none !important;
+                        }
+                        .stVideo > video::-webkit-media-controls-enclosure {
+                            overflow: hidden !important;
+                        }
+                        .stVideo > video::-webkit-media-controls-panel {
+                            width: calc(100% + 30px) !important;
+                        }
+                        /* 전체 비디오 요소에 대한 컨텍스트 메뉴 비활성화 */
+                        .stVideo > video::-webkit-media-controls {
+                            pointer-events: none !important;
+                        }
+                        .stVideo > video::-webkit-media-controls-play-button,
+                        .stVideo > video::-webkit-media-controls-timeline,
+                        .stVideo > video::-webkit-media-controls-volume-slider,
+                        .stVideo > video::-webkit-media-controls-mute-button,
+                        .stVideo > video::-webkit-media-controls-fullscreen-button {
+                            pointer-events: auto !important;
+                        }
+                    </style>
+                """, unsafe_allow_html=True)
+                
+                # 동영상 표시
+                st.video(video_bytes, format="video/mp4")
                 
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
