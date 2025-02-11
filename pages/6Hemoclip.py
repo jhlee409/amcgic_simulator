@@ -49,51 +49,67 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
    
     st.subheader("Hemoclip simulator orientation")
 
-    # 동영상 다운로드 방지를 위한 CSS 스타일 추가
-    st.markdown("""
-        <style>
-        /* 동영상 요소에 대한 컨텍스트 메뉴 비활성화 */
-        .stVideo > div {
-            position: relative;
-        }
-        .stVideo > div::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-        }
-        .stVideo video {
-            pointer-events: auto !important;
-        }
-        </style>
-        <script>
-        document.addEventListener('contextmenu', function(e) {
-            if (e.target.tagName === 'VIDEO') {
-                e.preventDefault();
-            }
-        }, false);
-        </script>
-    """, unsafe_allow_html=True)
-
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
             # 동영상 시청 버튼
             if st.button("동영상 시청", key="expert_demo_view"):
-                # 동영상 데이터를 임시 파일로 저장
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
-                    temp_file.write(demonstration_blob.download_as_bytes())
-                    temp_file_path = temp_file.name
+                # 동영상 데이터를 임시 파일로 저장하고 URL 생성
+                signed_url = demonstration_blob.generate_signed_url(
+                    version="v4",
+                    expiration=timedelta(minutes=30),
+                    method="GET"
+                )
                 
-                # 동영상 플레이어 표시
-                st.video(temp_file_path)
-                
-                # 임시 파일 삭제
-                os.unlink(temp_file_path)
+                # HTML5 비디오 플레이어 구현
+                video_player = f"""
+                <style>
+                    .video-container {{
+                        position: relative;
+                        width: 100%;
+                        margin: 0 auto;
+                    }}
+                    video {{
+                        width: 100%;
+                        max-height: 80vh;
+                    }}
+                    video::-webkit-media-controls-download-button {{
+                        display: none;
+                    }}
+                    video::-webkit-media-controls-enclosure {{
+                        overflow: hidden;
+                    }}
+                    video::-webkit-media-controls-panel {{
+                        width: calc(100% + 30px);
+                    }}
+                </style>
+                <div class="video-container">
+                    <video 
+                        controls 
+                        controlsList="nodownload" 
+                        oncontextmenu="return false;"
+                        disablePictureInPicture
+                    >
+                        <source src="{signed_url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <script>
+                    document.addEventListener('contextmenu', function(e) {{
+                        if (e.target.tagName === 'VIDEO') {{
+                            e.preventDefault();
+                        }}
+                    }}, false);
+                    
+                    document.addEventListener('keydown', function(e) {{
+                        if (e.key === 's' && (e.ctrlKey || e.metaKey)) {{
+                            e.preventDefault();
+                        }}
+                    }});
+                </script>
+                """
+                st.markdown(video_player, unsafe_allow_html=True)
                 
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
