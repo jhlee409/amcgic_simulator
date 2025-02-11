@@ -52,75 +52,23 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
-            if st.button(
-                label="동영상 시청",
-                key="expert_demo_watch"
-            ):
+            # 동영상 시청 버튼
+            if st.button("동영상 시청", key="expert_demo_view"):
                 # 동영상 데이터를 임시 파일로 저장
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
                     temp_file.write(demonstration_blob.download_as_bytes())
                     temp_file_path = temp_file.name
-
-                # 다운로드 방지 스크립트 추가
-                st.markdown("""
-                    <style>
-                        video {
-                            pointer-events: none;
-                        }
-                        .stVideo {
-                            pointer-events: auto;
-                        }
-                        /* 동영상 컨텍스트 메뉴 비활성화 */
-                        video::-webkit-media-controls-enclosure {
-                            overflow:hidden;
-                        }
-                        video::-webkit-media-controls-panel {
-                            width: calc(100% + 30px);
-                        }
-                        video::-internal-media-controls-download-button {
-                            display:none !important;
-                        }
-                        video::-webkit-media-controls-download-button {
-                            display:none !important;
-                        }
-                    </style>
-                    <script>
-                        // 컨텍스트 메뉴 비활성화
-                        document.addEventListener('contextmenu', function(e) {
-                            if (e.target.tagName === 'VIDEO') {
-                                e.preventDefault();
-                                return false;
-                            }
-                        }, false);
-                        
-                        // 키보드 단축키 비활성화
-                        document.addEventListener('keydown', function(e) {
-                            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
-                                e.preventDefault();
-                                return false;
-                            }
-                        });
-                        
-                        // 드래그 앤 드롭 비활성화
-                        document.addEventListener('dragstart', function(e) {
-                            if (e.target.tagName === 'VIDEO') {
-                                e.preventDefault();
-                                return false;
-                            }
-                        });
-                    </script>
-                """, unsafe_allow_html=True)
-
-                # 동영상 플레이어로 표시
+                
+                # 동영상 플레이어 표시
                 st.video(temp_file_path)
                 
                 # 임시 파일 삭제
                 os.unlink(temp_file_path)
-
+                
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -132,7 +80,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 재생 중 오류가 발생했습니다: {e}")
+        st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
    
 else:
