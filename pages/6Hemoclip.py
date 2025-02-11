@@ -54,31 +54,42 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if demonstration_blob.exists():
             if st.button(
                 label="동영상 시청",
-                key="expert_demo_view"
+                key="expert_demo_watch"
             ):
-                # 동영상 데이터를 base64로 인코딩
-                import base64
-                video_bytes = demonstration_blob.download_as_bytes()
-                video_base64 = base64.b64encode(video_bytes).decode()
+                # 동영상 데이터를 임시 파일로 저장
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
+                    temp_file.write(demonstration_blob.download_as_bytes())
+                    temp_file_path = temp_file.name
+
+                # 다운로드 방지 스크립트 추가
+                st.markdown("""
+                    <style>
+                        video {
+                            pointer-events: none;
+                        }
+                        .stVideo {
+                            pointer-events: auto;
+                        }
+                    </style>
+                    <script>
+                        document.addEventListener('contextmenu', function(e) {
+                            if (e.target.tagName === 'VIDEO') {
+                                e.preventDefault();
+                            }
+                        }, false);
+                    </script>
+                """, unsafe_allow_html=True)
+
+                # 동영상 플레이어로 표시
+                st.video(temp_file_path)
                 
-                # HTML5 비디오 플레이어 (다운로드 방지 옵션 포함)
-                video_html = f"""
-                    <video 
-                        width="100%" 
-                        controls 
-                        controlsList="nodownload" 
-                        oncontextmenu="return false;"
-                        style="max-width: 100%;">
-                        <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                """
-                st.markdown(video_html, unsafe_allow_html=True)
-                st.success("Hemoclip simulator orientation 동영상이 재생됩니다.")
+                # 임시 파일 삭제
+                os.unlink(temp_file_path)
+
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -90,7 +101,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+        st.error(f"Hemoclip simulator orientation 동영상 재생 중 오류가 발생했습니다: {e}")
 
    
 else:
