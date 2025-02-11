@@ -4,6 +4,7 @@ import tempfile
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+import base64
 
 # Set page to wide mode
 st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
@@ -48,6 +49,22 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
    
     st.subheader("Hemoclip simulator orientation")
 
+    # 동영상 다운로드 방지를 위한 CSS 스타일 추가
+    st.markdown("""
+        <style>
+        /* 동영상 요소에 대한 컨텍스트 메뉴 비활성화 */
+        video::-webkit-media-controls-enclosure {
+            overflow:hidden;
+        }
+        video::-webkit-media-controls-panel {
+            width: calc(100% + 30px);
+        }
+        .stVideo {
+            pointer-events: none;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
@@ -59,8 +76,25 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     temp_file.write(demonstration_blob.download_as_bytes())
                     temp_file_path = temp_file.name
                 
-                # 동영상 플레이어 표시
-                st.video(temp_file_path)
+                # HTML video 태그를 사용하여 동영상 표시
+                video_bytes = demonstration_blob.download_as_bytes()
+                video_base64 = base64.b64encode(video_bytes).decode()
+                
+                video_html = f'''
+                    <div style="position: relative;">
+                        <video 
+                            controls 
+                            width="100%"
+                            oncontextmenu="return false;"
+                            controlsList="nodownload"
+                            style="pointer-events: auto;"
+                        >
+                            <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
                 
                 # 임시 파일 삭제
                 os.unlink(temp_file_path)
