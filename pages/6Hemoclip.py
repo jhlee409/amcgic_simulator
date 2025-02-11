@@ -53,14 +53,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.markdown("""
         <style>
         /* 동영상 요소에 대한 컨텍스트 메뉴 비활성화 */
-        video::-webkit-media-controls-enclosure {
-            overflow:hidden;
-        }
-        video::-webkit-media-controls-panel {
-            width: calc(100% + 30px);
-        }
         .stVideo {
-            pointer-events: none;
+            pointer-events: none !important;
+        }
+        .stVideo > video {
+            pointer-events: auto !important;
+        }
+        iframe {
+            pointer-events: auto !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -76,25 +76,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     temp_file.write(demonstration_blob.download_as_bytes())
                     temp_file_path = temp_file.name
                 
-                # HTML video 태그를 사용하여 동영상 표시
-                video_bytes = demonstration_blob.download_as_bytes()
-                video_base64 = base64.b64encode(video_bytes).decode()
-                
-                video_html = f'''
-                    <div style="position: relative;">
-                        <video 
-                            controls 
-                            width="100%"
-                            oncontextmenu="return false;"
-                            controlsList="nodownload"
-                            style="pointer-events: auto;"
-                        >
-                            <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                '''
-                st.markdown(video_html, unsafe_allow_html=True)
+                # 동영상 플레이어 표시
+                st.video(temp_file_path)
                 
                 # 임시 파일 삭제
                 os.unlink(temp_file_path)
