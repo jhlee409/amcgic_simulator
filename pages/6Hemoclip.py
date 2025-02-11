@@ -70,13 +70,44 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                         .stVideo {
                             pointer-events: auto;
                         }
+                        /* 동영상 컨텍스트 메뉴 비활성화 */
+                        video::-webkit-media-controls-enclosure {
+                            overflow:hidden;
+                        }
+                        video::-webkit-media-controls-panel {
+                            width: calc(100% + 30px);
+                        }
+                        video::-internal-media-controls-download-button {
+                            display:none !important;
+                        }
+                        video::-webkit-media-controls-download-button {
+                            display:none !important;
+                        }
                     </style>
                     <script>
+                        // 컨텍스트 메뉴 비활성화
                         document.addEventListener('contextmenu', function(e) {
                             if (e.target.tagName === 'VIDEO') {
                                 e.preventDefault();
+                                return false;
                             }
                         }, false);
+                        
+                        // 키보드 단축키 비활성화
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+                        
+                        // 드래그 앤 드롭 비활성화
+                        document.addEventListener('dragstart', function(e) {
+                            if (e.target.tagName === 'VIDEO') {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
                     </script>
                 """, unsafe_allow_html=True)
 
