@@ -55,102 +55,66 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if demonstration_blob.exists():
             # 동영상 시청 버튼
             if st.button("동영상 시청", key="expert_demo_view"):
-                # 임시 서명된 URL 생성
-                signed_url = demonstration_blob.generate_signed_url(
-                    version="v4",
-                    expiration=timedelta(minutes=30),
-                    method="GET"
-                )
+                # 동영상 데이터를 바이트로 읽기
+                video_bytes = demonstration_blob.download_as_bytes()
                 
-                # HTML5 비디오 플레이어 구현
+                # 보안 관련 JavaScript 코드
                 st.markdown("""
                     <style>
-                        #videoContainer {
-                            position: relative;
-                            width: 100%;
-                            padding-top: 56.25%; /* 16:9 비율 */
+                        /* 비디오 컨테이너 스타일 */
+                        .stVideo {
+                            position: relative !important;
                         }
-                        #videoFrame {
+                        
+                        /* 다운로드 버튼 숨기기 */
+                        .stVideo video::-webkit-media-controls-download-button {
+                            display: none !important;
+                        }
+                        .stVideo video::-webkit-media-controls-enclosure {
+                            overflow: hidden !important;
+                        }
+                        
+                        /* 비디오 위에 보이지 않는 레이어 추가 */
+                        .stVideo::after {
+                            content: '';
                             position: absolute;
                             top: 0;
                             left: 0;
-                            width: 100%;
-                            height: 100%;
-                            border: none;
-                        }
-                        video {
-                            width: 100%;
-                            height: 100%;
-                        }
-                        video::-webkit-media-controls-enclosure {
-                            display: flex !important;
-                            pointer-events: none !important;
-                        }
-                        video::-webkit-media-controls-panel {
-                            display: flex !important;
-                            pointer-events: none !important;
-                        }
-                        video::-webkit-media-controls-play-button,
-                        video::-webkit-media-controls-timeline,
-                        video::-webkit-media-controls-time-remaining-display,
-                        video::-webkit-media-controls-volume-slider,
-                        video::-webkit-media-controls-mute-button,
-                        video::-webkit-media-controls-fullscreen-button {
-                            pointer-events: auto !important;
-                        }
-                        video::-webkit-media-controls-download-button {
-                            display: none !important;
+                            right: 0;
+                            bottom: 0;
+                            pointer-events: none;
                         }
                     </style>
-                """, unsafe_allow_html=True)
-
-                # iframe을 사용하여 동영상 표시
-                html_content = f"""
-                    <div id="videoContainer">
-                        <video
-                            id="videoPlayer"
-                            controls
-                            controlsList="nodownload noremoteplayback"
-                            disablePictureInPicture
-                            oncontextmenu="return false;"
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                        >
-                            <source src="about:blank" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
                     <script>
-                        // 비디오 요소 가져오기
-                        const video = document.getElementById('videoPlayer');
-                        
-                        // Blob URL 생성
-                        fetch('{signed_url}')
-                            .then(response => response.blob())
-                            .then(blob => {{
-                                const url = URL.createObjectURL(blob);
-                                video.src = url;
+                        // 페이지 로드 후 실행
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // 모든 비디오 요소에 대해
+                            document.querySelectorAll('video').forEach(function(video) {
+                                // 컨텍스트 메뉴 비활성화
+                                video.addEventListener('contextmenu', function(e) {
+                                    e.preventDefault();
+                                });
                                 
-                                // 비디오가 끝나면 Blob URL 해제
-                                video.onended = () => URL.revokeObjectURL(url);
-                            }});
-                        
-                        // 마우스 오른쪽 클릭 방지
-                        document.addEventListener('contextmenu', function(e) {{
-                            if (e.target.id === 'videoPlayer') {{
-                                e.preventDefault();
-                            }}
-                        }}, false);
-                        
-                        // 키보드 단축키 방지
-                        document.addEventListener('keydown', function(e) {{
-                            if ((e.ctrlKey || e.metaKey) && 
-                                (e.key === 's' || e.key === 'S' || e.key === 'c' || e.key === 'C')) {{
-                                e.preventDefault();
-                            }}
-                        }});
+                                // 다운로드 방지
+                                video.addEventListener('loadedmetadata', function() {
+                                    video.setAttribute('controlsList', 'nodownload');
+                                });
+                            });
+                            
+                            // 전역 키보드 단축키 방지
+                            document.addEventListener('keydown', function(e) {
+                                if ((e.ctrlKey || e.metaKey) && 
+                                    (e.key === 's' || e.key === 'S' || 
+                                     e.key === 'c' || e.key === 'C')) {
+                                    e.preventDefault();
+                                }
+                            });
+                        });
                     </script>
-                """
-                st.markdown(html_content, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                
+                # 동영상 표시
+                st.video(video_bytes, format="video/mp4")
                 
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
