@@ -53,16 +53,29 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.markdown("""
         <style>
         /* 동영상 요소에 대한 컨텍스트 메뉴 비활성화 */
-        .stVideo {
-            pointer-events: none !important;
+        .stVideo > div {
+            position: relative;
         }
-        .stVideo > video {
-            pointer-events: auto !important;
+        .stVideo > div::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
         }
-        iframe {
+        .stVideo video {
             pointer-events: auto !important;
         }
         </style>
+        <script>
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.tagName === 'VIDEO') {
+                e.preventDefault();
+            }
+        }, false);
+        </script>
     """, unsafe_allow_html=True)
 
     try:
