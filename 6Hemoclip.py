@@ -52,16 +52,18 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
-            if st.button(
-                label="동영상 시청",
-                key="expert_demo_view"
+            if st.download_button(
+                label="동영상 다운로드",
+                data=demonstration_blob.download_as_bytes(),
+                file_name="hemoclip_orientation.mp4",
+                mime="video/mp4",
+                key="expert_demo_download"
             ):
-                st.video(demonstration_blob.download_as_bytes(), format="video/mp4")
-                st.success("Hemoclip simulator orientation 동영상이 재생됩니다.")
+                st.success("Hemoclip simulator orientation 동영상이 다운로드되었습니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video downloaded by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -73,7 +75,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+        st.error(f"Hemoclip simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
    
 else:
