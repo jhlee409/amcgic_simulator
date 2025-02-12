@@ -73,16 +73,16 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
 
-            # 임시 파일로 동영상 저장
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
-                temp_video.write(video_data)
-                temp_video_path = temp_video.name
-            
-            # 동영상 플레이어 표시
-            st.video(temp_video_path, start_time=0)
-            
-            # 임시 파일 삭제
-            os.unlink(temp_video_path)
+                # 임시 파일로 동영상 저장
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+                    temp_video.write(video_data)
+                    temp_video_path = temp_video.name
+                
+                # 동영상 플레이어 표시
+                st.video(temp_video_path, start_time=0)
+                
+                # 임시 파일 삭제
+                os.unlink(temp_video_path)
 
         else:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
