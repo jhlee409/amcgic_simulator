@@ -60,8 +60,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 st.session_state.show_video = False
             
             # 동영상 시청 버튼 생성
-            button_text = "동영상 숨기기" if st.session_state.show_video else "동영상 시청"
-            if st.button(button_text, key="watch_video"):
+            if st.button("동영상 시청", key="watch_video"):
                 if not st.session_state.show_video:
                     # 로그 파일 생성 및 업로드
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
