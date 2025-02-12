@@ -31,8 +31,9 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     # Title and Instructions
     st.title("Simulation Center EGD basic course orientation")
-    st.write("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
-    st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
+    with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
+        st.markdown("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
+        st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
     st.write("---")
 
     # Initialize session state
@@ -94,8 +95,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         
     except Exception as e:
         st.error(f"simulation center 오리엔테이션 파일 로드 중 오류가 발생했습니다.: {e}")
-
-    st.write("---")
 
     # 로그아웃 버튼
     if "logged_in" in st.session_state and st.session_state['logged_in']:
