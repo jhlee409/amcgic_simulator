@@ -31,8 +31,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     # Title and Instructions
     st.title("Simulation Center EGD basic course orientation")
-    st.write("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 다운 받는 곳입니다.")
-    st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 다운 받아 시청하세요.")
+    st.write("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
+    st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
     st.write("---")
 
     # Initialize session state
@@ -44,18 +44,18 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.session_state.download_clicked = False
 
     # Add download button for EGD procedure document
-    st.subheader("Simulation Center EGD basic course orientation 파일 다운로드")
+    st.subheader("Simulation Center EGD basic course orientation 파일 시청")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         sim_blob = bucket.blob('Simulator_training/sim_orientation/simulation_center_orientation.mp4')
         if sim_blob.exists():
             sim_url = sim_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="오리엔테이션 파일 다운로드",
-                data=sim_url,
-                file_name="simulation_center_orientation.mp4",
-                mime="video/mp4",
-            ):
+            
+            # Initialize session state for video player
+            if 'show_video' not in st.session_state:
+                st.session_state.show_video = False
+            
+            if st.button("동영상 시청"):
                 try:
                     # 현재 날짜 가져오기
                     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -65,7 +65,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     
                     # 임시 파일 생성
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"Orientation file downloaded by {name} ({position}) on {current_date}"
+                        log_content = f"Orientation video viewed by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
@@ -77,18 +77,23 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     # 임시 파일 삭제
                     os.unlink(temp_file_path)
 
-                    # 성공 메시지 표시
+                    # 비디오 플레이어 표시
+                    st.session_state.show_video = True
                     st.session_state.show_file_list = True
-                    st.success(f"오리엔테이션 파일 다운로드 완료 및 로그가 저장되었습니다!")
+                    st.success(f"로그가 저장되었습니다. 아래에서 동영상을 시청하실 수 있습니다.")
 
                 except Exception as e:
                     st.error(f"로그 파일 업로드 중 오류가 발생했습니다: {e}")
+            
+            # Show video player if button was clicked
+            if st.session_state.show_video:
+                st.video(sim_url)
 
         else:
             st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
         
     except Exception as e:
-        st.error(f"simulation center 오리엔테이션 파일 다운로드 중 오류가 발생했습니다.: {e}")
+        st.error(f"simulation center 오리엔테이션 파일 로드 중 오류가 발생했습니다.: {e}")
 
     st.write("---")
 
