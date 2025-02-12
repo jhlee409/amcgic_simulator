@@ -53,30 +53,45 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EVL/EVL multiband 사용방법 및 demo.mp4')
         if demonstration_blob.exists():
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="EVL_multiband 사용방법 및 demo.mp4",
-                mime="video/mp4",
-                key="expert_demo_download"
-            ):
-                st.success("EVL multiband 사용방법 및 demo 동영상이 다운로드되었습니다.")
-                # 로그 파일 생성 및 업로드
-                current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"EVL_expert_demo video downloaded by {name} ({position}) on {current_date}"
-                    temp_file.write(log_content)
-                    temp_file_path = temp_file.name
+            # 세션 상태에 비디오 표시 여부를 저장
+            if 'show_video' not in st.session_state:
+                st.session_state['show_video'] = False
+            
+            # 동영상 시청 버튼
+            if st.button("동영상 시청", key="video_button"):
+                st.session_state['show_video'] = not st.session_state['show_video']
+                
+                if st.session_state['show_video']:
+                    # 로그 파일 생성 및 업로드
+                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                        log_content = f"EVL_expert_demo video viewed by {name} ({position}) on {current_date}"
+                        temp_file.write(log_content)
+                        temp_file_path = temp_file.name
 
-                # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/EVL/log_EVL/{position}*{name}*EVL")
-                log_blob.upload_from_filename(temp_file_path)
-                os.unlink(temp_file_path)
+                    # Firebase Storage에 로그 파일 업로드
+                    log_blob = bucket.blob(f"Simulator_training/EVL/log_EVL/{position}*{name}*EVL")
+                    log_blob.upload_from_filename(temp_file_path)
+                    os.unlink(temp_file_path)
+            
+            # 비디오 플레이어 표시
+            if st.session_state['show_video']:
+                # 임시 파일로 동영상 저장
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+                    temp_video.write(demonstration_blob.download_as_bytes())
+                    video_path = temp_video.name
+                
+                # 비디오 플레이어 표시
+                st.video(video_path)
+                
+                # 임시 파일 삭제
+                os.unlink(video_path)
+                
         else:
             st.error("EVL 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"EVL 시범 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"EVL 시범 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
    
 else:
