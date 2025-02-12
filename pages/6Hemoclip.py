@@ -4,7 +4,6 @@ import tempfile
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
-import base64
 
 # Set page to wide mode
 st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
@@ -53,104 +52,18 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
-            # 동영상 시청 버튼
-            if st.button("동영상 시청", key="expert_demo_view"):
-                # 스트리밍 서버 시작
-                import subprocess
-                import psutil
-                import time
-                
-                # 이미 실행 중인 스트리밍 서버 확인
-                server_running = False
-                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                    try:
-                        if 'python' in proc.info['name'].lower() and 'video_server.py' in ' '.join(proc.info['cmdline']):
-                            server_running = True
-                            break
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                        pass
-                
-                # 서버가 실행 중이 아니면 시작
-                if not server_running:
-                    subprocess.Popen(['python', 'video_server.py'], 
-                                  cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-                    time.sleep(2)  # 서버 시작 대기
-                
-                # HLS 플레이어 구현
-                st.markdown("""
-                    <style>
-                        .stVideo {
-                            position: relative !important;
-                            width: 100%;
-                        }
-                        .video-container {
-                            position: relative;
-                            width: 100%;
-                            padding-top: 56.25%;
-                        }
-                        .video-player {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                        }
-                    </style>
-                    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-                    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-                """, unsafe_allow_html=True)
-                
-                video_html = f"""
-                    <div class="video-container">
-                        <video
-                            id="my-video"
-                            class="video-js video-player"
-                            controls
-                            preload="auto"
-                            data-setup='{{"controlBar": {{"pictureInPictureToggle": false}}}}'
-                        >
-                            <source src="http://localhost:8000/stream/Simulator_training/Hemoclip/hemoclip_orientation.mp4" type="video/mp4">
-                        </video>
-                    </div>
-                    <script>
-                        var player = videojs('my-video', {
-                            controls: true,
-                            fluid: true,
-                            html5: {{
-                                vhs: {{
-                                    overrideNative: true
-                                }},
-                                nativeVideoTracks: false,
-                                nativeAudioTracks: false,
-                                nativeTextTracks: false
-                            }},
-                            controlBar: {{
-                                pictureInPictureToggle: false,
-                                downloadButton: false
-                            }}
-                        });
-                        
-                        // 컨텍스트 메뉴 비활성화
-                        player.on('contextmenu', function(e) {{
-                            e.preventDefault();
-                        }});
-                        
-                        // 키보드 단축키 방지
-                        document.addEventListener('keydown', function(e) {{
-                            if ((e.ctrlKey || e.metaKey) && 
-                                (e.key === 's' || e.key === 'S' || 
-                                 e.key === 'c' || e.key === 'C')) {{
-                                e.preventDefault();
-                            }}
-                        }});
-                    </script>
-                """
-                st.markdown(video_html, unsafe_allow_html=True)
-                
+            if st.download_button(
+                label="동영상 다운로드",
+                data=demonstration_blob.download_as_bytes(),
+                file_name="hemoclip_orientation.mp4",
+                mime="video/mp4",
+                key="expert_demo_download"
+            ):
+                st.success("Hemoclip simulator orientation 동영상이 다운로드되었습니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video downloaded by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -162,7 +75,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+        st.error(f"Hemoclip simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
    
 else:
