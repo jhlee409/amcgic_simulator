@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 
@@ -45,25 +45,28 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         st.markdown("이 페이지는 Hemoclip simulator을 대상으로 한 Hemoclip 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
         st.write("Hemoclip simulator 실습 전에 'hemoclip_orientation.mp4' 동영상을 예습하세요.")
     st.write("---")
-
+   
     st.subheader("Hemoclip simulator orientation")
 
     try:
-        # Firebase에서 동영상 blob 가져오기
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
             # 동영상 데이터를 메모리에 저장
             video_data = demonstration_blob.download_as_bytes()
-
+            
             # 세션 상태 초기화
             if 'show_video' not in st.session_state:
                 st.session_state.show_video = False
-
+            
             # 동영상 시청 버튼
-            if st.button(label="동영상 시청", key="watch_video"):
+            if st.button(
+                label="동영상 시청",
+                key="watch_video"
+            ):
                 # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
-
+                
                 if st.session_state.show_video:
                     # 로그 파일 생성 및 업로드
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -76,29 +79,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-
+                
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                # 1) HTML에 직접 video 태그 주입
-                # nodownload 설정, 우클릭 비활성화(oncontextmenu="return false")
-                # disablepictureinpicture 등 추가 가능한 속성도 사용
-
-                import base64
-                encoded_video = base64.b64encode(video_data).decode("utf-8")
-                video_html = f'''
-                    <video 
-                        controls 
-                        controlsList="nodownload" 
-                        disablepictureinpicture 
-                        oncontextmenu="return false;" 
-                        style="max-width: 80%; height: auto;"
-                    >
-                        <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
-                        해당 브라우저는 동영상을 재생할 수 없습니다.
-                    </video>
-                '''
-
-                st.markdown(video_html, unsafe_allow_html=True)
+                st.video(video_data, start_time=0)
 
         else:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
@@ -106,5 +90,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     except Exception as e:
         st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
+   
 else:
     st.warning('Please log in to read more.')
