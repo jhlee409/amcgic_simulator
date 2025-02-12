@@ -58,7 +58,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("---")
 
     st.subheader("LHT orientation 동영상")
-    st.write("LHT orientation 동영상을 시청하고 미리 예습하세요.")
+    st.write("LHT orientation 동영상을 미리 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/LHT/LHT_orientation.mp4')
