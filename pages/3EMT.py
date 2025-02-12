@@ -58,24 +58,29 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.write("---")
 
     st.subheader("EMT orientation 동영상")
-    st.write("EMT orientation 동영상을 다운 받아 미리 예습하세요.")
+    st.write("EMT orientation 동영상을 미리 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_orientation.mp4')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="EMT_orientation.mp4",
-                mime="video/mp4"
-            ):
-                st.write("")
+            
+            # 비디오 플레이어 상태 관리
+            if 'show_video' not in st.session_state:
+                st.session_state.show_video = False
+            
+            # 버튼 클릭 시 비디오 플레이어 표시/숨김 토글
+            if st.button("동영상 시청", key="toggle_video"):
+                st.session_state.show_video = not st.session_state.show_video
+            
+            # 비디오 플레이어 표시
+            if st.session_state.show_video:
+                st.video(demonstration_url)
         else:
             st.error("EMT_orientation 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"EMT_orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"EMT_orientation 동영상 재생 중 오류가 발생했습니다: {e}")
 
     st.write("---")
    
