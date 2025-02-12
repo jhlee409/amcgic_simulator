@@ -61,7 +61,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             
             # 동영상 시청 버튼 생성
             if st.button("동영상 시청", key="watch_video"):
-                if not st.session_state.show_video:
+                # 비디오 표시 상태 토글
+                st.session_state.show_video = not st.session_state.show_video
+                
+                if st.session_state.show_video:
                     # 로그 파일 생성 및 업로드
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
@@ -73,11 +76,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-                    
-                    st.success("동영상이 준비되었습니다. 아래에서 시청하실 수 있습니다.")
-                
-                # 비디오 표시 상태 토글
-                st.session_state.show_video = not st.session_state.show_video
                 
             # 비디오 플레이어 표시
             if st.session_state.show_video:
