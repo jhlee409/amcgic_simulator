@@ -55,22 +55,33 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             # 비디오 데이터를 메모리에 로드
             video_bytes = demonstration_blob.download_as_bytes()
             
+            # 세션 상태 초기화
+            if 'show_video' not in st.session_state:
+                st.session_state.show_video = False
+            
             # 동영상 시청 버튼 생성
-            if st.button("동영상 시청", key="watch_video"):
-                # 로그 파일 생성 및 업로드
-                current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
-                    temp_file.write(log_content)
-                    temp_file_path = temp_file.name
+            button_text = "동영상 숨기기" if st.session_state.show_video else "동영상 시청"
+            if st.button(button_text, key="watch_video"):
+                if not st.session_state.show_video:
+                    # 로그 파일 생성 및 업로드
+                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                        log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
+                        temp_file.write(log_content)
+                        temp_file_path = temp_file.name
 
-                # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
-                log_blob.upload_from_filename(temp_file_path)
-                os.unlink(temp_file_path)
+                    # Firebase Storage에 로그 파일 업로드
+                    log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
+                    log_blob.upload_from_filename(temp_file_path)
+                    os.unlink(temp_file_path)
+                    
+                    st.success("동영상이 준비되었습니다. 아래에서 시청하실 수 있습니다.")
                 
-                st.success("동영상이 준비되었습니다. 아래에서 시청하실 수 있습니다.")
-                # 비디오 플레이어 표시
+                # 비디오 표시 상태 토글
+                st.session_state.show_video = not st.session_state.show_video
+                
+            # 비디오 플레이어 표시
+            if st.session_state.show_video:
                 st.video(video_bytes)
 
         else:
