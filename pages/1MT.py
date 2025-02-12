@@ -98,28 +98,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if demonstration1_blob.exists():
             demonstration_url = demonstration1_blob.generate_signed_url(expiration=timedelta(minutes=15))
             if st.download_button(
-                label="EGD 해설 동영상 1 다운로드",
+                label="EGD 해설 동영상 다운로드",
                 data=demonstration1_blob.download_as_bytes(),
                 file_name="B1.mp4",
                 mime="video/mp4"
             ):
                 st.write("")
         else:
-            st.error("EGD 해설 동영상 1 파일을 찾을 수 없습니다.")
-    
-        bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration2_blob = bucket.blob('EGD_variation/B2.mp4')
-        if demonstration2_blob.exists():
-            demonstration2_url = demonstration2_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="EGD 해설 동영상 2 다운로드",
-                data=demonstration2_blob.download_as_bytes(),
-                file_name="B2.mp4",
-                mime="video/mp4"
-            ):
-                st.write("")
-        else:
-            st.error("EGD 해설 동영상 2 파일을 찾을 수 없습니다.")
+            st.error("EGD 해설 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
         st.error(f"EGD 해설 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
