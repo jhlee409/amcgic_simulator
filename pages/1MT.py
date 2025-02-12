@@ -91,19 +91,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     # Add mp4 download button
 
-    st.subheader("전문가 EGD 수행 해설 동영상 다운로드")
+    st.subheader("전문가 EGD 수행 해설 동영상")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration1_blob = bucket.blob('EGD_variation/B1.mp4')
         if demonstration1_blob.exists():
             demonstration_url = demonstration1_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="EGD 해설 동영상 다운로드",
-                data=demonstration1_blob.download_as_bytes(),
-                file_name="B1.mp4",
-                mime="video/mp4"
-            ):
-                st.write("")
+            if st.button("동영상 시청"):
+                st.video(demonstration_url)
         else:
             st.error("EGD 해설 동영상 파일을 찾을 수 없습니다.")
 
