@@ -91,19 +91,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                video_html = f'''
-                    <video 
-                        controls 
-                        controlsList="nodownload" 
-                        disablepictureinpicture 
-                        oncontextmenu="return false;" 
-                        style="max-width: 80%; height: auto;"
-                    >
-                        <source src="{signed_url}" type="video/mp4">
-                        해당 브라우저는 동영상을 재생할 수 없습니다.
-                    </video>
-                '''
-                st.markdown(video_html, unsafe_allow_html=True)
+                st.video(signed_url)
         else:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
