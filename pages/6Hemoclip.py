@@ -21,24 +21,30 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     def initialize_firebase():
         """Firebase 초기화 함수"""
-        if not firebase_admin._apps:
-            cred = credentials.Certificate({
-                "type": "service_account",
-                "project_id": st.secrets["project_id"],
-                "private_key_id": st.secrets["private_key_id"],
-                "private_key": st.secrets["private_key"].replace('\\n', '\n'),
-                "client_email": st.secrets["client_email"],
-                "client_id": st.secrets["client_id"],
-                "auth_uri": st.secrets["auth_uri"],
-                "token_uri": st.secrets["token_uri"],
-                "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
-                "client_x509_cert_url": st.secrets["client_x509_cert_url"],
-                "universe_domain": st.secrets["universe_domain"]
-            })
-            firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-        return storage.bucket('amcgi-bulletin.appspot.com')
+        try:
+            if not firebase_admin._apps:
+                cred = credentials.Certificate({
+                    "type": "service_account",
+                    "project_id": st.secrets["project_id"],
+                    "private_key_id": st.secrets["private_key_id"],
+                    "private_key": st.secrets["private_key"].replace('\\n', '\n'),
+                    "client_email": st.secrets["client_email"],
+                    "client_id": st.secrets["client_id"],
+                    "auth_uri": st.secrets["auth_uri"],
+                    "token_uri": st.secrets["token_uri"],
+                    "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+                    "client_x509_cert_url": st.secrets["client_x509_cert_url"],
+                    "universe_domain": st.secrets["universe_domain"]
+                })
+                firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
+            return storage.bucket('amcgi-bulletin.appspot.com')
+        except Exception as e:
+            st.error(f"Firebase 초기화 중 오류가 발생했습니다: {str(e)}")
+            return None
 
     bucket = initialize_firebase()
+    if bucket is None:
+        st.stop()
 
     st.header("Hemoclip simulator training")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
@@ -52,8 +58,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         # Firebase에서 동영상 blob 가져오기
         demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
         if demonstration_blob.exists():
-            # 동영상 데이터를 메모리에 저장
-            video_data = demonstration_blob.download_as_bytes()
+            # 동영상의 signed URL 생성
+            signed_url = demonstration_blob.generate_signed_url(
+                version="v4",
+                expiration=3600,  # URL 유효 시간 (초)
+                method="GET"
+            )
 
             # 세션 상태 초기화
             if 'show_video' not in st.session_state:
@@ -61,30 +71,26 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
             # 동영상 시청 버튼
             if st.button(label="동영상 시청", key="watch_video"):
-                # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
 
                 if st.session_state.show_video:
-                    # 로그 파일 생성 및 업로드
-                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
-                        temp_file.write(log_content)
-                        temp_file_path = temp_file.name
+                    try:
+                        # 로그 파일 생성 및 업로드
+                        current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                            log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
+                            temp_file.write(log_content)
+                            temp_file_path = temp_file.name
 
-                    # Firebase Storage에 로그 파일 업로드
-                    log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
-                    log_blob.upload_from_filename(temp_file_path)
-                    os.unlink(temp_file_path)
+                        # Firebase Storage에 로그 파일 업로드
+                        log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
+                        log_blob.upload_from_filename(temp_file_path)
+                        os.unlink(temp_file_path)
+                    except Exception as e:
+                        st.warning(f"로그 기록 중 오류가 발생했습니다: {str(e)}")
 
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                # 1) HTML에 직접 video 태그 주입
-                # nodownload 설정, 우클릭 비활성화(oncontextmenu="return false")
-                # disablepictureinpicture 등 추가 가능한 속성도 사용
-
-                import base64
-                encoded_video = base64.b64encode(video_data).decode("utf-8")
                 video_html = f'''
                     <video 
                         controls 
@@ -93,18 +99,16 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                         oncontextmenu="return false;" 
                         style="max-width: 80%; height: auto;"
                     >
-                        <source src="data:video/mp4;base64,{encoded_video}" type="video/mp4">
+                        <source src="{signed_url}" type="video/mp4">
                         해당 브라우저는 동영상을 재생할 수 없습니다.
                     </video>
                 '''
-
                 st.markdown(video_html, unsafe_allow_html=True)
-
         else:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+        st.error(f"동영상 로드 중 오류가 발생했습니다: {str(e)}")
 
 else:
     st.warning('Please log in to read more.')
