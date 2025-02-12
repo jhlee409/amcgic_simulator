@@ -52,18 +52,15 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.mp4')
         if demonstration_blob.exists():
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="Injection_orientation.mp4",
-                mime="video/mp4",
-                key="expert_demo_download"
-            ):
-                st.success("Injection simulator orientation 동영상이 다운로드되었습니다.")
+            # 비디오 데이터를 메모리에 로드
+            video_bytes = demonstration_blob.download_as_bytes()
+            
+            # 동영상 시청 버튼 생성
+            if st.button("동영상 시청", key="watch_video"):
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video downloaded by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -71,11 +68,16 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
+                st.success("동영상이 준비되었습니다. 아래에서 시청하실 수 있습니다.")
+
+            # 비디오 플레이어 표시
+            st.video(video_bytes)
+
         else:
             st.error("Injection simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Injection simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"Injection simulator orientation 동영상 재생 중 오류가 발생했습니다: {e}")
 
    
 else:

@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, storage
 
 # Set page to wide mode
-st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
+st.set_page_config(page_title="Injection simulator training", layout="wide")
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기
@@ -40,26 +40,26 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
 
     bucket = initialize_firebase()
 
-    st.header("Hemoclip simulator training")
+    st.header("Injection simulator training")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-        st.markdown("이 페이지는 Hemoclip simulator을 대상으로 한 Hemoclip 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-        st.write("Hemoclip simulator 실습 전에 'hemoclip_orientation.mp4' 동영상을 예습하세요.")
+        st.markdown("이 페이지는 Injection simulator을 대상으로 한 Injection 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+        st.write("Injection simulator 실습 전에 'Injection_orientation.mp4' 동영상을 예습하세요.")
     st.write("---")
    
-    st.subheader("Hemoclip simulator orientation")
+    st.subheader("Injection simulator orientation")
 
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
+        demonstration_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.mp4')
         if demonstration_blob.exists():
             if st.download_button(
                 label="동영상 다운로드",
                 data=demonstration_blob.download_as_bytes(),
-                file_name="hemoclip_orientation.mp4",
+                file_name="Injection_orientation.mp4",
                 mime="video/mp4",
                 key="expert_demo_download"
             ):
-                st.success("Hemoclip simulator orientation 동영상이 다운로드되었습니다.")
+                st.success("Injection simulator orientation 동영상이 다운로드되었습니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
@@ -68,14 +68,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     temp_file_path = temp_file.name
 
                 # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
+                log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
         else:
-            st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
+            st.error("Injection simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"Hemoclip simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"Injection simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
 
    
 else:
