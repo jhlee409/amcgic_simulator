@@ -55,24 +55,23 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             # 동영상 데이터를 메모리에 저장
             video_data = demonstration_blob.download_as_bytes()
             
-            # 동영상 시청 상태를 관리하기 위한 session_state 초기화
+            # 세션 상태 초기화
             if 'show_video' not in st.session_state:
                 st.session_state.show_video = False
-
+            
             # 동영상 시청 버튼
             if st.button(
                 label="동영상 시청",
-                key="expert_demo_view"
+                key="watch_video"
             ):
-                # 버튼을 누를 때마다 상태를 토글
+                # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
                 
                 if st.session_state.show_video:
-                    st.success("Hemoclip simulator orientation 동영상을 시청합니다.")
                     # 로그 파일 생성 및 업로드
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
+                        log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
@@ -80,19 +79,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-
-            # 동영상 플레이어 표시 (show_video가 True일 때만)
+                
+            # 비디오 플레이어 표시
             if st.session_state.show_video:
-                # 임시 파일로 동영상 저장
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
-                    temp_video.write(video_data)
-                    temp_video_path = temp_video.name
-                
-                # 동영상 플레이어 표시
-                st.video(temp_video_path, start_time=0)
-                
-                # 임시 파일 삭제
-                os.unlink(temp_video_path)
+                st.video(video_data, start_time=0)
 
         else:
             st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")

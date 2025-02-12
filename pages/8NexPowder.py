@@ -49,7 +49,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.subheader("NexPowder 사용방법과 cases")
     st.write("NexPowder를 장착하고 shooting 하는 방법을 보여주고 실제 사용하는 case를 보여주는 동영상입니다.")
     
-    # 비디오 플레이어 상태를 저장할 세션 상태 변수 초기화
+    # 세션 상태 초기화
     if 'show_video' not in st.session_state:
         st.session_state.show_video = False
         
@@ -57,19 +57,19 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/NexPowder/Nexpowder 사용법과 cases.mp4')
         if demonstration_blob.exists():
+            # 동영상 시청 버튼
             if st.button(
                 label="동영상 시청",
-                key="video_button"
+                key="watch_video"
             ):
-                # 비디오 플레이어 표시 상태 토글
+                # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
                 
                 if st.session_state.show_video:
-                    st.success("동영상 플레이어가 로드되었습니다.")
                     # 로그 파일 생성 및 업로드
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"NexPowder사용법 video viewed by {name} ({position}) on {current_date}"
+                        log_content = f"NexPowder_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
@@ -80,8 +80,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                video_data = demonstration_blob.download_as_bytes()
-                st.video(video_data)
+                video_bytes = demonstration_blob.download_as_bytes()
+                st.video(video_bytes)
                 
         else:
             st.error("NexPowder 사용법 동영상 파일을 찾을 수 없습니다.")

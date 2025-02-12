@@ -61,14 +61,28 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
-            # 세션 상태에 비디오 플레이어 표시 여부를 저장
+            # 세션 상태 초기화
             if 'show_video' not in st.session_state:
                 st.session_state.show_video = False
             
             # 동영상 시청 버튼 클릭 시 플레이어 토글
             if st.button("동영상 시청"):
+                # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
-            
+                
+                if st.session_state.show_video:
+                    # 로그 파일 생성 및 업로드
+                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                        log_content = f"SHT_orientation video watched by {name} ({position}) on {current_date}"
+                        temp_file.write(log_content)
+                        temp_file_path = temp_file.name
+
+                    # Firebase Storage에 로그 파일 업로드
+                    log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT/{position}*{name}*SHT")
+                    log_blob.upload_from_filename(temp_file_path)
+                    os.unlink(temp_file_path)
+                
             # 비디오 플레이어 표시
             if st.session_state.show_video:
                 st.video(demonstration_url)
