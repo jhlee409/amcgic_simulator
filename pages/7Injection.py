@@ -68,10 +68,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
+                
                 st.success("동영상이 준비되었습니다. 아래에서 시청하실 수 있습니다.")
-
-            # 비디오 플레이어 표시
-            st.video(video_bytes)
+                # 비디오 플레이어 표시
+                st.video(video_bytes)
 
         else:
             st.error("Injection simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
