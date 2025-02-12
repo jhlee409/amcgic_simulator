@@ -52,30 +52,36 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.header("LHT_skill_evaluation")
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.markdown("이 페이지는 LHT simulator을 대상으로 한 LHT 검사 수행에 도움이 되는 자료를 제공하고, 수행의 적절성을 평가하는 페이지입니다.")
-        st.markdown("먼저 LHT orientation 동영상을 다운받아 예습하세요.")
+        st.markdown("먼저 LHT orientation 동영상을 예습하세요.")
         st.markdown("시범 동영상을 잘 보고 미러링을 열심히 하시기 바랍니다.")
         st.markdown("수행에 자신이 생기면 동영상을 녹화하여 업로드하세요.")
     st.write("---")
 
     st.subheader("LHT orientation 동영상")
-    st.write("LHT orientation 동영상을 다운 받아 미리 예습하세요.")
+    st.write("LHT orientation 동영상을 시청하고 미리 예습하세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/LHT/LHT_orientation.mp4')
         if demonstration_blob.exists():
+            # 동영상 URL 생성
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="LHT_orientation.mp4",
-                mime="video/mp4"
-            ):
-                st.write("")
+            
+            # 비디오 플레이어 토글을 위한 session state 초기화
+            if 'show_orientation_video' not in st.session_state:
+                st.session_state.show_orientation_video = False
+            
+            # 동영상 시청 버튼
+            if st.button("동영상 시청", key="orientation_video_button"):
+                st.session_state.show_orientation_video = not st.session_state.show_orientation_video
+            
+            # 비디오 플레이어 표시
+            if st.session_state.show_orientation_video:
+                st.video(demonstration_url)
         else:
             st.error("LHT_orientation 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"LHT_orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"LHT_orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
     st.write("---")
    
