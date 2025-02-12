@@ -52,18 +52,15 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/APC/APC_orientation.mp4')
         if demonstration_blob.exists():
-            if st.download_button(
-                label="동영상 다운로드",
-                data=demonstration_blob.download_as_bytes(),
-                file_name="APC_orientation.mp4",
-                mime="video/mp4",
-                key="expert_demo_download"
+            # 동영상 시청 버튼
+            if st.button(
+                label="동영상 시청",
+                key="expert_demo_view"
             ):
-                st.success("APC simulator orientation 동영상이 다운로드되었습니다.")
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"APC_orientation video downloaded by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video viewed by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
@@ -71,11 +68,27 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 log_blob = bucket.blob(f"Simulator_training/APC/log_APC/{position}*{name}*APC")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
+
+                # 비디오 데이터를 바이트로 가져오기
+                video_data = demonstration_blob.download_as_bytes()
+                
+                # 임시 파일로 저장
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_file:
+                    tmp_file.write(video_data)
+                    tmp_file_path = tmp_file.name
+                
+                # 비디오 플레이어 표시
+                st.video(tmp_file_path)
+                
+                # 임시 파일 삭제
+                os.unlink(tmp_file_path)
+                
+                st.success("APC simulator orientation 동영상이 로드되었습니다.")
         else:
             st.error("APC simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"APC simulator orientation 동영상 파일 다운로드 중 오류가 발생했습니다: {e}")
+        st.error(f"APC simulator orientation 동영상 파일 로드 중 오류가 발생했습니다: {e}")
 
    
 else:
