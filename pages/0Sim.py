@@ -9,7 +9,10 @@ import tempfile
 st.set_page_config(page_title="Simulation center", layout="wide")
 
 # 로그인 상태 확인
-if "logged_in" not in st.session_state or not st.session_state['logged_in']:
+if ("logged_in" not in st.session_state or 
+    not st.session_state['logged_in'] or
+    "name" not in st.session_state or 
+    "position" not in st.session_state):
     st.warning('로그인이 필요합니다.')
     st.stop()
 
