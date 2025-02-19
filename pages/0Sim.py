@@ -9,8 +9,11 @@ from utils.auth import check_login, handle_logout
 # Set page to wide mode
 st.set_page_config(page_title="Simulation center", layout="wide")
 
-# 로그인 상태 확인
+# 로그인 상태 확인 및 페이지 접근 제어
 name, position = check_login()
+if not name or not position:
+    st.error("로그인이 필요합니다.")
+    st.stop()
 
 # 로그아웃 처리
 handle_logout()
@@ -37,14 +40,6 @@ with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하�
     st.markdown("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
     st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
 st.write("---")
-
-# # Initialize session state
-# if 'name_selected' not in st.session_state:
-#     st.session_state.name_selected = False
-# if 'show_file_list' not in st.session_state:
-#     st.session_state.show_file_list = False
-# if 'download_clicked' not in st.session_state:
-#     st.session_state.download_clicked = False
 
 # Add download button for EGD procedure document
 st.subheader("Simulation Center EGD basic course orientation 파일 시청")
