@@ -30,7 +30,7 @@ st.divider()
 
 # 로그인 상태 확인 및 표시
 if st.session_state.get('logged_in', False):
-    st.success(f"{st.session_state.get('name', '')}님, 환영합니다. 왼쪽 메뉴에서 원하시는 항목을 선택해주세요.")
+    st.success(f"{st.session_state.get('name', '')}님, 환영합니다. 왼쪽 메뉴에서 원하시는 항목을 선택해주세요..")
     if st.sidebar.button("Logout"):
         st.session_state['logged_in'] = False
         st.session_state['name'] = ''
