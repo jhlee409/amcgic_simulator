@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 
@@ -49,19 +49,21 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.subheader("NexPowder 사용방법과 cases")
     st.write("NexPowder를 장착하고 shooting 하는 방법을 보여주고 실제 사용하는 case를 보여주는 동영상입니다.")
     
-    # 세션 상태 초기화
-    if 'show_video' not in st.session_state:
-        st.session_state.show_video = False
-        
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/NexPowder/Nexpowder 사용법과 cases.mp4')
         if demonstration_blob.exists():
+            demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
+            
+            # 세션 상태 초기화
+            if 'show_video' not in st.session_state:
+                st.session_state.show_video = False
+            
+            # 비디오 플레이어를 위한 placeholder 생성
+            video_player_placeholder = st.empty()
+            
             # 동영상 시청 버튼
-            if st.button(
-                label="동영상 시청",
-                key="watch_video"
-            ):
+            if st.button("동영상 시청", key="watch_video"):
                 # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
                 
@@ -77,18 +79,30 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     log_blob = bucket.blob(f"Simulator_training/NexPowder/log_NexPowder/{position}*{name}*NexPowder")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-            
+                
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                video_bytes = demonstration_blob.download_as_bytes()
-                st.video(video_bytes)
-                
+                # 동영상 플레이어 렌더링
+                with video_player_placeholder.container():
+                    video_html = f'''
+                    <div style="display: flex; justify-content: center;">
+                        <video width="1000" height="800" controls controlsList="nodownload">
+                            <source src="{demonstration_url}" type="video/mp4">
+                        </video>
+                    </div>
+                    <script>
+                    var video_player = document.querySelector("video");
+                    video_player.addEventListener('contextmenu', function(e) {{
+                        e.preventDefault();
+                    }});
+                    </script>
+                    '''
+                    st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("NexPowder 사용법 동영상 파일을 찾을 수 없습니다.")
 
     except Exception as e:
-        st.error(f"NexPowder 사용법 동영상 파일 로드 중 오류가 발생했습니다: {e}")
+        st.error(f"NexPowder 사용법 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
-   
 else:
     st.warning('Please log in to read more.')
