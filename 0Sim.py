@@ -53,9 +53,6 @@ try:
         if 'show_video' not in st.session_state:
             st.session_state.show_video = False
         
-        # 비디오 플레이어를 위한 placeholder 생성
-        video_player_placeholder = st.empty()
-        
         # 동영상 시청 버튼
         if st.button("동영상 시청"):
             # 비디오 표시 상태 토글
@@ -76,22 +73,7 @@ try:
             
         # 비디오 플레이어 표시
         if st.session_state.show_video:
-            # 동영상 플레이어 렌더링
-            with video_player_placeholder.container():
-                video_html = f'''
-                <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
-                        <source src="{sim_url}" type="video/mp4">
-                    </video>
-                </div>
-                <script>
-                var video_player = document.querySelector("video");
-                video_player.addEventListener('contextmenu', function(e) {{
-                    e.preventDefault();
-                }});
-                </script>
-                '''
-                st.markdown(video_html, unsafe_allow_html=True)
+            st.video(sim_url)
 
     else:
         st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
