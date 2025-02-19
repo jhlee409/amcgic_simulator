@@ -11,7 +11,9 @@ st.set_page_config(page_title="amcgic_simulator")
 # 세션 상태 초기화
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
+if 'name' not in st.session_state:
     st.session_state['name'] = ''
+if 'position' not in st.session_state:
     st.session_state['position'] = ''
 
 # Streamlit 페이지 설정
@@ -26,12 +28,14 @@ st.markdown(
 )
 st.divider()
 
-if st.session_state['logged_in']:
-    st.success(f"{st.session_state['name']}님, 환영합니다. 왼쪽 메뉴에서 원하시는 항목을 선택해주세요.")
+# 로그인 상태 확인 및 표시
+if st.session_state.get('logged_in', False):
+    st.success(f"{st.session_state.get('name', '')}님, 환영합니다. 왼쪽 메뉴에서 원하시는 항목을 선택해주세요.")
     if st.sidebar.button("Logout"):
         st.session_state['logged_in'] = False
         st.session_state['name'] = ''
         st.session_state['position'] = ''
+        st.rerun()
 else:
     # 사용자 입력
     name = st.text_input("Your Name (예: 홍길동)")
