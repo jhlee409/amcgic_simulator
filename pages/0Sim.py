@@ -38,13 +38,13 @@ with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하�
     st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
 st.write("---")
 
-# Initialize session state
-if 'name_selected' not in st.session_state:
-    st.session_state.name_selected = False
-if 'show_file_list' not in st.session_state:
-    st.session_state.show_file_list = False
-if 'download_clicked' not in st.session_state:
-    st.session_state.download_clicked = False
+# # Initialize session state
+# if 'name_selected' not in st.session_state:
+#     st.session_state.name_selected = False
+# if 'show_file_list' not in st.session_state:
+#     st.session_state.show_file_list = False
+# if 'download_clicked' not in st.session_state:
+#     st.session_state.download_clicked = False
 
 # Add download button for EGD procedure document
 st.subheader("Simulation Center EGD basic course orientation 파일 시청")
