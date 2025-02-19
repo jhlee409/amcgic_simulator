@@ -136,30 +136,7 @@ if st.button("Login", disabled=login_disabled):
 
 # 로그 아웃 버튼
 if "logged_in" in st.session_state and st.session_state['logged_in']:
-    
-    # 로그인된 사용자 정보 표시
-    st.sidebar.write(f"**사용자**: {st.session_state.get('user_name', '이름 없음')}")
-    st.sidebar.write(f"**직책**: {st.session_state.get('user_position', '직책 미지정')}")
-    st.success(f"로그인 성공")
-    
-    if st.sidebar.button("Logout"):
-        # # 로그아웃 시간과 duration 계산
-        # logout_time = datetime.now(timezone.utc)
-        # login_time = st.session_state.get('login_time')
-        # if login_time:
-        #     # 경과 시간을 분 단위로 계산하고 반올림
-        #     duration = round((logout_time - login_time).total_seconds() / 60)
-        # else:
-        #     duration = 0
-
-        # # 로그아웃 이벤트 기록
-        # logout_data = {
-        #     "user_position": st.session_state.get('user_position'),
-        #     "user_name": st.session_state.get('user_name'),
-        #     "time": logout_time.isoformat(),
-        #     "event": "logout",
-        #     "duration": duration
-        # }
-        
+    st.success(f"로그인 성공")    
+    if st.sidebar.button("Logout"):      
         st.session_state.clear()
         st.success("로그아웃 되었습니다.")
