@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 
 st.set_page_config(page_title="amcgic_simulator")
