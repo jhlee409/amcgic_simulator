@@ -140,6 +140,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 로그인된 사용자 정보 표시
     st.sidebar.write(f"**사용자**: {st.session_state.get('user_name', '이름 없음')}")
     st.sidebar.write(f"**직책**: {st.session_state.get('user_position', '직책 미지정')}")
+    st.success(f"로그인 성공")
     
     if st.sidebar.button("Logout"):
         # # 로그아웃 시간과 duration 계산
