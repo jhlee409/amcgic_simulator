@@ -4,19 +4,16 @@ import tempfile
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
 st.set_page_config(page_title="APC simulator training", layout="wide")
 
 # 로그인 상태 확인
-required_keys = ['logged_in', 'name', 'position']
-if not all(key in st.session_state for key in required_keys) or not st.session_state['logged_in']:
-    st.warning('로그인이 필요합니다.')
-    st.stop()
+name, position = check_login()
 
-# 세션에서 사용자 정보 가져오기
-name = st.session_state['name']
-position = st.session_state['position']
+# 로그아웃 처리
+handle_logout()
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
@@ -34,12 +31,6 @@ if not firebase_admin._apps:
         "universe_domain": st.secrets["universe_domain"]
     })
     firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-
-# 로그아웃 버튼
-if st.sidebar.button("Logout"):
-    for key in st.session_state.keys():
-        del st.session_state[key]
-    st.rerun()
 
 bucket = storage.bucket('amcgi-bulletin.appspot.com')
 

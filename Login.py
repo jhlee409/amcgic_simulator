@@ -4,6 +4,7 @@ import json
 import firebase_admin
 from firebase_admin import credentials, db, auth
 from datetime import datetime, timezone
+from utils.auth import handle_logout
 
 # Firebase 초기화 (아직 초기화되지 않은 경우에만)
 if not firebase_admin._apps:
@@ -134,9 +135,7 @@ def handle_login(email, password, name, position):
 if st.button("Login", disabled=login_disabled):
     handle_login(email, password, name, position)
 
-# 로그 아웃 버튼
+# 로그아웃 버튼
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.success(f"로그인 성공")    
-    if st.sidebar.button("Logout"):      
-        st.session_state.clear()
-        st.success("로그아웃 되었습니다.")
+    handle_logout()

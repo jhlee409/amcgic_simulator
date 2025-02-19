@@ -4,21 +4,16 @@ from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
+from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulation center", layout="wide")
 
 # 로그인 상태 확인
-if ("logged_in" not in st.session_state or 
-    not st.session_state['logged_in'] or
-    "name" not in st.session_state or 
-    "position" not in st.session_state):
-    st.warning('로그인이 필요합니다.')
-    st.stop()
+name, position = check_login()
 
-# 세션에서 사용자 정보 가져오기
-name = st.session_state['name']
-position = st.session_state['position']
+# 로그아웃 처리
+handle_logout()
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
@@ -90,8 +85,3 @@ try:
     
 except Exception as e:
     st.error(f"simulation center 오리엔테이션 파일 로드 중 오류가 발생했습니다.: {e}")
-
-# 로그아웃 버튼
-if st.sidebar.button("Logout"):
-    st.session_state['logged_in'] = False
-    st.rerun()
