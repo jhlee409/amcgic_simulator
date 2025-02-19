@@ -63,12 +63,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/LHT/LHT_orientation.mp4')
         if demonstration_blob.exists():
-            # 동영상 URL 생성
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
             # 세션 상태 초기화
             if 'show_video' not in st.session_state:
                 st.session_state.show_video = False
+            
+            # 비디오 플레이어를 위한 placeholder 생성
+            video_player_placeholder = st.empty()
             
             # 동영상 시청 버튼
             if st.button("동영상 시청", key="orientation_video_button"):
@@ -90,7 +92,22 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
             # 비디오 플레이어 표시
             if st.session_state.show_video:
-                st.video(demonstration_url)
+                # 동영상 플레이어 렌더링
+                with video_player_placeholder.container():
+                    video_html = f'''
+                    <div style="display: flex; justify-content: center;">
+                        <video width="1000" height="800" controls controlsList="nodownload">
+                            <source src="{demonstration_url}" type="video/mp4">
+                        </video>
+                    </div>
+                    <script>
+                    var video_player = document.querySelector("video");
+                    video_player.addEventListener('contextmenu', function(e) {{
+                        e.preventDefault();
+                    }});
+                    </script>
+                    '''
+                    st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("LHT_orientation 동영상 파일을 찾을 수 없습니다.")
 
