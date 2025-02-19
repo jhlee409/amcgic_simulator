@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 
@@ -51,18 +51,17 @@ try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')
     demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
     if demonstration_blob.exists():
-        # 동영상 데이터를 메모리에 저장
-        video_data = demonstration_blob.download_as_bytes()
+        demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
         
         # 세션 상태 초기화
         if 'show_video' not in st.session_state:
             st.session_state.show_video = False
         
+        # 비디오 플레이어를 위한 placeholder 생성
+        video_player_placeholder = st.empty()
+        
         # 동영상 시청 버튼
-        if st.button(
-            label="동영상 시청",
-            key="watch_video"
-        ):
+        if st.button("동영상 시청", key="watch_video"):
             # 비디오 표시 상태 토글
             st.session_state.show_video = not st.session_state.show_video
             
@@ -81,8 +80,22 @@ try:
             
         # 비디오 플레이어 표시
         if st.session_state.show_video:
-            st.video(video_data, start_time=0)
-
+            # 동영상 플레이어 렌더링
+            with video_player_placeholder.container():
+                video_html = f'''
+                <div style="display: flex; justify-content: center;">
+                    <video width="1000" height="800" controls controlsList="nodownload">
+                        <source src="{demonstration_url}" type="video/mp4">
+                    </video>
+                </div>
+                <script>
+                var video_player = document.querySelector("video");
+                video_player.addEventListener('contextmenu', function(e) {{
+                    e.preventDefault();
+                }});
+                </script>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
     else:
         st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
