@@ -50,12 +50,13 @@ else:
             st.session_state['logged_in'] = True
             st.session_state['name'] = name
             st.session_state['position'] = position
-            st.success(f"{name}님 ({position}), 환영합니다!")
-            st.balloons()  # 축하 효과 추가
-            st.info("왼쪽 메뉴에서 원하시는 항목을 선택해주세요.")
-            
-            # 페이지 자동 새로고침
-            st.experimental_rerun()
+            st.success("로그인 성공!")
+
+            # 로그아웃 버튼
+            if "logged_in" in st.session_state and st.session_state['logged_in']:
+                if st.sidebar.button("Logout"):
+                    st.session_state['logged_in'] = False
+                    st.success("로그아웃 되었습니다.")
 
         else:
             st.error("비밀번호가 틀렸습니다")
