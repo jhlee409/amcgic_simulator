@@ -9,14 +9,14 @@ from utils.auth import check_login, handle_logout
 # Set page to wide mode
 st.set_page_config(page_title="Simulation center", layout="wide")
 
-# 로그인 상태 확인 및 페이지 접근 제어
-name, position = check_login()
-if not name or not position:
-    st.error("로그인이 필요합니다.")
+# 로그인 상태 확인
+if "logged_in" not in st.session_state or not st.session_state['logged_in']:
+    st.warning('로그인이 필요합니다.')
     st.stop()
 
-# 로그아웃 처리
-handle_logout()
+# 세션에서 사용자 정보 가져오기
+name = st.session_state['name']
+position = st.session_state['position']
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
