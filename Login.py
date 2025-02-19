@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 
 # Firebase 초기화 (아직 초기화되지 않은 경우에만)
 if not firebase_admin._apps:
-
     # Streamlit Secrets에서 Firebase 설정 정보 로드
     cred = credentials.Certificate({
         "type": "service_account",
@@ -22,8 +21,14 @@ if not firebase_admin._apps:
         "client_x509_cert_url": st.secrets["client_x509_cert_url"],
         "universe_domain": st.secrets["universe_domain"]
     })
+    
+    # 데이터베이스 URL이 None이 아닌지 확인
+    database_url = st.secrets.get("FIREBASE_DATABASE_URL")
+    if not database_url:
+        raise ValueError("FIREBASE_DATABASE_URL is not set in Streamlit secrets")
+        
     firebase_admin.initialize_app(cred, {
-        'databaseURL': st.secrets["FIREBASE_DATABASE_URL"]
+        'databaseURL': database_url
     })
 
 st.set_page_config(page_title="amcgic_simulator")
