@@ -13,9 +13,9 @@ if "logged_in" not in st.session_state or not st.session_state['logged_in']:
     st.warning('로그인이 필요합니다.')
     st.stop()
 
-# 세션에서 사용자 정보 가져오기
-name = st.session_state['name']
-position = st.session_state['position']
+# # 세션에서 사용자 정보 가져오기
+# name = st.session_state['name']
+# position = st.session_state['position']
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
