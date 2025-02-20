@@ -182,25 +182,24 @@ def handle_login(email, password, name, position):
 if st.button("Login", disabled=login_disabled):  # 원래 버튼 유지
     handle_login(email, password, name, position)
 
-def handle_logout():
-    try:
+# 로그 아웃 버튼
+if "logged_in" in st.session_state and st.session_state['logged_in']:
+    
+    # 로그인된 사용자 정보 표시
+    st.sidebar.write(f"**사용자**: {st.session_state.get('name', '이름 없음')}")
+    st.sidebar.write(f"**직책**: {st.session_state.get('position', '직책 미지정')}")
+    
+    if st.sidebar.button("Logout"):
         # 로그아웃 시간과 duration 계산
         logout_time = datetime.now(timezone.utc)
         login_time = st.session_state.get('login_time')
-        
-        print("Login time from session:", login_time)  # 디버깅
-        
-        # login_time이 문자열인 경우 datetime으로 변환
-        if isinstance(login_time, str):
-            login_time = datetime.fromisoformat(login_time.replace('Z', '+00:00'))
-            print("Converted login time:", login_time)  # 디버깅
-        
-        duration = 0
         if login_time:
+            # 경과 시간을 분 단위로 계산하고 반올림
             duration = round((logout_time - login_time).total_seconds() / 60)
-            print(f"Calculated duration: {duration} minutes")  # 디버깅
+        else:
+            duration = 0
 
-        # 로그아웃 데이터 준비
+        # 로그아웃 이벤트 기록
         logout_data = {
             "position": st.session_state.get('position'),
             "name": st.session_state.get('name'),
@@ -209,55 +208,16 @@ def handle_logout():
             "duration": duration
         }
         
-        print("Prepared logout data:", logout_data)  # 디버깅
-        
         # Supabase에 로그아웃 기록 전송
         supabase_url = st.secrets["supabase_url"]
         supabase_key = st.secrets["supabase_key"]
-        
-        print(f"Supabase URL: {supabase_url}")  # URL 확인 (민감한 정보는 일부만 표시)
-        
         supabase_headers = {
             "Content-Type": "application/json",
             "apikey": supabase_key,
-            "Authorization": f"Bearer {supabase_key}",
-            "Prefer": "return=minimal"
+            "Authorization": f"Bearer {supabase_key}"
         }
         
-        # API 요청 전송
-        response = requests.post(
-            f"{supabase_url}/rest/v1/login",
-            headers=supabase_headers,
-            json=logout_data,
-            timeout=10  # 타임아웃 설정
-        )
+        requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
         
-        print(f"Supabase response status: {response.status_code}")  # 디버깅
-        print(f"Supabase response content: {response.text}")  # 디버깅
-        
-        if response.status_code in [200, 201, 204]:
-            print("Logout event successfully recorded")
-            return True
-        else:
-            print(f"Failed to record logout. Status: {response.status_code}, Response: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"Error during logout: {str(e)}")  # 디버깅
-        return False
-
-# 로그아웃 버튼
-if "logged_in" in st.session_state and st.session_state['logged_in']:
-    
-    # 로그인된 사용자 정보 표시
-    st.sidebar.write(f"**사용자**: {st.session_state.get('name', '이름 없음')}")
-    st.sidebar.write(f"**직책**: {st.session_state.get('position', '직책 미지정')}")
-    
-    if st.sidebar.button("Logout"):
-        if handle_logout():
-            # 세션 상태 초기화
-            st.session_state.clear()
-            st.success("로그아웃 되었습니다.")
-            st.experimental_rerun()
-        else:
-            st.error("로그아웃 처리 중 오류가 발생했습니다.")
+        st.session_state.clear()
+        st.success("로그아웃 되었습니다.")
