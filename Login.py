@@ -235,7 +235,7 @@ def handle_logout():
         print(f"Supabase response status: {response.status_code}")  # 디버깅
         print(f"Supabase response content: {response.text}")  # 디버깅
         
-        if response.status_code == 201:
+        if response.status_code in [200, 201, 204]:
             print("Logout event successfully recorded")
             return True
         else:
