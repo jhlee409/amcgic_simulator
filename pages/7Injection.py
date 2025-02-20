@@ -20,12 +20,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     name = st.session_state['name']
     position = st.session_state['position']
 
-    # 로그아웃 버튼
-    if st.sidebar.button("Logout", key="logout_button"):
-        st.session_state['logged_in'] = False
-        st.success("로그아웃 되었습니다.")
-        st.stop()
-
     def initialize_firebase():
         """Firebase 초기화 함수"""
         if not firebase_admin._apps:
