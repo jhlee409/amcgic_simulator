@@ -34,14 +34,6 @@ if not firebase_admin._apps:
 
 st.set_page_config(page_title="amcgic_simulator")
 
-# # 세션 상태 초기화
-# if 'logged_in' not in st.session_state:
-#     st.session_state['logged_in'] = False
-# if 'name' not in st.session_state:
-#     st.session_state['name'] = ''
-# if 'position' not in st.session_state:
-#     st.session_state['position'] = ''
-
 # Streamlit 페이지 설정
 st.title("AMC GI 상부 Simulator training")
 st.header("Login page")
@@ -198,34 +190,47 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.sidebar.write(f"**직책**: {st.session_state.get('position', '직책 미지정')}")
     
     if st.sidebar.button("Logout"):
-        # 로그아웃 시간과 duration 계산
-        logout_time = datetime.now(timezone.utc)
-        login_time = st.session_state.get('login_time')
-        if login_time:
-            # 경과 시간을 분 단위로 계산하고 반올림
-            duration = round((logout_time - login_time).total_seconds() / 60)
-        else:
-            duration = 0
+        try:
+            # 로그아웃 시간과 duration 계산
+            logout_time = datetime.now(timezone.utc)
+            login_time = st.session_state.get('login_time')
+            if login_time:
+                # 경과 시간을 분 단위로 계산하고 반올림
+                duration = round((logout_time - login_time).total_seconds() / 60)
+            else:
+                duration = 0
 
-        # 로그아웃 이벤트 기록
-        logout_data = {
-            "position": st.session_state.get('position'),
-            "name": st.session_state.get('name'),
-            "time": logout_time.isoformat(),
-            "event": "logout",
-            "duration": duration
-        }
-        
-        # Supabase에 로그아웃 기록 전송
-        supabase_url = st.secrets["supabase_url"]
-        supabase_key = st.secrets["supabase_key"]
-        supabase_headers = {
-            "Content-Type": "application/json",
-            "apikey": supabase_key,
-            "Authorization": f"Bearer {supabase_key}"
-        }
-        
-        requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
-        
-        st.session_state.clear()
-        st.success("로그아웃 되었습니다.")
+            # 로그아웃 이벤트 기록
+            logout_data = {
+                "position": st.session_state.get('position'),
+                "name": st.session_state.get('name'),
+                "time": logout_time.isoformat(),
+                "event": "logout",
+                "duration": duration
+            }
+            
+            # Supabase에 로그아웃 기록 전송
+            supabase_url = st.secrets["supabase_url"]
+            supabase_key = st.secrets["supabase_key"]
+            supabase_headers = {
+                "Content-Type": "application/json",
+                "apikey": supabase_key,
+                "Authorization": f"Bearer {supabase_key}"
+            }
+            
+            response = requests.post(
+                f"{supabase_url}/rest/v1/login",
+                headers=supabase_headers,
+                json=logout_data
+            )
+            
+            if response.status_code != 201:
+                st.error(f"로그아웃 기록 저장 중 오류 발생: {response.text}")
+            
+            # 세션 상태 초기화
+            st.session_state.clear()
+            st.success("로그아웃 되었습니다.")
+            st.experimental_rerun()
+            
+        except Exception as e:
+            st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
