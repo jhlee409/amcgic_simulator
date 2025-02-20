@@ -194,13 +194,17 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             # 로그아웃 시간과 duration 계산
             logout_time = datetime.now(timezone.utc)
             login_time = st.session_state.get('login_time')
+            
+            # login_time이 문자열인 경우 datetime으로 변환
+            if isinstance(login_time, str):
+                login_time = datetime.fromisoformat(login_time.replace('Z', '+00:00'))
+            
             if login_time:
-                # 경과 시간을 분 단위로 계산하고 반올림
                 duration = round((logout_time - login_time).total_seconds() / 60)
             else:
                 duration = 0
 
-            # 로그아웃 이벤트 기록
+            # 로그아웃 데이터 준비
             logout_data = {
                 "position": st.session_state.get('position'),
                 "name": st.session_state.get('name'),
@@ -215,8 +219,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             supabase_headers = {
                 "Content-Type": "application/json",
                 "apikey": supabase_key,
-                "Authorization": f"Bearer {supabase_key}"
+                "Authorization": f"Bearer {supabase_key}",
+                "Prefer": "return=minimal"  # 응답 최소화
             }
+            
+            # 실제 요청 전송 전 로깅
+            print("Sending logout data:", logout_data)
             
             response = requests.post(
                 f"{supabase_url}/rest/v1/login",
@@ -224,13 +232,19 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 json=logout_data
             )
             
-            if response.status_code != 201:
-                st.error(f"로그아웃 기록 저장 중 오류 발생: {response.text}")
+            # 응답 확인을 위한 로깅
+            print("Supabase response status:", response.status_code)
+            print("Supabase response:", response.text)
             
-            # 세션 상태 초기화
-            st.session_state.clear()
-            st.success("로그아웃 되었습니다.")
-            st.experimental_rerun()
+            if response.status_code == 201:
+                print("Successfully logged logout event")
+                # 세션 상태 초기화
+                st.session_state.clear()
+                st.success("로그아웃 되었습니다.")
+                st.experimental_rerun()
+            else:
+                st.error(f"로그아웃 기록 저장 실패. 상태 코드: {response.status_code}, 응답: {response.text}")
             
         except Exception as e:
             st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
+            print("Logout error:", str(e))  # 상세한 에러 로깅
