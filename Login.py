@@ -34,13 +34,13 @@ if not firebase_admin._apps:
 
 st.set_page_config(page_title="amcgic_simulator")
 
-# 세션 상태 초기화
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-if 'name' not in st.session_state:
-    st.session_state['name'] = ''
-if 'position' not in st.session_state:
-    st.session_state['position'] = ''
+# # 세션 상태 초기화
+# if 'logged_in' not in st.session_state:
+#     st.session_state['logged_in'] = False
+# if 'name' not in st.session_state:
+#     st.session_state['name'] = ''
+# if 'position' not in st.session_state:
+#     st.session_state['position'] = ''
 
 # Streamlit 페이지 설정
 st.title("AMC GI 상부 Simulator training")
