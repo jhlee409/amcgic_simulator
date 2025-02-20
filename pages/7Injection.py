@@ -4,9 +4,16 @@ import tempfile
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
 st.set_page_config(page_title="Injection simulator training", layout="wide")
+
+# 로그인 상태 확인
+name, position = check_login()
+
+# 로그아웃 처리
+handle_logout()
 
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     # 세션에서 사용자 정보 가져오기

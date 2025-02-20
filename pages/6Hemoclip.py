@@ -4,18 +4,16 @@ import tempfile
 from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
 st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
 
 # 로그인 상태 확인
-if "logged_in" not in st.session_state or not st.session_state['logged_in']:
-    st.warning('로그인이 필요합니다.')
-    st.stop()
+name, position = check_login()
 
-# 세션에서 사용자 정보 가져오기
-name = st.session_state['name']
-position = st.session_state['position']
+# 로그아웃 처리
+handle_logout()
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
@@ -33,11 +31,6 @@ if not firebase_admin._apps:
         "universe_domain": st.secrets["universe_domain"]
     })
     firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-
-# 로그아웃 버튼
-if st.sidebar.button("Logout"):
-    st.session_state['logged_in'] = False
-    st.rerun()
 
 st.header("Hemoclip simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
