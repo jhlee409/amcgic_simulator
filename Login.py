@@ -54,7 +54,7 @@ def is_korean_name(name):
 email = st.text_input("Email")
 password = st.text_input("Password", type="password")
 name = st.text_input("Name")  # 이름 입력 필드 추가
-position = st.selectbox("Select Position", ["", "Staff", "F1", "F2", "R3", "Student"])  # 직책 선택 필드 추가
+position = st.selectbox("Select Position", ["", "Staff", "F1", "F2", "R3", "Student", "신촌", "계명"])  # 직책 선택 필드 추가
 
 # 로그인 버튼 클릭 전 초기화
 login_disabled = True  # 초기값 설정
