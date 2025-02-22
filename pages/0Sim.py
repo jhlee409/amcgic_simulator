@@ -34,6 +34,11 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred)
 
+# 로그아웃 버튼
+if st.sidebar.button("Logout"):
+    st.session_state['logged_in'] = False
+    st.rerun()
+
 # Title and Instructions
 st.title("Simulation Center EGD basic course orientation")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
