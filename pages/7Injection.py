@@ -15,6 +15,21 @@ name, position = check_login()
 # Initialize Firebase (기존 코드 유지)
 # ... existing code ...
 
+# 페이지 선택을 위한 드롭다운 메뉴
+selected_page = st.sidebar.selectbox(
+    "시뮬레이터 선택",
+    ["Default", "PEG", "APC", "Injection", "Hemoclip"],
+    key="page_selection",
+    index=3  # Injection 페이지의 경우 기본값을 Injection으로 설정
+)
+
+# 선택된 페이지로 리다이렉트
+if selected_page != "Injection":
+    if selected_page == "Default":
+        st.switch_page("Home.py")
+    else:
+        st.switch_page(f"pages/{selected_page}.py")
+
 st.header("Injection simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
     st.markdown("이 페이지는 Injection simulator을 대상으로 한 Injection 수행에 도움이 되는 자료를 제공하는 페이지입니다.")

@@ -43,10 +43,18 @@ if 'show_video' not in st.session_state:
 
 # 페이지 선택을 위한 드롭다운 메뉴
 selected_page = st.sidebar.selectbox(
-    "페이지 선택",
-    ["Default", "PEG"],
-    key="page_selection"
+    "시뮬레이터 선택",
+    ["Default", "PEG", "APC", "Injection", "Hemoclip"],
+    key="page_selection",
+    index=1  # PEG 페이지의 경우 기본값을 PEG로 설정
 )
+
+# 선택된 페이지로 리다이렉트
+if selected_page != "PEG":
+    if selected_page == "Default":
+        st.switch_page("Home.py")
+    else:
+        st.switch_page(f"pages/{selected_page}.py")
 
 # 동영상 시청 버튼을 로그아웃 버튼 위에 배치
 if st.sidebar.button("본영상 시청", key="watch_video"):
