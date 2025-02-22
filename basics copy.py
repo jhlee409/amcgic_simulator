@@ -207,8 +207,10 @@ elif selected_option == "MT":
                 video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
                 video.close()
 
-                # Initialize Gemini and evaluate
+                # Initialize Gemini
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+                # Configure Gemini model
                 generation_config = {
                     "temperature": 1,
                     "top_p": 0.95,
@@ -239,43 +241,47 @@ elif selected_option == "MT":
                 if score_match:
                     score = int(score_match.group(1))
                     if score >= 85:
-                        st.success("축하합니다. 합격입니다!")
-                        
-                        # Only proceed with file upload if score is >= 85%
-                        current_date = datetime.now().strftime("%Y-%m-%d")
-
-                        # Generate file names
-                        video_extension = os.path.splitext(uploaded_file.name)[1]
-                        video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                        audio_file_name = f"{position}*{name}*MT_result.mp3"
-
-                        # Firebase Storage upload for video and audio
-                        bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                        
-                        # Upload video
-                        video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
-                        video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                        
-                        # Upload audio
-                        audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                        audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
-
-                        # Generate log file
-                        log_file_name = f"{position}*{name}*MT"
-                        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                            log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
-                            temp_file.write(log_content)
-                            temp_file_path = temp_file.name
-
-                        # Upload log file
-                        log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
-                        log_blob.upload_from_filename(temp_file_path)
-                        os.unlink(temp_file_path)  # Delete temporary log file
-
-                        st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
+                        st.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
                     else:
-                        st.error("안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
+                        st.error(f"점수: {score}점 - 아쉽게도 불합격입니다. 다시 시도해주세요.")
 
+                # Continue with existing upload logic
+                current_date = datetime.now().strftime("%Y-%m-%d")
+
+                # Generate file names
+                video_extension = os.path.splitext(uploaded_file.name)[1]
+                video_file_name = f"{position}*{name}*MT_result{video_extension}"
+                audio_file_name = f"{position}*{name}*MT_result.mp3"
+
+                # Firebase Storage upload for video and audio
+                bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                
+                # Upload video
+                video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
+                video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
+                
+                # Upload audio
+                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
+                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
+
+                # Generate log file name
+                log_file_name = f"{position}*{name}*MT"
+
+                # Create log file
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                    log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
+                    temp_file.write(log_content)
+                    temp_file_path = temp_file.name
+
+                # Firebase Storage upload for log file
+                log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
+                log_blob.upload_from_filename(temp_file_path)
+
+                # Remove temporary log file
+                os.unlink(temp_file_path)
+
+                # Success message
+                st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
         except Exception as e:
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
