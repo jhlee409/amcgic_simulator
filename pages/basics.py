@@ -24,7 +24,7 @@ from firebase_admin import credentials, storage
 import tempfile
 
 # Set page to wide mode
-st.set_page_config(page_title="Simulator training", layout="wide")
+st.set_page_config(page_title="Simulator basic training", layout="wide")
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:

@@ -12,7 +12,7 @@ from utils.auth import check_login, handle_logout
 from PIL import Image, ImageDraw, ImageFont
 
 # Set page to wide mode
-st.set_page_config(page_title="Advanced Training", layout="wide")
+st.set_page_config(page_title="Simualtor dvanced Training", layout="wide")
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -67,7 +67,7 @@ elif st.session_state.previous_selection != selected_option:
     st.session_state.previous_selection = selected_option
 
 # Title
-st.title("Advanced Endoscopy Training")
+st.title("Simulaor training advanced course orientation")
 
 # 선택된 옵션에 따라 다른 기능 실행
 if selected_option == "LHT":
