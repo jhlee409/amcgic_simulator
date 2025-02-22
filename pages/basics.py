@@ -777,9 +777,9 @@ if "logged_in" not in st.session_state or not st.session_state['logged_in']:
                 st.divider() 
                 st.success("평가가 완료되었습니다.")
                 
-        except Exception as e:
-            st.error(f"오류가 발생했습니다: {str(e)}")
-            st.stop()  # 치명적 오류 시 실행 중단
+        # except Exception as e:
+        #     st.error(f"오류가 발생했습니다: {str(e)}")
+        #     st.stop()  # 치명적 오류 시 실행 중단
 
     else:
         st.warning('Please log in to read more.')
