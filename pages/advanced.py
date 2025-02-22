@@ -90,17 +90,7 @@ if selected_option == "LHT":
             if st.button("동영상 시청", key="lht_video"):
                 st.session_state.show_lht_video = not st.session_state.show_lht_video
                 
-                if st.session_state.show_lht_video:
-                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"LHT_orientation video watched by {name} ({position}) on {current_date}"
-                        temp_file.write(log_content)
-                        temp_file_path = temp_file.name
-
-                    log_blob = bucket.blob(f"Simulator_training/LHT/log_LHT/{position}*{name}*LHT")
-                    log_blob.upload_from_filename(temp_file_path)
-                    os.unlink(temp_file_path)
-            
+                # 로그 정보 전송을 제거하여 버튼 클릭 시 로그가 기록되지 않도록 수정
             if st.session_state.show_lht_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
