@@ -195,7 +195,6 @@ elif selected_option == "MT":
 
     if uploaded_file:
         try:
-            # Create a temporary directory to store the video file
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Save the uploaded file temporarily
                 temp_video_path = os.path.join(temp_dir, uploaded_file.name)
@@ -229,9 +228,6 @@ elif selected_option == "MT":
 
                     # Upload audio file to Gemini
                     gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-                    
-                    # Debug: Show upload status
-                    st.write("파일이 Gemini에 업로드되었습니다.")
 
                     # Start chat session with Gemini
                     chat = model.start_chat(history=[
@@ -241,69 +237,68 @@ elif selected_option == "MT":
                     # Get evaluation from Gemini
                     response = chat.send_message("평가를 시작해주세요")
                     
-                    # Debug: Show raw response
-                    st.write("Gemini 응답:", response.text)
-
-                    # Extract score from evaluation
-                    evaluation = response.text
-                    score_match = re.search(r'정답률:\s*(\d+)%', evaluation)
-                    
-                    if score_match:
-                        score = int(score_match.group(1))
-                        st.write(f"추출된 점수: {score}%")  # Debug: Show extracted score
+                    # Extract score using a more flexible pattern
+                    score = None
+                    try:
+                        # Try different patterns to extract the score
+                        patterns = [
+                            r'정답률:\s*(\d+)%',
+                            r'(\d+)%',
+                            r'점수:\s*(\d+)',
+                            r'Score:\s*(\d+)'
+                        ]
                         
-                        if score >= 85:
-                            status_placeholder.success("축하합니다. 합격입니다!")
-                            
-                            # Only proceed with file upload if score is >= 85%
-                            current_date = datetime.now().strftime("%Y-%m-%d")
-
-                            try:
-                                # Generate file names
+                        for pattern in patterns:
+                            match = re.search(pattern, response.text)
+                            if match:
+                                score = int(match.group(1))
+                                break
+                        
+                        if score is not None:
+                            if score >= 85:
+                                status_placeholder.success("축하합니다. 합격입니다!")
+                                
+                                # Upload files
+                                current_date = datetime.now().strftime("%Y-%m-%d")
                                 video_extension = os.path.splitext(uploaded_file.name)[1]
                                 video_file_name = f"{position}*{name}*MT_result{video_extension}"
                                 audio_file_name = f"{position}*{name}*MT_result.mp3"
 
-                                # Firebase Storage upload for video and audio
                                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
                                 
                                 # Upload video
                                 video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                                st.write("비디오 업로드 완료")  # Debug
                                 
                                 # Upload audio
                                 audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
                                 audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
-                                st.write("오디오 업로드 완료")  # Debug
 
-                                # Generate log file
+                                # Generate and upload log file
                                 log_file_name = f"{position}*{name}*MT"
                                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                                     log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
                                     temp_file.write(log_content)
                                     temp_file_path = temp_file.name
 
-                                # Upload log file
                                 log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
                                 log_blob.upload_from_filename(temp_file_path)
-                                os.unlink(temp_file_path)  # Delete temporary log file
-                                st.write("로그 파일 업로드 완료")  # Debug
+                                os.unlink(temp_file_path)
 
                                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
-                            
-                            except Exception as upload_error:
-                                st.error(f"파일 업로드 중 오류 발생: {upload_error}")
+                            else:
+                                status_placeholder.error("안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
                         else:
-                            status_placeholder.error("안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
-                    else:
-                        st.error("점수를 추출할 수 없습니다. Gemini 응답을 확인해주세요.")
+                            status_placeholder.error("평가 결과를 확인할 수 없습니다. 다시 시도해 주세요.")
+                            
+                    except Exception as score_error:
+                        status_placeholder.error("평가 결과 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
                 
                 except Exception as gemini_error:
-                    st.error(f"Gemini 처리 중 오류 발생: {gemini_error}")
+                    status_placeholder.error("음성 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
 
         except Exception as e:
-            st.error(f"파일 처리 중 오류가 발생했습니다: {e}")
+            st.error("파일 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
 
 elif selected_option == "SHT":
     st.subheader("SHT (Scope Handling Training)")
