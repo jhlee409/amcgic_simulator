@@ -88,7 +88,7 @@ try:
                 video_url = main_video_blob.generate_signed_url(expiration=timedelta(minutes=15))
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="3000" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{video_url}" type="video/mp4">
                     </video>
                 </div>
