@@ -51,6 +51,16 @@ if "logged_in" not in st.session_state or not st.session_state['logged_in']:
 name = st.session_state.get('name', '')
 position = st.session_state.get('position', '')
 
+# 세션 상태 초기화 (페이지 시작 시)
+if 'show_sim_video' not in st.session_state:
+    st.session_state.show_sim_video = False
+if 'show_mt_video' not in st.session_state:
+    st.session_state.show_mt_video = False
+if 'show_sht_video' not in st.session_state:
+    st.session_state.show_sht_video = False
+if 'show_emt_video' not in st.session_state:
+    st.session_state.show_emt_video = False
+
 # 세부항목 선택 드롭다운 메뉴를 사이드바로 이동
 selected_option = st.sidebar.selectbox(
     "세부항목 선택",
@@ -61,6 +71,16 @@ selected_option = st.sidebar.selectbox(
 if st.sidebar.button("Logout"):
     st.session_state['logged_in'] = False
     st.rerun()
+
+# 선택된 옵션이 변경될 때 모든 비디오 플레이어 숨기기
+if 'previous_selection' not in st.session_state:
+    st.session_state.previous_selection = selected_option
+elif st.session_state.previous_selection != selected_option:
+    st.session_state.show_sim_video = False
+    st.session_state.show_mt_video = False
+    st.session_state.show_sht_video = False
+    st.session_state.show_emt_video = False
+    st.session_state.previous_selection = selected_option
 
 # Title and Instructions in main area
 st.title("Simulation Center EGD basic course orientation")
@@ -78,29 +98,23 @@ if selected_option == "Sim orientation":
         if sim_blob.exists():
             sim_url = sim_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
-            # Initialize session state for video player
-            if 'show_video' not in st.session_state:
-                st.session_state.show_video = False
-            
             # 동영상 시청 버튼
             if st.button("동영상 시청"):
-                st.session_state.show_video = not st.session_state.show_video
+                st.session_state.show_sim_video = not st.session_state.show_sim_video
                 
-                if st.session_state.show_video:
-                    # 로그 파일 생성 및 업로드
+                if st.session_state.show_sim_video:
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                         log_content = f"Sim_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    # Firebase Storage에 로그 파일 업로드
                     log_blob = bucket.blob(f"Simulator_training/Sim/log_Sim/{position}*{name}*Sim")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
-            # 비디오 플레이어 표시 (버튼 아래에 위치)
-            if st.session_state.show_video:
+            # 비디오 플레이어 표시
+            if st.session_state.show_sim_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1000" height="800" controls controlsList="nodownload">
@@ -221,49 +235,37 @@ elif selected_option == "SHT":
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
-            # 세션 상태 초기화
-            if 'show_video' not in st.session_state:
-                st.session_state.show_video = False
-                
-            # 비디오 플레이어를 위한 placeholder 생성
-            video_player_placeholder = st.empty()
-            
             # 동영상 시청 버튼
             if st.button("동영상 시청"):
-                # 비디오 표시 상태 토글
-                st.session_state.show_video = not st.session_state.show_video
+                st.session_state.show_sht_video = not st.session_state.show_sht_video
                 
-                if st.session_state.show_video:
-                    # 로그 파일 생성 및 업로드
+                if st.session_state.show_sht_video:
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                         log_content = f"SHT_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    # Firebase Storage에 로그 파일 업로드
                     log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT/{position}*{name}*SHT")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-                
+            
             # 비디오 플레이어 표시
-            if st.session_state.show_video:
-                # 동영상 플레이어 렌더링
-                with video_player_placeholder.container():
-                    video_html = f'''
-                    <div style="display: flex; justify-content: center;">
-                        <video width="1000" height="800" controls controlsList="nodownload">
-                            <source src="{demonstration_url}" type="video/mp4">
-                        </video>
-                    </div>
-                    <script>
-                    var video_player = document.querySelector("video");
-                    video_player.addEventListener('contextmenu', function(e) {{
-                        e.preventDefault();
-                    }});
-                    </script>
-                    '''
-                    st.markdown(video_html, unsafe_allow_html=True)
+            if st.session_state.show_sht_video:
+                video_html = f'''
+                <div style="display: flex; justify-content: center;">
+                    <video width="1000" height="800" controls controlsList="nodownload">
+                        <source src="{demonstration_url}" type="video/mp4">
+                    </video>
+                </div>
+                <script>
+                var video_player = document.querySelector("video");
+                video_player.addEventListener('contextmenu', function(e) {{
+                    e.preventDefault();
+                }});
+                </script>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("SHT 설명 동영상 파일을 찾을 수 없습니다.")
 
@@ -328,49 +330,37 @@ elif selected_option == "EMT":
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
-            # 세션 상태 초기화
-            if 'show_video' not in st.session_state:
-                st.session_state.show_video = False
-            
-            # 비디오 플레이어를 위한 placeholder 생성
-            video_player_placeholder = st.empty()
-            
             # 동영상 시청 버튼
             if st.button("동영상 시청", key="toggle_video"):
-                # 비디오 표시 상태 토글
-                st.session_state.show_video = not st.session_state.show_video
+                st.session_state.show_emt_video = not st.session_state.show_emt_video
                 
-                if st.session_state.show_video:
-                    # 로그 파일 생성 및 업로드
+                if st.session_state.show_emt_video:
                     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                         log_content = f"EMT_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    # Firebase Storage에 로그 파일 업로드
                     log_blob = bucket.blob(f"Simulator_training/EMT/log_EMT/{position}*{name}*EMT")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-                
+            
             # 비디오 플레이어 표시
-            if st.session_state.show_video:
-                # 동영상 플레이어 렌더링
-                with video_player_placeholder.container():
-                    video_html = f'''
-                    <div style="display: flex; justify-content: center;">
-                        <video width="1000" height="800" controls controlsList="nodownload">
-                            <source src="{demonstration_url}" type="video/mp4">
-                        </video>
-                    </div>
-                    <script>
-                    var video_player = document.querySelector("video");
-                    video_player.addEventListener('contextmenu', function(e) {{
-                        e.preventDefault();
-                    }});
-                    </script>
-                    '''
-                    st.markdown(video_html, unsafe_allow_html=True)
+            if st.session_state.show_emt_video:
+                video_html = f'''
+                <div style="display: flex; justify-content: center;">
+                    <video width="1000" height="800" controls controlsList="nodownload">
+                        <source src="{demonstration_url}" type="video/mp4">
+                    </video>
+                </div>
+                <script>
+                var video_player = document.querySelector("video");
+                video_player.addEventListener('contextmenu', function(e) {{
+                    e.preventDefault();
+                }});
+                </script>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("EMT_orientation 동영상 파일을 찾을 수 없습니다.")
 
