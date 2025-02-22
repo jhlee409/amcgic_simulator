@@ -51,23 +51,23 @@ if "logged_in" not in st.session_state or not st.session_state['logged_in']:
 name = st.session_state.get('name', '')
 position = st.session_state.get('position', '')
 
-# 로그아웃 버튼
+# 세부항목 선택 드롭다운 메뉴를 사이드바로 이동
+selected_option = st.sidebar.selectbox(
+    "세부항목 선택",
+    ["Sim orientation", "MT", "SHT", "EMT"]
+)
+
+# 로그아웃 버튼 (이미 사이드바에 있음)
 if st.sidebar.button("Logout"):
     st.session_state['logged_in'] = False
     st.rerun()
 
-# Title and Instructions
+# Title and Instructions in main area
 st.title("Simulation Center EGD basic course orientation")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
     st.markdown("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
     st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
 st.write("---")
-
-# 세부항목 선택 드롭다운 메뉴 추가
-selected_option = st.selectbox(
-    "세부항목 선택",
-    ["Sim orientation", "MT", "SHT", "EMT"]
-)
 
 # 선택된 옵션에 따라 다른 기능 실행
 if selected_option == "Sim orientation":
