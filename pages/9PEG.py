@@ -7,7 +7,7 @@ from firebase_admin import credentials, storage
 from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
-st.set_page_config(page_title="APC simulator training", layout="wide")
+st.set_page_config(page_title="PEG simulator training", layout="wide")
 
 # 로그인 상태 확인
 name, position = check_login()
@@ -34,10 +34,10 @@ if not firebase_admin._apps:
 
 bucket = storage.bucket('amcgi-bulletin.appspot.com')
 
-st.header("APC simulator training")
+st.header("PEG simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-    st.markdown("이 페이지는 APC simulator을 대상으로 한 APC 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-    st.write("APC simulator 실습 전에 'APC_orientation.mp4' 동영상을 예습하세요.")
+    st.markdown("이 페이지는 PEG simulator을 대상으로 한 PEG 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+    st.write("PEG simulator 실습 전에 'PEG_orientation.mp4' 동영상을 예습하세요.")
 st.write("---")
 
 st.subheader('PEG simulator orientation')
@@ -92,7 +92,7 @@ try:
                 '''
                 st.markdown(video_html, unsafe_allow_html=True)
     else:
-        st.error("APC simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
+        st.error("PEG simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
 except Exception as e:
-    st.error(f"APC simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+    st.error(f"PEG simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
