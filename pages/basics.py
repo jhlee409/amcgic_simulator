@@ -190,7 +190,9 @@ elif selected_option == "MT":
     
     # File uploader
     uploaded_file = None
-    st.subheader("암기 영상 업로드")
+    st.subheader("암기 영상 평가 및 업로드")
+    st.write("업로드할 동영상을 선택하면 인공지능이 평가를 하고 합격여부를 알려 줍니다. 합격된 경우만 통과입니다다.")
+    st.write("업로드와 평가에 1분 10초 정도 소요됩니다.")
     uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
 
     if uploaded_file:
@@ -256,7 +258,7 @@ elif selected_option == "MT":
                         
                         if score is not None:
                             if score >= 85:
-                                status_placeholder.success("축하합니다. 합격입니다!")
+                                status_placeholder.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
                                 
                                 # Upload files
                                 current_date = datetime.now().strftime("%Y-%m-%d")
@@ -287,7 +289,7 @@ elif selected_option == "MT":
 
                                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
                             else:
-                                status_placeholder.error("안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
+                                status_placeholder.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
                         else:
                             status_placeholder.error("평가 결과를 확인할 수 없습니다. 다시 시도해 주세요.")
                             
