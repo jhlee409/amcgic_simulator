@@ -22,7 +22,6 @@ from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
-from moviepy.editor import VideoFileClip
 import wave
 
 # Set page to wide mode
