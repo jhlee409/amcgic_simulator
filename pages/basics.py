@@ -70,11 +70,6 @@ selected_option = st.sidebar.selectbox(
     ["Sim orientation", "MT", "SHT", "EMT"]
 )
 
-# 로그아웃 버튼 (이미 사이드바에 있음)
-if st.sidebar.button("Logout"):
-    st.session_state['logged_in'] = False
-    st.rerun()
-
 # 선택된 옵션이 변경될 때 모든 비디오 플레이어 숨기기
 if 'previous_selection' not in st.session_state:
     st.session_state.previous_selection = selected_option
