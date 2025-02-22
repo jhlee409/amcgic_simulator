@@ -44,10 +44,11 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
         st.markdown("이 페이지는 NexPowder 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
         st.markdown("NexPowder 사용법 동영상과 cases를 예습하세요.")
+        st.markdown("NexPowder를 장착하고 shooting 하는 방법을 보여주고 실제 사용하는 case를 보여주는 동영상입니다.")
     st.write("---")
    
     st.subheader("NexPowder 사용방법과 cases")
-    st.write("NexPowder를 장착하고 shooting 하는 방법을 보여주고 실제 사용하는 case를 보여주는 동영상입니다.")
+    
     
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
