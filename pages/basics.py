@@ -217,7 +217,7 @@ elif selected_option == "MT":
                     temp_file_path = temp_file.name
 
                 # Firebase Storage upload for log file
-                log_blob = bucket.blob(f"Simulator_training/MT/log_MT_result/{log_file_name}")
+                log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
 
                 # Remove temporary log file
@@ -312,7 +312,7 @@ elif selected_option == "SHT":
                     temp_file_path = temp_file.name
 
                 # Firebase Storage upload for log file
-                log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT_result/{log_file_name}")
+                log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
 
                 # Remove temporary log file
@@ -674,7 +674,7 @@ elif selected_option == "EMT":
                 
                 # 임시 디렉토리 생성
                 os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
-                os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
+                os.makedirs('Simulator_training/EMT/log_EMT/', exist_ok=True)
                 
                 # 결과 이미지 크기 조정
                 width, height = result_image.size
@@ -698,10 +698,10 @@ elif selected_option == "EMT":
                     
                     # 로그 파일 생성
                     log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result'
+                    log_file_path = f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT_result'
                     with open(log_file_path, 'w') as f:
                         f.write(log_text)
-                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
+                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT_result')
                     log_blob.upload_from_filename(log_file_path)
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
