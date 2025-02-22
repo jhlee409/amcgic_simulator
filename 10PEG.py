@@ -7,7 +7,7 @@ from firebase_admin import credentials, storage
 from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
-st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
+st.set_page_config(page_title="PEG simulator training", layout="wide")
 
 # 로그인 상태 확인
 name, position = check_login()
@@ -32,17 +32,19 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
 
-st.header("Hemoclip simulator training")
+bucket = storage.bucket('amcgi-bulletin.appspot.com')
+
+st.header("PEG simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-    st.markdown("이 페이지는 Hemoclip simulator을 대상으로 한 Hemoclip 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-    st.write("Hemoclip simulator 실습 전에 'hemoclip_orientation.mp4' 동영상을 예습하세요.")
+    st.markdown("이 페이지는 PEG simulator을 대상으로 한 PEG 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+    st.write("PEG simulator 실습 전에 'PEG_orientation.mp4' 동영상을 예습하세요.")
 st.write("---")
-   
-st.subheader("Hemoclip simulator orientation")
+
+st.subheader('PEG simulator orientation')
 
 try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')
-    demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
+    demonstration_blob = bucket.blob('Simulator_training/PEG/PEG_orientation.mp4')
     if demonstration_blob.exists():
         demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
         
@@ -53,8 +55,8 @@ try:
         # 비디오 플레이어를 위한 placeholder 생성
         video_player_placeholder = st.empty()
         
-        # 동영상 시청 버튼을 사이드바로 이동
-        if st.sidebar.button("동영상 시청", key="watch_video"):
+        # 동영상 시청 버튼
+        if st.button("동영상 시청"):
             # 비디오 표시 상태 토글
             st.session_state.show_video = not st.session_state.show_video
             
@@ -62,12 +64,12 @@ try:
                 # 로그 파일 생성 및 업로드
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
+                    log_content = f"PEG_orientation video watched by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
                 # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
+                log_blob = bucket.blob(f"Simulator_training/PEG/log_PEG/{position}*{name}*PEG")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
             
@@ -90,7 +92,7 @@ try:
                 '''
                 st.markdown(video_html, unsafe_allow_html=True)
     else:
-        st.error("Hemoclip simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
+        st.error("PEG simulator orientation 시범 동영상 파일을 찾을 수 없습니다.")
 
 except Exception as e:
-    st.error(f"Hemoclip simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+    st.error(f"PEG simulator orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")

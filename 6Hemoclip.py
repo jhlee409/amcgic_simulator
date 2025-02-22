@@ -53,8 +53,8 @@ try:
         # 비디오 플레이어를 위한 placeholder 생성
         video_player_placeholder = st.empty()
         
-        # 동영상 시청 버튼을 사이드바로 이동
-        if st.sidebar.button("동영상 시청", key="watch_video"):
+        # 동영상 시청 버튼
+        if st.button("동영상 시청", key="watch_video"):
             # 비디오 표시 상태 토글
             st.session_state.show_video = not st.session_state.show_video
             
