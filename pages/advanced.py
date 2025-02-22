@@ -150,7 +150,7 @@ if selected_option == "LHT":
                     video_blob = bucket.blob(f"Simulator_training/LHT/LHT_result/{video_file_name}")
                     video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
 
-                    log_file_name = f"{position}*{name}*LHT_result"
+                    log_file_name = f"{position}*{name}*LHT"
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                         log_content = f"LHT_result video uploaded by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
