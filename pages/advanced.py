@@ -156,7 +156,7 @@ if selected_option == "LHT":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/LHT/log_LHT_result/{log_file_name}")
+                    log_blob = bucket.blob(f"Simulator_training/LHT/log_LHT/{log_file_name}")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
 
