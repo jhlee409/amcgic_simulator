@@ -94,7 +94,7 @@ if selected_option == "LHT":
             if st.session_state.show_lht_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" height="800" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
