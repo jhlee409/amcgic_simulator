@@ -82,12 +82,8 @@ if selected_option == "Sim orientation":
             if 'show_video' not in st.session_state:
                 st.session_state.show_video = False
             
-            # 비디오 플레이어를 위한 placeholder 생성
-            video_player_placeholder = st.empty()
-            
             # 동영상 시청 버튼
             if st.button("동영상 시청"):
-                # 비디오 표시 상태 토글
                 st.session_state.show_video = not st.session_state.show_video
                 
                 if st.session_state.show_video:
@@ -102,25 +98,23 @@ if selected_option == "Sim orientation":
                     log_blob = bucket.blob(f"Simulator_training/Sim/log_Sim/{position}*{name}*Sim")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
-                
-            # 비디오 플레이어 표시
+            
+            # 비디오 플레이어 표시 (버튼 아래에 위치)
             if st.session_state.show_video:
-                # 동영상 플레이어 렌더링
-                with video_player_placeholder.container():
-                    video_html = f'''
-                    <div style="display: flex; justify-content: center;">
-                        <video width="1000" height="800" controls controlsList="nodownload">
-                            <source src="{sim_url}" type="video/mp4">
-                        </video>
-                    </div>
-                    <script>
-                    var video_player = document.querySelector("video");
-                    video_player.addEventListener('contextmenu', function(e) {{
-                        e.preventDefault();
-                    }});
-                    </script>
-                    '''
-                    st.markdown(video_html, unsafe_allow_html=True)
+                video_html = f'''
+                <div style="display: flex; justify-content: center;">
+                    <video width="1000" height="800" controls controlsList="nodownload">
+                        <source src="{sim_url}" type="video/mp4">
+                    </video>
+                </div>
+                <script>
+                var video_player = document.querySelector("video");
+                video_player.addEventListener('contextmenu', function(e) {{
+                    e.preventDefault();
+                }});
+                </script>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("simulation center 오리엔테이션 문서를 찾을 수 없습니다.")
     except Exception as e:
