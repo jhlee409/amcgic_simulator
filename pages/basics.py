@@ -64,11 +64,18 @@ if 'show_sht_video' not in st.session_state:
 if 'show_emt_video' not in st.session_state:
     st.session_state.show_emt_video = False
 
-# 세부항목 선택 드롭다운 메뉴를 사이드바로 이동
+# 사이드바에 드롭다운 메뉴와 로그아웃 버튼 배치
 selected_option = st.sidebar.selectbox(
     "세부항목 선택",
     ["Sim orientation", "MT", "SHT", "EMT"]
 )
+
+st.sidebar.markdown("---")  # 구분선 추가
+
+# 로그아웃 버튼
+if st.sidebar.button("Logout"):
+    st.session_state['logged_in'] = False
+    st.rerun()
 
 # 선택된 옵션이 변경될 때 모든 비디오 플레이어 숨기기
 if 'previous_selection' not in st.session_state:
