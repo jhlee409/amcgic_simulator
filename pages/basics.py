@@ -240,17 +240,6 @@ elif selected_option == "SHT":
             # 동영상 시청 버튼
             if st.button("동영상 시청"):
                 st.session_state.show_sht_video = not st.session_state.show_sht_video
-                
-                if st.session_state.show_sht_video:
-                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"SHT_orientation video watched by {name} ({position}) on {current_date}"
-                        temp_file.write(log_content)
-                        temp_file_path = temp_file.name
-
-                    log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT/{position}*{name}*SHT")
-                    log_blob.upload_from_filename(temp_file_path)
-                    os.unlink(temp_file_path)
             
             # 비디오 플레이어 표시
             if st.session_state.show_sht_video:
@@ -337,15 +326,7 @@ elif selected_option == "EMT":
                 st.session_state.show_emt_video = not st.session_state.show_emt_video
                 
                 if st.session_state.show_emt_video:
-                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                        log_content = f"EMT_orientation video watched by {name} ({position}) on {current_date}"
-                        temp_file.write(log_content)
-                        temp_file_path = temp_file.name
-
-                    log_blob = bucket.blob(f"Simulator_training/EMT/log_EMT/{position}*{name}*EMT")
-                    log_blob.upload_from_filename(temp_file_path)
-                    os.unlink(temp_file_path)
+                    pass  # 로그 파일 전송을 제거하여 버튼 클릭 시 로그가 기록되지 않도록 수정
             
             # 비디오 플레이어 표시
             if st.session_state.show_emt_video:
