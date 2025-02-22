@@ -24,7 +24,7 @@ from firebase_admin import credentials, storage
 import tempfile
 
 # Set page to wide mode
-st.set_page_config(page_title="Simulation center", layout="wide")
+st.set_page_config(page_title="Simulator training", layout="wide")
 
 # Initialize Firebase only if it hasn't been initialized
 if not firebase_admin._apps:
@@ -84,10 +84,12 @@ elif st.session_state.previous_selection != selected_option:
     st.session_state.previous_selection = selected_option
 
 # Title and Instructions in main area
-st.title("Simulation Center EGD basic course orientation")
+st.title("Simulaor training orientation")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-    st.markdown("이 페이지는 Simulation center EGD basic course에 대한 orientation 동영상을 시청하는 곳입니다.")
-    st.write("simulation center를 이용하기 전에, simulation_center_orientation.mp4 파일을 시청하세요.")
+    st.markdown("이 페이지는 GI 상부의 simulattor training 관련 자료를 제곻하고 결과를 업로드하기 위한 페이지 입니다.")
+    st.markdown("basic과 advanced course를 선택하여 dropdwon menu에서 세부항목을 선택하세요요.")
+    st.markdown("이 페이지는 GI 상부의 simulattor training 관련 자료를 제곻하고 결과를 업로드하기 위한 페이지 입니다.")
+    st.markdown("끝낼 때는 반드시 로그아웃 버튼을 눌러 종결하세요. 그냥 종결하면 출석체크가 안됩니다.")
 st.write("---")
 
 # 선택된 옵션에 따라 다른 기능 실행
@@ -324,7 +326,7 @@ elif selected_option == "SHT":
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
 elif selected_option == "EMT":
-    st.subheader("EMT (Endoscopy Maneuver Training)")
+    st.subheader("EMT (EGD Method Training)")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_orientation.mp4')
