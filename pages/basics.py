@@ -119,7 +119,7 @@ if selected_option == "Sim orientation":
             if st.session_state.show_sim_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{sim_url}" type="video/mp4">
                     </video>
                 </div>
@@ -245,7 +245,7 @@ elif selected_option == "SHT":
             if st.session_state.show_sht_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -332,7 +332,7 @@ elif selected_option == "EMT":
             if st.session_state.show_emt_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
