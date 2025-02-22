@@ -257,7 +257,7 @@ elif selected_option == "MT":
                                 break
                         
                         if score is not None:
-                            if score >= 85:
+                            if score >= 70:
                                 status_placeholder.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
                                 
                                 # Upload files
