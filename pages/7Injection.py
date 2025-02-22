@@ -64,7 +64,6 @@ try:
         doc_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.docx')
         if doc_blob.exists():
             doc_url = doc_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            st.markdown(f"[Injection orientation 문서 다운로드]({doc_url})")
 
     # 본영상 시청 버튼이 눌렸을 때만 오른쪽 컬럼에 동영상 표시
     with col2:
