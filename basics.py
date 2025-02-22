@@ -23,7 +23,6 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
 import wave
-from moviepy.editor import VideoFileClip
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulator basic training", layout="wide")
@@ -197,30 +196,17 @@ elif selected_option == "MT":
                 with open(temp_video_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # Extract audio from video
-                video = VideoFileClip(temp_video_path)
-                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
-                video.close()
-
                 # Get current date
                 current_date = datetime.now().strftime("%Y-%m-%d")
 
                 # Generate file names
-                video_extension = os.path.splitext(uploaded_file.name)[1]
-                video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                audio_file_name = f"{position}*{name}*MT_result.mp3"
+                extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
+                video_file_name = f"{position}*{name}*MT_result{extension}"
 
-                # Firebase Storage upload for video and audio
+                # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                
-                # Upload video
                 video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                
-                # Upload audio
-                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
 
                 # Generate log file name
                 log_file_name = f"{position}*{name}*MT"
