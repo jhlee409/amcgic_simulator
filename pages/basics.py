@@ -46,9 +46,6 @@ if not firebase_admin._apps:
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
     st.warning('로그인이 필요합니다.')
     st.stop()
-    
-# 로그아웃 처리
-handle_logout()
 
 # 세션에서 사용자 정보 가져오기
 name = st.session_state.get('name', '')
@@ -72,10 +69,9 @@ selected_option = st.sidebar.selectbox(
 
 st.sidebar.markdown("---")  # 구분선 추가
 
-# 로그아웃 버튼
-if st.sidebar.button("Logout"):
-    st.session_state['logged_in'] = False
-    st.rerun()
+# 로그아웃 처리
+handle_logout()
+
 
 # 선택된 옵션이 변경될 때 모든 비디오 플레이어 숨기기
 if 'previous_selection' not in st.session_state:
