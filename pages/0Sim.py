@@ -45,7 +45,7 @@ st.write("---")
 st.subheader("Simulation Center EGD basic course orientation 파일 시청")
 try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')
-    sim_blob = bucket.blob('Simulator_training/sim_orientation/simulation_center_orientation.mp4')
+    sim_blob = bucket.blob('Simulator_training/Sim/simulation_center_orientation.mp4')
     if sim_blob.exists():
         sim_url = sim_blob.generate_signed_url(expiration=timedelta(minutes=15))
         
