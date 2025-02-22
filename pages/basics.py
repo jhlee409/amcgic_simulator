@@ -25,6 +25,7 @@ import tempfile
 import wave
 from moviepy.editor import VideoFileClip
 import google.generativeai as genai
+import re 
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulator basic training", layout="wide")
