@@ -12,6 +12,25 @@ st.set_page_config(page_title="Hemoclip simulator training", layout="wide")
 # 로그인 상태 확인
 name, position = check_login()
 
+# 동영상 시청 버튼을 로그아웃 버튼 위에 배치
+if st.sidebar.button("본영상 시청", key="watch_video"):
+    # 비디오 표시 상태 토글
+    st.session_state.show_video = not st.session_state.show_video
+    
+    if st.session_state.show_video:
+        # 로그 파일 생성 및 업로드
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+            log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
+            temp_file.write(log_content)
+            temp_file_path = temp_file.name
+
+        # Firebase Storage에 로그 파일 업로드
+        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+        log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
+        log_blob.upload_from_filename(temp_file_path)
+        os.unlink(temp_file_path)
+
 # 로그아웃 처리
 handle_logout()
 
@@ -53,24 +72,6 @@ try:
         # 비디오 플레이어를 위한 placeholder 생성
         video_player_placeholder = st.empty()
         
-        # 동영상 시청 버튼을 사이드바로 이동
-        if st.sidebar.button("동영상 시청", key="watch_video"):
-            # 비디오 표시 상태 토글
-            st.session_state.show_video = not st.session_state.show_video
-            
-            if st.session_state.show_video:
-                # 로그 파일 생성 및 업로드
-                current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
-                    temp_file.write(log_content)
-                    temp_file_path = temp_file.name
-
-                # Firebase Storage에 로그 파일 업로드
-                log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
-                log_blob.upload_from_filename(temp_file_path)
-                os.unlink(temp_file_path)
-            
         # 비디오 플레이어 표시
         if st.session_state.show_video:
             # 동영상 플레이어 렌더링
