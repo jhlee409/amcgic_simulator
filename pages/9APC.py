@@ -59,7 +59,7 @@ if st.sidebar.button("본영상 시청", key="watch_video"):
         log_blob.upload_from_filename(temp_file_path)
         os.unlink(temp_file_path)
 
-# 로그아웃 처리
+# 로그아웃 처리 (한 번만 호출)
 handle_logout()
 
 # 1:9 비율의 두 컬럼 생성
