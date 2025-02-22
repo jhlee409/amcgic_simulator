@@ -46,6 +46,9 @@ if not firebase_admin._apps:
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
     st.warning('로그인이 필요합니다.')
     st.stop()
+    
+# 로그아웃 처리
+handle_logout()
 
 # 세션에서 사용자 정보 가져오기
 name = st.session_state.get('name', '')
