@@ -208,7 +208,7 @@ elif selected_option == "MT":
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
 
                 # Generate log file name
-                log_file_name = f"{position}*{name}*MT_result"
+                log_file_name = f"{position}*{name}*MT"
 
                 # Create log file
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
@@ -303,7 +303,7 @@ elif selected_option == "SHT":
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
 
                 # Generate log file name
-                log_file_name = f"{position}*{name}*SHT_result"
+                log_file_name = f"{position}*{name}*SHT"
 
                 # Create log file
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
@@ -698,10 +698,10 @@ elif selected_option == "EMT":
                     
                     # 로그 파일 생성
                     log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT_result'
+                    log_file_path = f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT'
                     with open(log_file_path, 'w') as f:
                         f.write(log_text)
-                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT_result')
+                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT/{position}*{name}*EMT')
                     log_blob.upload_from_filename(log_file_path)
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
