@@ -94,7 +94,7 @@ if selected_option == "LHT":
             if st.session_state.show_lht_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1300" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -189,7 +189,7 @@ elif selected_option == "EVL":
             if st.session_state.show_evl_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -235,7 +235,7 @@ elif selected_option == "Hemoclip":
             if st.session_state.show_hemoclip_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -281,7 +281,7 @@ elif selected_option == "Injection":
             if st.session_state.show_injection_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -328,7 +328,7 @@ elif selected_option == "NexPowder":
             if st.session_state.show_nexpowder_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -374,7 +374,7 @@ elif selected_option == "APC":
             if st.session_state.show_apc_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
@@ -420,7 +420,7 @@ elif selected_option == "PEG":
             if st.session_state.show_peg_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1000" height="800" controls controlsList="nodownload">
+                    <video width="1300" controls controlsList="nodownload">
                         <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
