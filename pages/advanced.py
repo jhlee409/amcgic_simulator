@@ -69,6 +69,8 @@ elif st.session_state.previous_selection != selected_option:
 # Title
 st.title("Simulaor training advanced course orientation")
 
+st.sidebar.markdown("---")  # 구분선 추가
+
 # 선택된 옵션에 따라 다른 기능 실행
 if selected_option == "LHT":
     st.header("LHT_skill_evaluation")
