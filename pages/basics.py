@@ -44,7 +44,7 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred, {
         'storageBucket': 'amcgi-bulletin.appspot.com',
-        'databaseURL': st.secrets["database_url"]  # Streamlit secrets에서 database_url 사용
+        'databaseURL': st.secrets["FIREBASE_DATABASE_URL"]  # Streamlit secrets에서 FIREBASE_DATABASE_URL사용
     })
 
 # 로그인 상태 확인
