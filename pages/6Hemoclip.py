@@ -80,14 +80,15 @@ try:
             doc_url = doc_blob.generate_signed_url(expiration=timedelta(minutes=15))
             st.markdown(f"[Hemoclip orientation 문서 다운로드]({doc_url})")
 
+    # 본영상 시청 버튼이 눌렸을 때만 오른쪽 컬럼에 동영상 표시
     with col2:
-        if st.session_state.show_video:
+        if 'show_video' in st.session_state and st.session_state.show_video:
             main_video_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
             if main_video_blob.exists():
                 video_url = main_video_blob.generate_signed_url(expiration=timedelta(minutes=15))
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
-                    <video width="1300" controls controlsList="nodownload">
+                    <video width="3000" controls controlsList="nodownload">
                         <source src="{video_url}" type="video/mp4">
                     </video>
                 </div>
