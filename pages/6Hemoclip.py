@@ -28,6 +28,9 @@ if not firebase_admin._apps:
         "universe_domain": st.secrets["universe_domain"]
     })
     firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
+    
+# 로그아웃 처리 (한 번만 호출)
+handle_logout()
 
 st.header("Hemoclip simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
