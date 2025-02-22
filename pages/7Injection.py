@@ -69,16 +69,24 @@ try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')
     
     with col1:
-        # 미리보기 비디오 표시
-        prevideo_blob = bucket.blob('Simulator_training/Injection/Injection_orientation_prevideo.mp4')
-        if prevideo_blob.exists():
-            prevideo_url = prevideo_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            st.video(prevideo_url)
-        
-        # 문서 파일 표시
-        doc_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.docx')
-        if doc_blob.exists():
-            doc_url = doc_blob.generate_signed_url(expiration=timedelta(minutes=15))
+        if selected_page == "Default":
+            # default 미리보기 비디오 표시
+            default_prevideo_blob = bucket.blob('Simulator_training/default/default_prevideo.mp4')
+            if default_prevideo_blob.exists():
+                default_prevideo_url = default_prevideo_blob.generate_signed_url(expiration=timedelta(minutes=15))
+                st.video(default_prevideo_url)
+        else:  # Injection 선택시
+            # Injection 미리보기 비디오 표시
+            prevideo_blob = bucket.blob('Simulator_training/Injection/Injection_orientation_prevideo.mp4')
+            if prevideo_blob.exists():
+                prevideo_url = prevideo_blob.generate_signed_url(expiration=timedelta(minutes=15))
+                st.video(prevideo_url)
+            
+            # 문서 파일 표시
+            doc_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.docx')
+            if doc_blob.exists():
+                doc_url = doc_blob.generate_signed_url(expiration=timedelta(minutes=15))
+                st.markdown(f"[Injection orientation 문서 다운로드]({doc_url})")
 
     # 본영상 시청 버튼이 눌렸을 때만 오른쪽 컬럼에 동영상 표시
     with col2:
