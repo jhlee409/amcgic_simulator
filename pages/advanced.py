@@ -70,7 +70,6 @@ elif st.session_state.previous_selection != selected_option:
 st.title("Simulaor training advanced course orientation")
 
 st.markdown("---")  # 구분선 추가
-st.markdown("---")  # 구분선 추가
 
 # 선택된 옵션에 따라 다른 기능 실행
 if selected_option == "LHT":
