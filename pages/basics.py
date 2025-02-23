@@ -207,11 +207,23 @@ elif selected_option == "MT":
                 
                 # 비디오에서 오디오 추출 (25% 진행)
                 status_text.text("오디오 추출 중...")
-                video = VideoFileClip(temp_video_path)
-                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
-                video.close()
-                progress_bar.progress(25)
+                try:
+                    video = VideoFileClip(temp_video_path)
+                    temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
+                    # MoviePy 로깅 끄기 및 오디오 추출 설정 추가
+                    video.audio.write_audiofile(
+                        temp_audio_path,
+                        codec='mp3',
+                        bitrate='128k',
+                        verbose=False,
+                        logger=None
+                    )
+                    video.close()
+                    progress_bar.progress(25)
+                except Exception as e:
+                    st.error(f"오디오 추출 중 오류가 발생했습니다: {e}")
+                    video.close() if 'video' in locals() else None
+                    raise Exception("오디오 추출 실패")
 
                 # Gemini 초기화 및 설정 (50% 진행)
                 status_text.text("음성 분석 준비 중...")
