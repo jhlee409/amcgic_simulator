@@ -235,7 +235,7 @@ elif selected_option == "MT":
                 except Exception as e:
                     st.error(f"오디오 추출 중 오류가 발생했습니다: {e}")
                     video.close() if 'video' in locals() else None
-                    raise Exception("오디오 추출 실패")
+                    st.stop()
 
                 # Firebase에 파일 업로드 (50% 진행)
                 status_text.text("파일 업로드 중...")
@@ -313,7 +313,7 @@ elif selected_option == "MT":
                     st.error(f"음성 분석 중 오류가 발생했습니다: {str(e)}")
                     progress_bar.empty()
                     status_text.empty()
-                    return
+                    st.stop()
 
                 # 로그 파일 생성 및 업로드
                 log_file_name = f"{position}*{name}*MT"
