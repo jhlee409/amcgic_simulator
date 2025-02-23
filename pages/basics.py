@@ -266,7 +266,12 @@ elif selected_option == "MT":
                 try:
                     # 채팅 시작 및 응답 대기
                     chat = model.start_chat(history=[
-                        {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
+                        {"role": "user", "parts": [gemini_file, """
+                            주어진 음성 파일을 분석하여 다음 형식으로 정확히 응답해주세요:
+                            1. 음성에서 추출한 내용을 줄바꿈으로 구분하여 나열
+                            2. 마지막 줄에 반드시 "정답률: XX%" 형식으로 점수 표시 
+                            (추출된 문장 수 / 81 * 100을 반올림하여 백분율로 표시)
+                        """]}
                     ])
                     
                     # 응답 타임아웃 설정
