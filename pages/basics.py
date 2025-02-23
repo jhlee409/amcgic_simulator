@@ -263,19 +263,34 @@ elif selected_option == "MT":
 
                 # 음성 분석 (100% 진행)
                 status_text.text("음성 분석 중...")
-                chat = model.start_chat(history=[
-                    {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
-                ])
-                response = chat.send_message("평가를 시작해주세요")
-                
-                # 추출된 문장 수(x) 계산
-                extracted_sentences = len(response.text.split('\n'))
-                reference_sentences = 81
-                
-                # 점수 추출 및 계산
-                import re
-                score_match = re.search(r'정답률:\s*(\d+)%', response.text)
-                if score_match:
+                try:
+                    # 채팅 시작 및 응답 대기
+                    chat = model.start_chat(history=[
+                        {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
+                    ])
+                    
+                    # 응답 타임아웃 설정
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(chat.send_message, "평가를 시작해주세요")
+                        try:
+                            response = future.result(timeout=300)  # 5분 타임아웃
+                        except concurrent.futures.TimeoutError:
+                            raise Exception("음성 분석 시간이 초과되었습니다. 다시 시도해 주세요.")
+                    
+                    if not response or not response.text:
+                        raise Exception("음성 분석 결과가 비어있습니다.")
+                    
+                    # 추출된 문장 수(x) 계산
+                    extracted_sentences = len(response.text.split('\n'))
+                    reference_sentences = 81
+                    
+                    # 점수 추출 및 계산
+                    import re
+                    score_match = re.search(r'정답률:\s*(\d+)%', response.text)
+                    if not score_match:
+                        raise Exception("점수 계산에 실패했습니다.")
+                        
                     score = int(score_match.group(1))
                     progress_bar.progress(100)
                     status_text.empty()
@@ -293,6 +308,12 @@ elif selected_option == "MT":
                         st.success("합격입니다. 축하합니다!")
                     else:
                         st.error("안타깝게도 빠진 내용이 많습니다. 다시 시도해 주세요")
+
+                except Exception as e:
+                    st.error(f"음성 분석 중 오류가 발생했습니다: {str(e)}")
+                    progress_bar.empty()
+                    status_text.empty()
+                    return
 
                 # 로그 파일 생성 및 업로드
                 log_file_name = f"{position}*{name}*MT"
