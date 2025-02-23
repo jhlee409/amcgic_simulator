@@ -213,7 +213,7 @@ elif selected_option == "MT":
                 status_text.text("Step 2/5: 음성 추출 중...")
                 video = VideoFileClip(temp_video_path)
                 temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k', verbose=False)
                 video.close()
                 progress_bar.progress(30)
 
