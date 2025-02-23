@@ -190,6 +190,7 @@ elif selected_option == "MT":
     # File uploader
     uploaded_file = None
     st.subheader("암기 영상 업로드")
+    st.write("영상을 처리하는데 20-30초가 소요되니, 성공 메시지가 나올 때까지 기다려 주세요")
     uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
 
     if uploaded_file:
