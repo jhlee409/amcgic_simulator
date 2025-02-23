@@ -202,23 +202,8 @@ elif selected_option == "MT":
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
-                # Step 1: Save uploaded file (10%)
-                status_text.text("Step 1/5: 업로드된 파일 저장 중...")
-                temp_video_path = os.path.join(temp_dir, uploaded_file.name)
-                with open(temp_video_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                progress_bar.progress(10)
-
-                # Step 2: Extract audio (30%)
-                status_text.text("Step 2/5: 음성 추출 중...")
-                video = VideoFileClip(temp_video_path)
-                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
-                video.close()
-                progress_bar.progress(30)
-
-                # Step 3: Initialize Gemini (50%)
-                status_text.text("Step 3/5: AI 분석 준비 중...")
+                # Step 1: Initialize Gemini (20%)
+                status_text.text("Step 1/5: AI 초기화 중...")
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                 generation_config = {
                     "temperature": 1,
@@ -230,19 +215,34 @@ elif selected_option == "MT":
                     model_name="gemini-2.0-flash",
                     generation_config=generation_config,
                 )
-                progress_bar.progress(50)
+                progress_bar.progress(20)
+                
+                # Step 2: Save uploaded file (40%)
+                status_text.text("Step 2/5: 업로드된 파일 저장 중...")
+                temp_video_path = os.path.join(temp_dir, uploaded_file.name)
+                with open(temp_video_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                progress_bar.progress(40)
 
-                # Step 4: Upload to Gemini and start analysis (70%)
+                # Step 3: Extract audio (60%)
+                status_text.text("Step 3/5: 음성 추출 중...")
+                video = VideoFileClip(temp_video_path)
+                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
+                video.close()
+                progress_bar.progress(60)
+
+                # Step 4: Upload to Gemini and start analysis (80%)
                 status_text.text("Step 4/5: 음성 분석 중...")
                 gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-                chat = model.start_chat(history=[
-                    {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
-                ])
-                progress_bar.progress(70)
+                chat = model.start_chat(history=[])  # 빈 히스토리로 새로운 채팅 시작
+                response = chat.send_message(
+                    [gemini_file, st.secrets["GEMINI_PROMPT"]]
+                )
+                progress_bar.progress(80)
 
-                # Step 5: Get evaluation and process results (90%)
+                # Step 5: Get evaluation (90%)
                 status_text.text("Step 5/5: 평가 결과 처리 중...")
-                # 명시적으로 평가 요청
                 response = chat.send_message("나레이션과 실제 음성을 비교하여 정확도를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
                 progress_bar.progress(90)
 
