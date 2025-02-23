@@ -202,8 +202,23 @@ elif selected_option == "MT":
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
-                # Step 1: Initialize Gemini (20%)
-                status_text.text("Step 1/5: AI 초기화 중...")
+                # Step 1: Save uploaded file (10%)
+                status_text.text("Step 1/5: 업로드된 파일 저장 중...")
+                temp_video_path = os.path.join(temp_dir, uploaded_file.name)
+                with open(temp_video_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                progress_bar.progress(10)
+
+                # Step 2: Extract audio (30%)
+                status_text.text("Step 2/5: 음성 추출 중...")
+                video = VideoFileClip(temp_video_path)
+                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
+                video.close()
+                progress_bar.progress(30)
+
+                # Step 3: Initialize Gemini (50%)
+                status_text.text("Step 3/5: AI 분석 준비 중...")
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                 generation_config = {
                     "temperature": 1,
@@ -215,35 +230,20 @@ elif selected_option == "MT":
                     model_name="gemini-2.0-flash",
                     generation_config=generation_config,
                 )
-                progress_bar.progress(20)
-                
-                # Step 2: Save uploaded file (40%)
-                status_text.text("Step 2/5: 업로드된 파일 저장 중...")
-                temp_video_path = os.path.join(temp_dir, uploaded_file.name)
-                with open(temp_video_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                progress_bar.progress(40)
+                progress_bar.progress(50)
 
-                # Step 3: Extract audio (60%)
-                status_text.text("Step 3/5: 음성 추출 중...")
-                video = VideoFileClip(temp_video_path)
-                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k', verbose=False)
-                video.close()
-                progress_bar.progress(60)
-
-                # Step 4: Upload to Gemini and start analysis (80%)
+                # Step 4: Upload to Gemini and start analysis (70%)
                 status_text.text("Step 4/5: 음성 분석 중...")
                 gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-                chat = model.start_chat(history=[])  # 빈 히스토리로 새로운 채팅 시작
-                response = chat.send_message(
-                    [gemini_file, st.secrets["GEMINI_PROMPT"]]
-                )
-                progress_bar.progress(80)
+                chat = model.start_chat(history=[
+                    {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
+                ])
+                progress_bar.progress(70)
 
-                # Step 5: Get evaluation (90%)
+                # Step 5: Get evaluation and process results (90%)
                 status_text.text("Step 5/5: 평가 결과 처리 중...")
-                response = chat.send_message("업로드된 mp3 파일에서 추출한 텍스트 문장과 GEMINI_PROMPT에 있는 '검사 순서' 문장을 비교하여 '검사 순서'에 있는 문장을 얼마나 mp3 파일에서 언급했는지를를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
+                # 명시적으로 평가 요청
+                response = chat.send_message("나레이션과 실제 음성을 비교하여 정확도를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
                 progress_bar.progress(90)
 
                 # Process results
@@ -256,35 +256,32 @@ elif selected_option == "MT":
                     all_numbers = re.findall(r'\d+', response.text)
                     st.write("발견된 모든 숫자:", all_numbers)
                     
-                    # 점수 계산 문장만 찾기 (비율 또는 퍼센트 형태)
+                    # 점수 관련 문장 찾기
                     score_sentences = []
                     for line in response.text.split('\n'):
-                        # 비율이나 퍼센트를 나타내는 패턴 찾기
-                        ratio_match = re.search(r'(\d+)\s*/\s*(\d+)', line)  # x/y 형태
-                        percent_match = re.search(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', line)  # x% 형태
-                        
-                        if ratio_match:
-                            # 비율을 퍼센트로 변환
-                            numerator = float(ratio_match.group(1))
-                            denominator = float(ratio_match.group(2))
-                            if denominator > 0:  # 0으로 나누기 방지
-                                score_sentences.append(str(round((numerator/denominator) * 100)))
-                        elif percent_match:
-                            score_sentences.append(percent_match.group(1))
-                    
-                    st.write("계산된 점수 목록:", score_sentences)
+                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가', '정확도', '일치']):
+                            score_sentences.append(line)
+                    st.write("점수 관련 문장들:", score_sentences)
                     
                     # 점수 추출 시도
                     if score_sentences:
-                        # 첫 번째 유효한 점수 사용
-                        for score_str in score_sentences:
-                            try:
-                                potential_score = int(score_str)
+                        for sentence in score_sentences:
+                            numbers = re.findall(r'\d+', sentence)
+                            if numbers:
+                                potential_score = int(numbers[0])
                                 if 0 <= potential_score <= 100:  # 유효한 점수 범위 확인
                                     score = potential_score
                                     break
-                            except ValueError:
-                                continue
+                    
+                    # 여전히 점수를 찾지 못했다면 전체 텍스트에서 백분율 찾기
+                    if score is None:
+                        percentage_matches = re.findall(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', response.text)
+                        if percentage_matches:
+                            for match in percentage_matches:
+                                potential_score = int(match)
+                                if 0 <= potential_score <= 100:
+                                    score = potential_score
+                                    break
                     
                     # Complete progress bar
                     progress_bar.progress(100)
