@@ -242,7 +242,8 @@ elif selected_option == "MT":
 
                 # Step 5: Get evaluation and process results (90%)
                 status_text.text("Step 5/5: 평가 결과 처리 중...")
-                response = chat.send_message("평가를 시작해주세요")
+                # 명시적으로 평가 요청
+                response = chat.send_message("나레이션과 실제 음성을 비교하여 정확도를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
                 progress_bar.progress(90)
 
                 # Process results
@@ -258,44 +259,51 @@ elif selected_option == "MT":
                     # 점수 관련 문장 찾기
                     score_sentences = []
                     for line in response.text.split('\n'):
-                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가']):
+                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가', '정확도', '일치']):
                             score_sentences.append(line)
                     st.write("점수 관련 문장들:", score_sentences)
                     
-                    patterns = [
-                        r'정답률[은:]?\s*(\d+)[%점]',
-                        r'점수[는:]?\s*(\d+)[%점]',
-                        r'Score:\s*(\d+)',
-                        r'[\d]+%',
-                        r'[\d]+점',
-                        r'정답률은 (\d+)',
-                        r'(\d+)\s*[%점]',
-                        r'정답률\s*(\d+)',
-                        r'점수\s*(\d+)',
-                    ]
+                    # 점수 추출 시도
+                    if score_sentences:
+                        for sentence in score_sentences:
+                            numbers = re.findall(r'\d+', sentence)
+                            if numbers:
+                                potential_score = int(numbers[0])
+                                if 0 <= potential_score <= 100:  # 유효한 점수 범위 확인
+                                    score = potential_score
+                                    break
                     
-                    for pattern in patterns:
-                        match = re.search(pattern, response.text)
-                        if match:
-                            st.write(f"매칭된 패턴: {pattern}")
-                            st.write(f"매칭된 텍스트: {match.group(0)}")
-                            score_text = re.findall(r'\d+', match.group(0))[0]
-                            score = int(score_text)
-                            break
+                    # 여전히 점수를 찾지 못했다면 전체 텍스트에서 백분율 찾기
+                    if score is None:
+                        percentage_matches = re.findall(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', response.text)
+                        if percentage_matches:
+                            for match in percentage_matches:
+                                potential_score = int(match)
+                                if 0 <= potential_score <= 100:
+                                    score = potential_score
+                                    break
                     
                     # Complete progress bar
                     progress_bar.progress(100)
                     status_text.empty()
                     
                     if score is not None:
+                        # 결과 메시지 표시
                         if score >= 70:
                             st.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
-                            # Upload files
+                        else:
+                            st.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
+                        
+                        # 점수와 관계없이 파일 업로드 진행
+                        try:
+                            # Get current date
                             current_date = datetime.now().strftime("%Y-%m-%d")
+                            
+                            # Generate file names
                             video_extension = os.path.splitext(uploaded_file.name)[1]
                             video_file_name = f"{position}*{name}*MT_result{video_extension}"
                             audio_file_name = f"{position}*{name}*MT_result.mp3"
-
+                            
                             bucket = storage.bucket('amcgi-bulletin.appspot.com')
                             
                             # Upload video
@@ -305,24 +313,22 @@ elif selected_option == "MT":
                             # Upload audio
                             audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
                             audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
-
+                            
                             # Generate and upload log file
                             log_file_name = f"{position}*{name}*MT"
                             with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                                log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
+                                log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}, Score: {score}"
                                 temp_file.write(log_content)
                                 temp_file_path = temp_file.name
-
+                            
                             log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
                             log_blob.upload_from_filename(temp_file_path)
                             os.unlink(temp_file_path)
-
-                            st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
-                        else:
-                            st.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
-                    else:
-                        st.error("점수를 찾을 수 없습니다. AI 응답을 확인해 주세요.")
-                        st.write("점수 추출에 실패했습니다. 관리자에게 문의해 주세요.")
+                            
+                            st.success(f"파일이 성공적으로 업로드되었습니다! (점수: {score}점)")
+                            
+                        except Exception as upload_error:
+                            st.error(f"파일 업로드 중 오류가 발생했습니다: {str(upload_error)}")
 
                 except Exception as score_error:
                     st.error(f"평가 결과 처리 중 오류가 발생했습니다: {str(score_error)}")
