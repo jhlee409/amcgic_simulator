@@ -248,17 +248,23 @@ elif selected_option == "MT":
                 # Process results
                 score = None
                 try:
+                    # 디버깅을 위해 전체 응답 텍스트 출력
+                    st.write("AI 응답:", response.text)
+                    
                     patterns = [
-                        r'정답률:\s*(\d+)%',
-                        r'(\d+)%',
-                        r'점수:\s*(\d+)',
-                        r'Score:\s*(\d+)'
+                        r'정답률[은:]?\s*(\d+)[%점]',
+                        r'점수[는:]?\s*(\d+)[%점]',
+                        r'Score:\s*(\d+)',
+                        r'[\d]+%',  # 단순히 숫자와 % 기호가 붙어있는 패턴
+                        r'[\d]+점'  # 숫자와 '점'이 붙어있는 패턴
                     ]
                     
                     for pattern in patterns:
                         match = re.search(pattern, response.text)
                         if match:
-                            score = int(match.group(1))
+                            # 매칭된 숫자만 추출
+                            score_text = re.findall(r'\d+', match.group(0))[0]
+                            score = int(score_text)
                             break
                     
                     # Complete progress bar
@@ -299,10 +305,11 @@ elif selected_option == "MT":
                         else:
                             st.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
                     else:
-                        st.error("평가 결과를 확인할 수 없습니다. 다시 시도해 주세요.")
+                        st.error("평가 결과를 확인할 수 없습니다. 응답 텍스트를 확인해 주세요.")
                     
                 except Exception as score_error:
-                    st.error("평가 결과 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
+                    st.error(f"평가 결과 처리 중 오류가 발생했습니다: {str(score_error)}")
+                    st.write("전체 응답:", response.text)
 
         except Exception as gemini_error:
             st.error("음성 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
