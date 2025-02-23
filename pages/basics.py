@@ -206,7 +206,7 @@ elif selected_option == "MT":
                 # Extract audio from video
                 video = VideoFileClip(temp_video_path)
                 temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k')
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
                 video.close()
 
                 # Show processing status
