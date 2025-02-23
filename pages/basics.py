@@ -307,9 +307,6 @@ elif selected_option == "MT":
         except Exception as gemini_error:
             st.error("음성 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
 
-    except Exception as e:
-        st.error("파일 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
-
 elif selected_option == "SHT":
     st.subheader("SHT (Scope Handling Training)")
     try:
