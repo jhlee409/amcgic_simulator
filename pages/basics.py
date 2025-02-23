@@ -289,7 +289,11 @@ elif selected_option == "MT":
                     import re
                     score_match = re.search(r'정답률:\s*(\d+)%', response.text)
                     if not score_match:
-                        raise Exception("점수 계산에 실패했습니다.")
+                        st.error("음성 분석 결과에서 점수를 찾을 수 없습니다.")
+                        st.write("AI 응답:", response.text)  # AI 응답 내용 표시
+                        progress_bar.empty()
+                        status_text.empty()
+                        st.stop()
                         
                     score = int(score_match.group(1))
                     progress_bar.progress(100)
