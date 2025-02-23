@@ -23,8 +23,6 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
 import wave
-from moviepy.editor import VideoFileClip
-import google.generativeai as genai
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulator basic training", layout="wide")
@@ -43,10 +41,7 @@ if not firebase_admin._apps:
         "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
         "client_x509_cert_url": st.secrets["client_x509_cert_url"]
     })
-    firebase_admin.initialize_app(cred, {
-        'storageBucket': 'amcgi-bulletin.appspot.com',
-        'databaseURL': st.secrets["FIREBASE_DATABASE_URL"]  # Streamlit secrets에서 FIREBASE_DATABASE_URL사용
-    })
+    firebase_admin.initialize_app(cred)
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -201,68 +196,17 @@ elif selected_option == "MT":
                 with open(temp_video_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # Extract audio from video
-                video = VideoFileClip(temp_video_path)
-                temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
-                video.close()
-
-                # Initialize Gemini
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-
-                # Configure Gemini model
-                generation_config = {
-                    "temperature": 1,
-                    "top_p": 0.95,
-                    "top_k": 40,
-                    "max_output_tokens": 8192,
-                }
-
-                model = genai.GenerativeModel(
-                    model_name="gemini-2.0-flash",
-                    generation_config=generation_config,
-                )
-
-                # Upload audio file to Gemini
-                gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-
-                # Start chat session with Gemini
-                chat = model.start_chat(history=[
-                    {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
-                ])
-
-                # Get evaluation from Gemini
-                response = chat.send_message("평가를 시작해주세요")
-                evaluation = response.text
-
-                # Extract score from evaluation
-                import re
-                score_match = re.search(r'정답률:\s*(\d+)%', evaluation)
-                if score_match:
-                    score = int(score_match.group(1))
-                    if score >= 85:
-                        st.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
-                    else:
-                        st.error(f"점수: {score}점 - 아쉽게도 불합격입니다. 다시 시도해주세요.")
-
-                # Continue with existing upload logic
+                # Get current date
                 current_date = datetime.now().strftime("%Y-%m-%d")
 
                 # Generate file names
-                video_extension = os.path.splitext(uploaded_file.name)[1]
-                video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                audio_file_name = f"{position}*{name}*MT_result.mp3"
+                extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
+                video_file_name = f"{position}*{name}*MT_result{extension}"
 
-                # Firebase Storage upload for video and audio
+                # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                
-                # Upload video
                 video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                
-                # Upload audio
-                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
 
                 # Generate log file name
                 log_file_name = f"{position}*{name}*MT"
@@ -283,6 +227,7 @@ elif selected_option == "MT":
                 # Success message
                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
         except Exception as e:
+            # Error message
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
 elif selected_option == "SHT":
