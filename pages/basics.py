@@ -23,8 +23,6 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
 import wave
-from moviepy.editor import VideoFileClip
-import google.generativeai as genai
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulator basic training", layout="wide")
@@ -43,10 +41,7 @@ if not firebase_admin._apps:
         "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
         "client_x509_cert_url": st.secrets["client_x509_cert_url"]
     })
-    firebase_admin.initialize_app(cred, {
-        'storageBucket': 'amcgi-bulletin.appspot.com',
-        'databaseURL': st.secrets["FIREBASE_DATABASE_URL"]  # Streamlit secrets에서 FIREBASE_DATABASE_URL사용
-    })
+    firebase_admin.initialize_app(cred)
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -190,161 +185,49 @@ elif selected_option == "MT":
     # File uploader
     uploaded_file = None
     st.subheader("암기 영상 업로드")
-    st.write("영상을 처리하는데 1분 정도가 소요되니, 성공 메시지가 나올 때까지 기다려 주세요")
     uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
 
     if uploaded_file:
         try:
-            # Gemini 초기화 및 설정
-            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-            generation_config = {
-                "temperature": 1,
-                "top_p": 0.95,
-                "top_k": 40,
-                "max_output_tokens": 8192,
-            }
-            model = genai.GenerativeModel(
-                model_name="gemini-2.0-flash",
-                generation_config=generation_config,
-            )
-
+            # Create a temporary directory to store the video file
             with tempfile.TemporaryDirectory() as temp_dir:
-                # 파일 저장 및 오디오 추출 부분
+                # Save the uploaded file temporarily
                 temp_video_path = os.path.join(temp_dir, uploaded_file.name)
                 with open(temp_video_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # 진행 상태 표시
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                # 비디오에서 오디오 추출 (25% 진행)
-                status_text.text("오디오 추출 중...")
-                try:
-                    video = VideoFileClip(temp_video_path)
-                    temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                    video.audio.write_audiofile(
-                        temp_audio_path,
-                        codec='mp3',
-                        bitrate='128k',
-                        verbose=False,
-                        logger=None
-                    )
-                    video.close()
-                    progress_bar.progress(25)
-                except Exception as e:
-                    st.error(f"오디오 추출 중 오류가 발생했습니다: {e}")
-                    video.close() if 'video' in locals() else None
-                    st.stop()
-
-                # Firebase에 파일 업로드 (50% 진행)
-                status_text.text("파일 업로드 중...")
+                # Get current date
                 current_date = datetime.now().strftime("%Y-%m-%d")
-                video_extension = os.path.splitext(uploaded_file.name)[1]
-                video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                audio_file_name = f"{position}*{name}*MT_result.mp3"
 
+                # Generate file names
+                extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
+                video_file_name = f"{position}*{name}*MT_result{extension}"
+
+                # Firebase Storage upload for video
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                
-                # 비디오 및 오디오 업로드
                 video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                
-                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
-                progress_bar.progress(50)
 
-                # 음성 분석 준비 (75% 진행)
-                status_text.text("음성 분석 준비 중...")
-                # Firebase에서 업로드된 오디오 파일의 URL 가져오기
-                audio_url = audio_blob.generate_signed_url(expiration=timedelta(minutes=10))
-                gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-                progress_bar.progress(75)
-
-                # 음성 분석 (100% 진행)
-                status_text.text("음성 분석 중...")
-                try:
-                    # 채팅 시작 및 응답 대기
-                    chat = model.start_chat(history=[
-                        # 시스템 지시사항으로 GEMINI_PROMPT 전달
-                        {"role": "model", "parts": [st.secrets["GEMINI_PROMPT"]]},
-                        # 분석 지침 전달
-                        {"role": "user", "parts": ["""
-                            위의 검사 순서는 총 81개의 핵심 문장으로 구성된 표준 지침입니다.
-                            이제 제가 전달할 음성 파일을 분석하여:
-                            1. 음성에서 추출한 내용을 문장 단위로 나열해주세요
-                            2. 각 문장이 표준 지침의 어떤 문장과 핵심적으로 일치하는지 분석해주세요
-                            3. 일치하는 문장의 수를 세어 점수를 계산해주세요 (일치 문장 수 / 81 * 100)
-                            4. 마지막 줄에 반드시 "정답률: XX%" 형식으로 점수를 표시해주세요
-                        """]},
-                        # 음성 파일 전달
-                        {"role": "user", "parts": [gemini_file]}
-                    ])
-                    
-                    # 응답 타임아웃 설정
-                    import concurrent.futures
-                    with concurrent.futures.ThreadPoolExecutor() as executor:
-                        future = executor.submit(chat.send_message, "평가를 시작해주세요")
-                        try:
-                            response = future.result(timeout=300)  # 5분 타임아웃
-                        except concurrent.futures.TimeoutError:
-                            raise Exception("음성 분석 시간이 초과되었습니다. 다시 시도해 주세요.")
-                    
-                    if not response or not response.text:
-                        raise Exception("음성 분석 결과가 비어있습니다.")
-                    
-                    # 추출된 문장 수(x) 계산
-                    extracted_sentences = len(response.text.split('\n'))
-                    reference_sentences = 81
-                    
-                    # 점수 추출 및 계산
-                    import re
-                    score_match = re.search(r'정답률:\s*(\d+)%', response.text)
-                    if not score_match:
-                        st.error("음성 분석 결과에서 점수를 찾을 수 없습니다.")
-                        st.write("AI 응답:", response.text)  # AI 응답 내용 표시
-                        progress_bar.empty()
-                        status_text.empty()
-                        st.stop()
-                        
-                    score = int(score_match.group(1))
-                    progress_bar.progress(100)
-                    status_text.empty()
-
-                    # 결과 표시
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("추출된 문장 수", extracted_sentences)
-                    with col2:
-                        st.metric("기준 문장 수", reference_sentences)
-                    with col3:
-                        st.metric("최종 점수", f"{score}%")
-
-                    if score >= 70:
-                        st.success("합격입니다. 축하합니다!")
-                    else:
-                        st.error("안타깝게도 빠진 내용이 많습니다. 다시 시도해 주세요")
-
-                except Exception as e:
-                    st.error(f"음성 분석 중 오류가 발생했습니다: {str(e)}")
-                    progress_bar.empty()
-                    status_text.empty()
-                    st.stop()
-
-                # 로그 파일 생성 및 업로드
+                # Generate log file name
                 log_file_name = f"{position}*{name}*MT"
+
+                # Create log file
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                     log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
+                # Firebase Storage upload for log file
                 log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
+
+                # Remove temporary log file
                 os.unlink(temp_file_path)
 
+                # Success message
                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
-
         except Exception as e:
+            # Error message
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
 elif selected_option == "SHT":
