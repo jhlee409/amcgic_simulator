@@ -195,6 +195,19 @@ elif selected_option == "MT":
 
     if uploaded_file:
         try:
+            # Gemini 초기화 및 설정
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            generation_config = {
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 40,
+                "max_output_tokens": 8192,
+            }
+            model = genai.GenerativeModel(
+                model_name="gemini-2.0-flash",
+                generation_config=generation_config,
+            )
+
             with tempfile.TemporaryDirectory() as temp_dir:
                 # 파일 저장 및 오디오 추출 부분
                 temp_video_path = os.path.join(temp_dir, uploaded_file.name)
@@ -210,7 +223,6 @@ elif selected_option == "MT":
                 try:
                     video = VideoFileClip(temp_video_path)
                     temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                    # MoviePy 로깅 끄기 및 오디오 추출 설정 추가
                     video.audio.write_audiofile(
                         temp_audio_path,
                         codec='mp3',
@@ -225,37 +237,40 @@ elif selected_option == "MT":
                     video.close() if 'video' in locals() else None
                     raise Exception("오디오 추출 실패")
 
-                # Gemini 초기화 및 설정 (50% 진행)
-                status_text.text("음성 분석 준비 중...")
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                generation_config = {
-                    "temperature": 1,
-                    "top_p": 0.95,
-                    "top_k": 40,
-                    "max_output_tokens": 8192,
-                }
-                model = genai.GenerativeModel(
-                    model_name="gemini-2.0-flash",
-                    generation_config=generation_config,
-                )
+                # Firebase에 파일 업로드 (50% 진행)
+                status_text.text("파일 업로드 중...")
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                video_extension = os.path.splitext(uploaded_file.name)[1]
+                video_file_name = f"{position}*{name}*MT_result{video_extension}"
+                audio_file_name = f"{position}*{name}*MT_result.mp3"
+
+                bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                
+                # 비디오 및 오디오 업로드
+                video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
+                video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
+                
+                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
+                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
                 progress_bar.progress(50)
 
-                # 음성 분석 (75% 진행)
-                status_text.text("음성 분석 중...")
+                # 음성 분석 준비 (75% 진행)
+                status_text.text("음성 분석 준비 중...")
+                # Firebase에서 업로드된 오디오 파일의 URL 가져오기
+                audio_url = audio_blob.generate_signed_url(expiration=timedelta(minutes=10))
                 gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
+                progress_bar.progress(75)
+
+                # 음성 분석 (100% 진행)
+                status_text.text("음성 분석 중...")
                 chat = model.start_chat(history=[
                     {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
                 ])
-                progress_bar.progress(75)
-
-                # 평가 및 점수 계산 (100% 진행)
-                status_text.text("평가 결과 분석 중...")
                 response = chat.send_message("평가를 시작해주세요")
                 
                 # 추출된 문장 수(x) 계산
                 extracted_sentences = len(response.text.split('\n'))
-                # 기준 문장 수(y)는 GEMINI_PROMPT에서 가져옴 (예시 값)
-                reference_sentences = 81  # st.secrets["GEMINI_PROMPT"]에서 실제 문장 수로 대체 필요
+                reference_sentences = 81
                 
                 # 점수 추출 및 계산
                 import re
@@ -278,21 +293,6 @@ elif selected_option == "MT":
                         st.success("합격입니다. 축하합니다!")
                     else:
                         st.error("안타깝게도 빠진 내용이 많습니다. 다시 시도해 주세요")
-
-                # 파일 업로드 처리
-                current_date = datetime.now().strftime("%Y-%m-%d")
-                video_extension = os.path.splitext(uploaded_file.name)[1]
-                video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                audio_file_name = f"{position}*{name}*MT_result.mp3"
-
-                bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                
-                # 비디오 및 오디오 업로드
-                video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
-                video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                
-                audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
 
                 # 로그 파일 생성 및 업로드
                 log_file_name = f"{position}*{name}*MT"
