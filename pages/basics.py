@@ -195,94 +195,106 @@ elif selected_option == "MT":
 
     if uploaded_file:
         try:
-            # Create a temporary directory to store the video file
             with tempfile.TemporaryDirectory() as temp_dir:
-                # Save the uploaded file temporarily
+                # 파일 저장 및 오디오 추출 부분
                 temp_video_path = os.path.join(temp_dir, uploaded_file.name)
                 with open(temp_video_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # Extract audio from video
+                # 진행 상태 표시
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                # 비디오에서 오디오 추출 (25% 진행)
+                status_text.text("오디오 추출 중...")
                 video = VideoFileClip(temp_video_path)
                 temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
                 video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k')
                 video.close()
+                progress_bar.progress(25)
 
-                # Initialize Gemini
+                # Gemini 초기화 및 설정 (50% 진행)
+                status_text.text("음성 분석 준비 중...")
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-
-                # Configure Gemini model
                 generation_config = {
                     "temperature": 1,
                     "top_p": 0.95,
                     "top_k": 40,
                     "max_output_tokens": 8192,
                 }
-
                 model = genai.GenerativeModel(
                     model_name="gemini-2.0-flash",
                     generation_config=generation_config,
                 )
+                progress_bar.progress(50)
 
-                # Upload audio file to Gemini
+                # 음성 분석 (75% 진행)
+                status_text.text("음성 분석 중...")
                 gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-
-                # Start chat session with Gemini
                 chat = model.start_chat(history=[
                     {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
                 ])
+                progress_bar.progress(75)
 
-                # Get evaluation from Gemini
+                # 평가 및 점수 계산 (100% 진행)
+                status_text.text("평가 결과 분석 중...")
                 response = chat.send_message("평가를 시작해주세요")
-                evaluation = response.text
-
-                # Extract score from evaluation
+                
+                # 추출된 문장 수(x) 계산
+                extracted_sentences = len(response.text.split('\n'))
+                # 기준 문장 수(y)는 GEMINI_PROMPT에서 가져옴 (예시 값)
+                reference_sentences = 81  # st.secrets["GEMINI_PROMPT"]에서 실제 문장 수로 대체 필요
+                
+                # 점수 추출 및 계산
                 import re
-                score_match = re.search(r'정답률:\s*(\d+)%', evaluation)
+                score_match = re.search(r'정답률:\s*(\d+)%', response.text)
                 if score_match:
                     score = int(score_match.group(1))
-                    if score >= 85:
-                        st.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
+                    progress_bar.progress(100)
+                    status_text.empty()
+
+                    # 결과 표시
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("추출된 문장 수", extracted_sentences)
+                    with col2:
+                        st.metric("기준 문장 수", reference_sentences)
+                    with col3:
+                        st.metric("최종 점수", f"{score}%")
+
+                    if score >= 70:
+                        st.success("합격입니다. 축하합니다!")
                     else:
-                        st.error(f"점수: {score}점 - 아쉽게도 불합격입니다. 다시 시도해주세요.")
+                        st.error("안타깝게도 빠진 내용이 많습니다. 다시 시도해 주세요")
 
-                # Continue with existing upload logic
+                # 파일 업로드 처리
                 current_date = datetime.now().strftime("%Y-%m-%d")
-
-                # Generate file names
                 video_extension = os.path.splitext(uploaded_file.name)[1]
                 video_file_name = f"{position}*{name}*MT_result{video_extension}"
                 audio_file_name = f"{position}*{name}*MT_result.mp3"
 
-                # Firebase Storage upload for video and audio
                 bucket = storage.bucket('amcgi-bulletin.appspot.com')
                 
-                # Upload video
+                # 비디오 및 오디오 업로드
                 video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
                 video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
                 
-                # Upload audio
                 audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
                 audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
 
-                # Generate log file name
+                # 로그 파일 생성 및 업로드
                 log_file_name = f"{position}*{name}*MT"
-
-                # Create log file
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                     log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
-                # Firebase Storage upload for log file
                 log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
-
-                # Remove temporary log file
                 os.unlink(temp_file_path)
 
-                # Success message
                 st.success(f"{video_file_name} 파일이 성공적으로 업로드되었습니다!")
+
         except Exception as e:
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
