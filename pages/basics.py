@@ -190,7 +190,7 @@ elif selected_option == "MT":
     # File uploader
     uploaded_file = None
     st.subheader("암기 영상 업로드")
-    st.write("영상을 처리하는데 20-30초가 소요되니, 성공 메시지가 나올 때까지 기다려 주세요")
+    st.write("영상을 처리하는데 1분 정도가 소요되니, 성공 메시지가 나올 때까지 기다려 주세요")
     uploaded_file = st.file_uploader("업로드할 암기 동영상(mp4)을 선택하세요 (100 MB 이하로 해주세요.):", type=["mp4"])
 
     if uploaded_file:
@@ -266,12 +266,19 @@ elif selected_option == "MT":
                 try:
                     # 채팅 시작 및 응답 대기
                     chat = model.start_chat(history=[
-                        {"role": "user", "parts": [gemini_file, """
-                            주어진 음성 파일을 분석하여 다음 형식으로 정확히 응답해주세요:
-                            1. 음성에서 추출한 내용을 줄바꿈으로 구분하여 나열
-                            2. 마지막 줄에 반드시 "정답률: XX%" 형식으로 점수 표시 
-                            (추출된 문장 수 / 81 * 100을 반올림하여 백분율로 표시)
-                        """]}
+                        # 시스템 지시사항으로 GEMINI_PROMPT 전달
+                        {"role": "model", "parts": [st.secrets["GEMINI_PROMPT"]]},
+                        # 분석 지침 전달
+                        {"role": "user", "parts": ["""
+                            위의 검사 순서는 총 81개의 핵심 문장으로 구성된 표준 지침입니다.
+                            이제 제가 전달할 음성 파일을 분석하여:
+                            1. 음성에서 추출한 내용을 문장 단위로 나열해주세요
+                            2. 각 문장이 표준 지침의 어떤 문장과 핵심적으로 일치하는지 분석해주세요
+                            3. 일치하는 문장의 수를 세어 점수를 계산해주세요 (일치 문장 수 / 81 * 100)
+                            4. 마지막 줄에 반드시 "정답률: XX%" 형식으로 점수를 표시해주세요
+                        """]},
+                        # 음성 파일 전달
+                        {"role": "user", "parts": [gemini_file]}
                     ])
                     
                     # 응답 타임아웃 설정
