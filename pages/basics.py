@@ -228,7 +228,7 @@ elif selected_option == "MT":
                 status_text.text("Step 3/5: 음성 추출 중...")
                 video = VideoFileClip(temp_video_path)
                 temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k', verbose=False)
                 video.close()
                 progress_bar.progress(60)
 
@@ -256,32 +256,35 @@ elif selected_option == "MT":
                     all_numbers = re.findall(r'\d+', response.text)
                     st.write("발견된 모든 숫자:", all_numbers)
                     
-                    # 점수 관련 문장 찾기
+                    # 점수 계산 문장만 찾기 (비율 또는 퍼센트 형태)
                     score_sentences = []
                     for line in response.text.split('\n'):
-                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가', '정확도', '일치']):
-                            score_sentences.append(line)
-                    st.write("점수 관련 문장들:", score_sentences)
+                        # 비율이나 퍼센트를 나타내는 패턴 찾기
+                        ratio_match = re.search(r'(\d+)\s*/\s*(\d+)', line)  # x/y 형태
+                        percent_match = re.search(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', line)  # x% 형태
+                        
+                        if ratio_match:
+                            # 비율을 퍼센트로 변환
+                            numerator = float(ratio_match.group(1))
+                            denominator = float(ratio_match.group(2))
+                            if denominator > 0:  # 0으로 나누기 방지
+                                score_sentences.append(str(round((numerator/denominator) * 100)))
+                        elif percent_match:
+                            score_sentences.append(percent_match.group(1))
+                    
+                    st.write("계산된 점수 목록:", score_sentences)
                     
                     # 점수 추출 시도
                     if score_sentences:
-                        for sentence in score_sentences:
-                            numbers = re.findall(r'\d+', sentence)
-                            if numbers:
-                                potential_score = int(numbers[0])
+                        # 첫 번째 유효한 점수 사용
+                        for score_str in score_sentences:
+                            try:
+                                potential_score = int(score_str)
                                 if 0 <= potential_score <= 100:  # 유효한 점수 범위 확인
                                     score = potential_score
                                     break
-                    
-                    # 여전히 점수를 찾지 못했다면 전체 텍스트에서 백분율 찾기
-                    if score is None:
-                        percentage_matches = re.findall(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', response.text)
-                        if percentage_matches:
-                            for match in percentage_matches:
-                                potential_score = int(match)
-                                if 0 <= potential_score <= 100:
-                                    score = potential_score
-                                    break
+                            except ValueError:
+                                continue
                     
                     # Complete progress bar
                     progress_bar.progress(100)
