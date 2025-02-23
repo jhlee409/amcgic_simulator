@@ -251,25 +251,41 @@ elif selected_option == "MT":
                     # 디버깅을 위해 전체 응답 텍스트 출력
                     st.write("AI 응답:", response.text)
                     
+                    # 응답 텍스트에서 모든 숫자를 찾음
+                    all_numbers = re.findall(r'\d+', response.text)
+                    st.write("발견된 모든 숫자:", all_numbers)
+                    
+                    # 점수 관련 문장 찾기
+                    score_sentences = []
+                    for line in response.text.split('\n'):
+                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가']):
+                            score_sentences.append(line)
+                    st.write("점수 관련 문장들:", score_sentences)
+                    
                     patterns = [
                         r'정답률[은:]?\s*(\d+)[%점]',
                         r'점수[는:]?\s*(\d+)[%점]',
                         r'Score:\s*(\d+)',
-                        r'[\d]+%',  # 단순히 숫자와 % 기호가 붙어있는 패턴
-                        r'[\d]+점'  # 숫자와 '점'이 붙어있는 패턴
+                        r'[\d]+%',
+                        r'[\d]+점',
+                        r'정답률은 (\d+)',
+                        r'(\d+)\s*[%점]',
+                        r'정답률\s*(\d+)',
+                        r'점수\s*(\d+)',
                     ]
                     
                     for pattern in patterns:
                         match = re.search(pattern, response.text)
                         if match:
-                            # 매칭된 숫자만 추출
+                            st.write(f"매칭된 패턴: {pattern}")
+                            st.write(f"매칭된 텍스트: {match.group(0)}")
                             score_text = re.findall(r'\d+', match.group(0))[0]
                             score = int(score_text)
                             break
                     
                     # Complete progress bar
                     progress_bar.progress(100)
-                    status_text.empty()  # Clear status text
+                    status_text.empty()
                     
                     if score is not None:
                         if score >= 70:
@@ -305,8 +321,9 @@ elif selected_option == "MT":
                         else:
                             st.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
                     else:
-                        st.error("평가 결과를 확인할 수 없습니다. 응답 텍스트를 확인해 주세요.")
-                    
+                        st.error("점수를 찾을 수 없습니다. AI 응답을 확인해 주세요.")
+                        st.write("점수 추출에 실패했습니다. 관리자에게 문의해 주세요.")
+
                 except Exception as score_error:
                     st.error(f"평가 결과 처리 중 오류가 발생했습니다: {str(score_error)}")
                     st.write("전체 응답:", response.text)
