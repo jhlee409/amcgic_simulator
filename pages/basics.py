@@ -213,126 +213,68 @@ elif selected_option == "MT":
                 status_text.text("Step 2/5: 음성 추출 중...")
                 video = VideoFileClip(temp_video_path)
                 temp_audio_path = os.path.join(temp_dir, f"{os.path.splitext(uploaded_file.name)[0]}.mp3")
-                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='128k', verbose=False)
+                video.audio.write_audiofile(temp_audio_path, codec='mp3', bitrate='64k', verbose=False)
                 video.close()
                 progress_bar.progress(30)
-
-                # Step 3: Initialize Gemini (50%)
-                status_text.text("Step 3/5: AI 분석 준비 중...")
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                generation_config = {
-                    "temperature": 1,
-                    "top_p": 0.95,
-                    "top_k": 40,
-                    "max_output_tokens": 8192,
-                }
-                model = genai.GenerativeModel(
-                    model_name="gemini-2.0-flash",
-                    generation_config=generation_config,
-                )
-                progress_bar.progress(50)
 
                 # Step 4: Upload to Gemini and start analysis (70%)
                 status_text.text("Step 4/5: 음성 분석 중...")
                 gemini_file = genai.upload_file(temp_audio_path, mime_type="audio/mpeg")
-                chat = model.start_chat(history=[
-                    {"role": "user", "parts": [gemini_file, st.secrets["GEMINI_PROMPT"]]}
+                
+                # 먼저 STT로 텍스트 추출
+                chat = model.start_chat()
+                stt_response = chat.send_message([
+                    gemini_file,
+                    "이 음성 파일에서 한국어 텍스트를 추출하여 각 문장마다 번호를 붙여서 보여주세요."
                 ])
+                
+                # STT 결과를 기준 문장들과 비교
+                comparison_prompt = f"""
+                다음은 음성 파일에서 추출한 텍스트입니다:
+                {stt_response.text}
+
+                이 텍스트의 각 문장을 '검사 순서'의 각 문장과 비교하여 일치하는 문장의 비율을 계산해주세요.
+                응답 형식: "일치율: XX%"
+                """
+                
+                comparison_response = chat.send_message(comparison_prompt)
                 progress_bar.progress(70)
 
-                # Step 5: Get evaluation and process results (90%)
-                status_text.text("Step 5/5: 평가 결과 처리 중...")
-                # 명시적으로 평가 요청
-                response = chat.send_message("mp3에 추출한 텍스트 문장과 GEMINI_PROMPT에 있는 '검사 순서'에 있는 문장과의 일치도를 평가 결과만 알려주세요.")
-                progress_bar.progress(90)
-
-                # Process results
-                score = None
+                # 점수와 관계없이 파일 업로드 진행
                 try:
-                    # 디버깅을 위해 전체 응답 텍스트 출력
-                    st.write("AI 응답:", response.text)
+                    # Get current date
+                    current_date = datetime.now().strftime("%Y-%m-%d")
                     
-                    # 응답 텍스트에서 모든 숫자를 찾음
-                    all_numbers = re.findall(r'\d+', response.text)
-                    st.write("발견된 모든 숫자:", all_numbers)
+                    # Generate file names
+                    video_extension = os.path.splitext(uploaded_file.name)[1]
+                    video_file_name = f"{position}*{name}*MT_result{video_extension}"
+                    audio_file_name = f"{position}*{name}*MT_result.mp3"
                     
-                    # 점수 관련 문장 찾기
-                    score_sentences = []
-                    for line in response.text.split('\n'):
-                        if any(keyword in line.lower() for keyword in ['점수', '정답', 'score', '%', '퍼센트', '평가', '정확도', '일치']):
-                            score_sentences.append(line)
-                    st.write("점수 관련 문장들:", score_sentences)
+                    bucket = storage.bucket('amcgi-bulletin.appspot.com')
                     
-                    # 점수 추출 시도
-                    if score_sentences:
-                        for sentence in score_sentences:
-                            numbers = re.findall(r'\d+', sentence)
-                            if numbers:
-                                potential_score = int(numbers[0])
-                                if 0 <= potential_score <= 100:  # 유효한 점수 범위 확인
-                                    score = potential_score
-                                    break
+                    # Upload video
+                    video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
+                    video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
                     
-                    # 여전히 점수를 찾지 못했다면 전체 텍스트에서 백분율 찾기
-                    if score is None:
-                        percentage_matches = re.findall(r'(\d+)(?:\s*%|\s*퍼센트|\s*점)', response.text)
-                        if percentage_matches:
-                            for match in percentage_matches:
-                                potential_score = int(match)
-                                if 0 <= potential_score <= 100:
-                                    score = potential_score
-                                    break
+                    # Upload audio
+                    audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
+                    audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
                     
-                    # Complete progress bar
-                    progress_bar.progress(100)
-                    status_text.empty()
+                    # Generate and upload log file
+                    log_file_name = f"{position}*{name}*MT"
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+                        log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}, Score: {comparison_response.text}"
+                        temp_file.write(log_content)
+                        temp_file_path = temp_file.name
                     
-                    if score is not None:
-                        # 결과 메시지 표시
-                        if score >= 70:
-                            st.success(f"축하합니다! 점수: {score}점 - 합격입니다!")
-                        else:
-                            st.error(f"점수: {score}점 - 안타깝게도 누락된 문장이 많네요. 다시 시도해 주세요.")
-                        
-                        # 점수와 관계없이 파일 업로드 진행
-                        try:
-                            # Get current date
-                            current_date = datetime.now().strftime("%Y-%m-%d")
-                            
-                            # Generate file names
-                            video_extension = os.path.splitext(uploaded_file.name)[1]
-                            video_file_name = f"{position}*{name}*MT_result{video_extension}"
-                            audio_file_name = f"{position}*{name}*MT_result.mp3"
-                            
-                            bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                            
-                            # Upload video
-                            video_blob = bucket.blob(f"Simulator_training/MT/MT_result/{video_file_name}")
-                            video_blob.upload_from_filename(temp_video_path, content_type=uploaded_file.type)
-                            
-                            # Upload audio
-                            audio_blob = bucket.blob(f"Simulator_training/MT/MT_result/{audio_file_name}")
-                            audio_blob.upload_from_filename(temp_audio_path, content_type='audio/mpeg')
-                            
-                            # Generate and upload log file
-                            log_file_name = f"{position}*{name}*MT"
-                            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                                log_content = f"MT_result video uploaded by {name} ({position}) on {current_date}, Score: {score}"
-                                temp_file.write(log_content)
-                                temp_file_path = temp_file.name
-                            
-                            log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
-                            log_blob.upload_from_filename(temp_file_path)
-                            os.unlink(temp_file_path)
-                            
-                            st.success(f"파일이 성공적으로 업로드되었습니다! (점수: {score}점)")
-                            
-                        except Exception as upload_error:
-                            st.error(f"파일 업로드 중 오류가 발생했습니다: {str(upload_error)}")
-
-                except Exception as score_error:
-                    st.error(f"평가 결과 처리 중 오류가 발생했습니다: {str(score_error)}")
-                    st.write("전체 응답:", response.text)
+                    log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
+                    log_blob.upload_from_filename(temp_file_path)
+                    os.unlink(temp_file_path)
+                    
+                    st.success(f"파일이 성공적으로 업로드되었습니다! (일치율: {comparison_response.text})")
+                    
+                except Exception as upload_error:
+                    st.error(f"파일 업로드 중 오류가 발생했습니다: {str(upload_error)}")
 
         except Exception as gemini_error:
             st.error("음성 분석 중 오류가 발생했습니다. 다시 시도해 주세요.")
