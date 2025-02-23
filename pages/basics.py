@@ -243,7 +243,7 @@ elif selected_option == "MT":
 
                 # Step 5: Get evaluation (90%)
                 status_text.text("Step 5/5: 평가 결과 처리 중...")
-                response = chat.send_message("나레이션과 실제 음성을 비교하여 정확도를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
+                response = chat.send_message("업로드된 mp3 파일에서 추출한 텍스트 문장과 prompt에 있는 '검사 순서' 문장을 비교하여 '검사 순서'에 있는 문장을 얼마나 mp3 파일에서 언급했는지를를 퍼센트로 평가해주세요. 단순히 나레이션을 반복하지 말고 평가 결과만 알려주세요.")
                 progress_bar.progress(90)
 
                 # Process results
