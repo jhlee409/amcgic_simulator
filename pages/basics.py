@@ -139,7 +139,10 @@ if selected_option == "Sim orientation":
 
 elif selected_option == "MT":
     # MT 관련 코드
-    st.subheader("MT (Memory Training)")
+    st.title("MT (Memory Training)")
+    with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
+        st.markdown("업로드된 동영상은 AI로 평가됩니다. EGD 시행 동작 순서 파일 내용 중 암기해야 하는 내용의 80%이상 암기한 것으로 평가되면 통과입니다.")
+        st.markdown("80% 미만인 선생에게는 개별적으로 연락을 할 것이고, 좀 더 훈련해서 재도전 해야 합니다.")
     
     # Add download button for EGD procedure document
     st.subheader("EGD 시행 동작 순서 파일")
