@@ -185,6 +185,8 @@ elif selected_option == "MT":
 
     st.write("---")
 
+    st.subheader("MT demo 동영상 시청")
+    st.markdown("인공지능 분석 99점인 암기 구술 동영상입니다. 합격 기준은 80점 이상입니다.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/MT/MT_demo.mp4')
