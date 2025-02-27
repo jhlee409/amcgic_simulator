@@ -30,10 +30,15 @@ if not firebase_admin._apps:
     if not database_url:
         raise ValueError("FIREBASE_DATABASE_URL is not set in Streamlit secrets")
     
+    # 스토리지 버킷 이름 확인
+    storage_bucket = st.secrets.get("FIREBASE_STORAGE_BUCKET")
+    if not storage_bucket:
+        raise ValueError("FIREBASE_STORAGE_BUCKET is not set in Streamlit secrets")
+    
     # Firebase 앱 초기화
     firebase_admin.initialize_app(cred, {
         'databaseURL': database_url,
-        'storageBucket': st.secrets.get("FIREBASE_STORAGE_BUCKET", "amcgi-bulletin.appspot.com")
+        'storageBucket': storage_bucket
     })
     
     # Firebase Storage 버킷 초기화
