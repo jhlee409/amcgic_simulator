@@ -244,21 +244,17 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 if log_duration_ref.get() is None:
                     log_duration_ref.set({})
                 
-                # Firebase에 사용 시간 저장
-                duration_key = f"{position}*{name}*total minutes*{logout_time_str}"
+                # Firebase에 사용 시간 저장 - 키 형식 변경
+                duration_key = f"{position}*{name}*{duration}*{logout_time_str}"
                 log_duration_ref.child(duration_key).set({
                     'position': position,
                     'name': name,
                     'time': logout_time.isoformat(),
                     'duration_minutes': duration
                 })
-                
-                # 디버깅 메시지 추가
-                st.write(f"사용 시간: {duration}분이 기록되었습니다.")
             else:
                 duration = 0
-                st.warning("로그인 시간 정보가 없어 사용 시간을 계산할 수 없습니다.")
-
+            
             # 로그인/로그아웃 데이터 삭제
             login_key = st.session_state.get('login_key')
             if login_key:
