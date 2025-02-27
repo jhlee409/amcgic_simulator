@@ -11,6 +11,7 @@ import tempfile
 from utils.auth import check_login, handle_logout
 from PIL import Image, ImageDraw, ImageFont
 import requests
+import tempfile
 
 # Set page to wide mode
 st.set_page_config(page_title="Simualtor dvanced Training", layout="wide")
@@ -159,7 +160,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
                 st.session_state.clear()
                 st.success("로그아웃 되었습니다.")
-                st.experimental_rerun()
+                st.rerun()
                 
             else:
                 st.error("로그인 기록을 찾을 수 없습니다.")
