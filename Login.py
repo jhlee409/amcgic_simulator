@@ -253,7 +253,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
                 # Firebase Storage에 파일 업로드
                 bucket = storage.bucket()
-                blob = bucket.blob(f"log_logout/{current_time})
+                blob = bucket.blob(f"log_logout/{current_time}")
                 blob.upload_from_filename(temp_file_path)
                 
                 # 임시 파일 삭제
