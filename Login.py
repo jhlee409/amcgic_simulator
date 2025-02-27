@@ -246,30 +246,58 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 duration = int((logout_time - login_time).total_seconds())
                 st.write(f"계산된 사용 시간: {duration}초")
                 
-                # log_duration 폴더 확인 및 생성
-                log_duration_ref = db.reference('log_duration')
-                if log_duration_ref.get() is None:
-                    log_duration_ref.set({})
-                    st.write("log_duration 폴더 생성됨")
+                # 키에 특수문자 제거 - Firebase 경로 문제 해결
+                safe_position = position.replace('.', '_').replace('#', '_').replace('$', '_').replace('[', '_').replace(']', '_')
+                safe_name = name.replace('.', '_').replace('#', '_').replace('$', '_').replace('[', '_').replace(']', '_')
                 
-                # Firebase에 사용 시간 저장 - 키 형식 변경
-                duration_key = f"{position}*{name}*{duration}*{logout_time_str}"
-                st.write(f"생성된 키: {duration_key}")
-                
-                duration_data = {
-                    'position': position,
-                    'name': name,
-                    'time': logout_time.isoformat(),
-                    'duration_seconds': duration  # 분 단위에서 초 단위로 변경
-                }
-                st.write(f"저장할 데이터: {duration_data}")
-                
-                # 직접 데이터 저장 시도
+                # log_duration 폴더 확인 및 생성 - 루트 경로에 직접 생성
                 try:
-                    log_duration_ref.child(duration_key).set(duration_data)
+                    # 루트 레퍼런스 가져오기
+                    root_ref = db.reference('/')
+                    root_data = root_ref.get() or {}
+                    
+                    # log_duration이 없으면 생성
+                    if 'log_duration' not in root_data:
+                        root_ref.update({'log_duration': {}})
+                        st.write("루트에 log_duration 폴더 생성됨")
+                    
+                    # 안전한 키 생성
+                    duration_key = f"{safe_position}_{safe_name}_{duration}_{logout_time_str}"
+                    st.write(f"생성된 키: {duration_key}")
+                    
+                    duration_data = {
+                        'position': position,
+                        'name': name,
+                        'time': logout_time.isoformat(),
+                        'duration_seconds': duration
+                    }
+                    st.write(f"저장할 데이터: {duration_data}")
+                    
+                    # 직접 경로 지정하여 데이터 저장
+                    db.reference(f'/log_duration/{duration_key}').set(duration_data)
                     st.write("log_duration에 데이터 저장 성공")
+                    
+                    # 백업 방법: 다른 경로에도 저장 시도
+                    db.reference(f'/logs/duration/{duration_key}').set(duration_data)
+                    st.write("백업 경로에도 데이터 저장됨")
                 except Exception as e:
                     st.error(f"log_duration 데이터 저장 중 오류: {str(e)}")
+                    
+                    # 대체 방법: 사용자 데이터에 로그 추가
+                    try:
+                        user_id = st.session_state.get('user_id')
+                        if user_id:
+                            user_log_ref = db.reference(f'/users/{user_id}/logs')
+                            user_log_ref.push({
+                                'event': 'duration',
+                                'position': position,
+                                'name': name,
+                                'time': logout_time.isoformat(),
+                                'duration_seconds': duration
+                            })
+                            st.write("사용자 로그에 데이터 저장됨")
+                    except Exception as user_log_error:
+                        st.error(f"사용자 로그 저장 중 오류: {str(user_log_error)}")
             else:
                 duration = 0
                 st.warning("로그인 시간 정보가 없어 사용 시간을 계산할 수 없습니다.")
