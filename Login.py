@@ -10,6 +10,7 @@ from pytz import timezone
 
 # Firebase 초기화 (아직 초기화되지 않은 경우에만)
 if not firebase_admin._apps:
+    # Firebase Admin SDK 초기화를 위한 인증 정보 설정
     cred = credentials.Certificate({
         "type": "service_account",
         "project_id": st.secrets["project_id"],
@@ -23,21 +24,23 @@ if not firebase_admin._apps:
         "client_x509_cert_url": st.secrets["client_x509_cert_url"],
         "universe_domain": st.secrets["universe_domain"]
     })
-    firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
-
-    bucket = storage.bucket('amcgi-bulletin.appspot.com')
     
     # 데이터베이스 URL이 None이 아닌지 확인
     database_url = st.secrets.get("FIREBASE_DATABASE_URL")
     if not database_url:
         raise ValueError("FIREBASE_DATABASE_URL is not set in Streamlit secrets")
-        
+    
+    # Firebase 앱 초기화
     firebase_admin.initialize_app(cred, {
         'databaseURL': database_url,
-        'storageBucket': st.secrets.get("FIREBASE_STORAGE_BUCKET")
+        'storageBucket': st.secrets.get("FIREBASE_STORAGE_BUCKET", "amcgi-bulletin.appspot.com")
     })
     
     # Firebase Storage 버킷 초기화
+    from firebase_admin import storage
+    bucket = storage.bucket()
+else:
+    # 이미 초기화된 경우 기존 버킷 사용
     from firebase_admin import storage
     bucket = storage.bucket()
 
