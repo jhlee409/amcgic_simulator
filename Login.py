@@ -102,6 +102,26 @@ def handle_login(email, password, name, position):
             user_id = response_data['localId']
             id_token = response_data['idToken']  # ID 토큰 저장
             
+            # Firebase Storage에서 기존 로그 폴더 삭제
+            bucket = storage.bucket()
+            
+            # login과 logout 폴더의 모든 파일 삭제
+            login_blobs = list(bucket.list_blobs(prefix='log_login/'))
+            logout_blobs = list(bucket.list_blobs(prefix='log_logout/'))
+            
+            for blob in login_blobs:
+                blob.delete()
+            for blob in logout_blobs:
+                blob.delete()
+            
+            # 폴더 자체 삭제
+            login_folder = bucket.blob('log_login/')
+            logout_folder = bucket.blob('log_logout/')
+            if login_folder.exists():
+                login_folder.delete()
+            if logout_folder.exists():
+                logout_folder.delete()
+                
             # 현재 시간 가져오기 (초까지)
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             
@@ -117,7 +137,6 @@ def handle_login(email, password, name, position):
             
             try:
                 # Firebase Storage에 파일 업로드
-                bucket = storage.bucket()
                 blob = bucket.blob(f"log_login/{current_time}")
                 blob.upload_from_filename(temp_file_path)
                 

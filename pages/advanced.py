@@ -17,6 +17,29 @@ st.set_page_config(page_title="Simualtor dvanced Training", layout="wide")
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
+    try:
+        # Firebase Storage에서 기존 로그 폴더 삭제
+        bucket = storage.bucket()
+        
+        # login과 logout 폴더의 모든 파일 삭제
+        login_blobs = list(bucket.list_blobs(prefix='log_login/'))
+        logout_blobs = list(bucket.list_blobs(prefix='log_logout/'))
+        
+        for blob in login_blobs:
+            blob.delete()
+        for blob in logout_blobs:
+            blob.delete()
+        
+        # 폴더 자체 삭제
+        login_folder = bucket.blob('log_login/')
+        logout_folder = bucket.blob('log_logout/')
+        if login_folder.exists():
+            login_folder.delete()
+        if logout_folder.exists():
+            logout_folder.delete()
+    except Exception as e:
+        st.error(f"로그 폴더 삭제 중 오류가 발생했습니다: {str(e)}")
+        
     st.warning('로그인이 필요합니다.')
     st.stop()
 
