@@ -221,65 +221,78 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.sidebar.write(f"**직책**: {st.session_state.get('position', '직책 미지정')}")
     
     if st.sidebar.button("Logout"):
-        # 로그아웃 시간과 duration 계산
-        logout_time = datetime.now(timezone.utc)
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        login_time = st.session_state.get('login_time')
-        
-        # 사용자 정보 가져오기
-        name = st.session_state.get('name', '이름 없음')
-        position = st.session_state.get('position', '직책 미지정')
-        
-        if login_time:
-            # 경과 시간을 분 단위로 계산하고 반올림
-            duration = round((logout_time - login_time).total_seconds() / 60)
-        else:
-            duration = 0
+        try:
+            # 현재 시간 가져오기
+            logout_time = datetime.now(timezone.utc)
+            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-        # Storage 버킷이 설정되어 있는 경우에만 로그 파일 저장 시도
-        storage_bucket = "amcgi-bulletin.appspot.com"
-        if storage_bucket:
-            try:
-                # 로그아웃 로그 파일 이름 생성 (position_name_logout_시간)
-                log_filename = f"{position}_{name}_logout_{current_time}.txt"
+            # Firebase Storage에서 로그인 로그 가져오기
+            bucket = storage.bucket()
+            login_blobs = list(bucket.list_blobs(prefix='log_login/'))
+            logout_blobs = list(bucket.list_blobs(prefix='log_logout/'))
+            
+            if login_blobs:
+                # 가장 최근 로그인 시간 찾기
+                latest_login_blob = max(login_blobs, key=lambda x: x.name)
+                login_time_str = latest_login_blob.name.split('/')[-1]
+                login_time = datetime.strptime(login_time_str, "%Y%m%d_%H%M%S")
+                
+                # 시간 차이 계산 (초 단위)
+                time_duration = int((logout_time - login_time.replace(tzinfo=timezone.utc)).total_seconds())
+                
+                # 사용자 정보 가져오기
+                name = st.session_state.get('name', '이름 없음')
+                position = st.session_state.get('position', '직책 미지정')
+                
+                # duration 로그 저장
+                duration_filename = f"{position}*{name}*{time_duration}*{current_time}"
                 
                 # 임시 파일 생성
                 with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
                     temp_file.write(f"Position: {position}\n")
                     temp_file.write(f"Name: {name}\n")
+                    temp_file.write(f"Duration (seconds): {time_duration}\n")
                     temp_file.write(f"Logout Time: {current_time}\n")
-                    temp_file.write(f"Duration (minutes): {duration}\n")
                     temp_file_path = temp_file.name
                 
-                # Firebase Storage에 파일 업로드
-                bucket = storage.bucket()
-                blob = bucket.blob(f"log_logout/{current_time}")
-                blob.upload_from_filename(temp_file_path)
+                # Firebase Storage에 duration 로그 업로드
+                duration_blob = bucket.blob(f"log_duration/{duration_filename}")
+                duration_blob.upload_from_filename(temp_file_path)
                 
                 # 임시 파일 삭제
                 os.unlink(temp_file_path)
-            except Exception as e:
-                st.error(f"로그아웃 로그 파일 업로드 중 오류 발생: {str(e)}")
+                
+                # login과 logout 폴더의 모든 파일 삭제
+                for blob in login_blobs:
+                    blob.delete()
+                for blob in logout_blobs:
+                    blob.delete()
 
-        # 로그아웃 이벤트 기록
-        logout_data = {
-            "position": position,
-            "name": name,
-            "time": logout_time.isoformat(),
-            "event": "logout",
-            "duration": duration
-        }
-        
-        # Supabase에 로그아웃 기록 전송
-        supabase_url = st.secrets["supabase_url"]
-        supabase_key = st.secrets["supabase_key"]
-        supabase_headers = {
-            "Content-Type": "application/json",
-            "apikey": supabase_key,
-            "Authorization": f"Bearer {supabase_key}"
-        }
-        
-        requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
-        
-        st.session_state.clear()
-        st.success("로그아웃 되었습니다.")
+                # Supabase에 로그아웃 기록 전송
+                logout_data = {
+                    "position": position,
+                    "name": name,
+                    "time": logout_time.isoformat(),
+                    "event": "logout",
+                    "duration": time_duration
+                }
+                
+                # Supabase 로그아웃 기록
+                supabase_url = st.secrets["supabase_url"]
+                supabase_key = st.secrets["supabase_key"]
+                supabase_headers = {
+                    "Content-Type": "application/json",
+                    "apikey": supabase_key,
+                    "Authorization": f"Bearer {supabase_key}"
+                }
+                
+                requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
+                
+                st.session_state.clear()
+                st.success("로그아웃 되었습니다.")
+                
+            else:
+                st.error("로그인 기록을 찾을 수 없습니다.")
+                
+        except Exception as e:
+            st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
