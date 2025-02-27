@@ -242,9 +242,9 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             
             # 사용 시간 계산 및 저장
             if login_time:
-                # 경과 시간을 분 단위로 계산하고 반올림
-                duration = round((logout_time - login_time).total_seconds() / 60)
-                st.write(f"계산된 사용 시간: {duration}분")
+                # 경과 시간을 초 단위로 계산하고 정수로 변환
+                duration = int((logout_time - login_time).total_seconds())
+                st.write(f"계산된 사용 시간: {duration}초")
                 
                 # log_duration 폴더 확인 및 생성
                 log_duration_ref = db.reference('log_duration')
@@ -260,7 +260,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     'position': position,
                     'name': name,
                     'time': logout_time.isoformat(),
-                    'duration_minutes': duration
+                    'duration_seconds': duration  # 분 단위에서 초 단위로 변경
                 }
                 st.write(f"저장할 데이터: {duration_data}")
                 
