@@ -301,7 +301,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     "name": name,
                     "time": logout_time.isoformat(),
                     "event": "logout",
-                    "duration": time_duration  # 초 단위의 정수값 사용
+                    "duration": time_duration
                 }
                 
                 # Supabase 로그아웃 기록
