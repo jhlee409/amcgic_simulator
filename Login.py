@@ -267,6 +267,14 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     blob.delete()
                 for blob in logout_blobs:
                     blob.delete()
+                
+                # 폴더 자체 삭제
+                login_folder = bucket.blob('log_login/')
+                logout_folder = bucket.blob('log_logout/')
+                if login_folder.exists():
+                    login_folder.delete()
+                if logout_folder.exists():
+                    logout_folder.delete()
 
                 # Supabase에 로그아웃 기록 전송
                 logout_data = {
