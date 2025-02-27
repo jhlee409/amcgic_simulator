@@ -127,7 +127,7 @@ def handle_login(email, password, name, position):
                 # 로그 업로드 성공 메시지 (디버깅용, 필요시 주석 처리)
                 # st.success("로그인 로그가 저장되었습니다.")
             except Exception as e:
-                st.error(f"로그인 로그 업로드 중 오류 발생: {str(e)}")
+                st.error(f"로그 파일 업로드 중 오류 발생: {str(e)}")
             
             # Authentication 사용자 정보 업데이트
             try:
@@ -223,48 +223,17 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     if st.sidebar.button("Logout"):
         # 로그아웃 시간과 duration 계산
         logout_time = datetime.now(timezone.utc)
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         login_time = st.session_state.get('login_time')
-        
-        # 사용자 정보 가져오기
-        name = st.session_state.get('name', '이름 없음')
-        position = st.session_state.get('position', '직책 미지정')
-        
         if login_time:
             # 경과 시간을 분 단위로 계산하고 반올림
             duration = round((logout_time - login_time).total_seconds() / 60)
         else:
             duration = 0
-            
-        # Storage 버킷이 설정되어 있는 경우에만 로그 파일 저장 시도
-        storage_bucket = "amcgi-bulletin.appspot.com"
-        if storage_bucket:
-            try:
-                # 로그아웃 로그 파일 이름 생성 (position_name_logout_시간)
-                log_filename = f"{position}_{name}_logout_{current_time}.txt"
-                
-                # 임시 파일 생성
-                with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
-                    temp_file.write(f"Position: {position}\n")
-                    temp_file.write(f"Name: {name}\n")
-                    temp_file.write(f"Logout Time: {current_time}\n")
-                    temp_file.write(f"Duration (minutes): {duration}\n")
-                    temp_file_path = temp_file.name
-                
-                # Firebase Storage에 파일 업로드
-                bucket = storage.bucket()
-                blob = bucket.blob(f"log_logout/{current_time})
-                blob.upload_from_filename(temp_file_path)
-                
-                # 임시 파일 삭제
-                os.unlink(temp_file_path)
-            except Exception as e:
-                st.error(f"로그아웃 로그 파일 업로드 중 오류 발생: {str(e)}")
 
         # 로그아웃 이벤트 기록
         logout_data = {
-            "position": position,
-            "name": name,
+            "position": st.session_state.get('position'),
+            "name": st.session_state.get('name'),
             "time": logout_time.isoformat(),
             "event": "logout",
             "duration": duration
