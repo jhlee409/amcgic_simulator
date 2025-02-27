@@ -8,8 +8,6 @@ import tempfile
 import os
 from pytz import timezone
 
-bucket = storage.bucket('amcgi-bulletin.appspot.com')
-    
 # Firebase 초기화 (아직 초기화되지 않은 경우에만)
 if not firebase_admin._apps:
     cred = credentials.Certificate({
@@ -27,7 +25,8 @@ if not firebase_admin._apps:
     })
     firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
 
-
+    bucket = storage.bucket('amcgi-bulletin.appspot.com')
+    
     # 데이터베이스 URL이 None이 아닌지 확인
     database_url = st.secrets.get("FIREBASE_DATABASE_URL")
     if not database_url:
