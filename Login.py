@@ -140,30 +140,6 @@ def handle_login(email, password, name, position):
                 })
                 user_data['position'] = position
 
-            # 로그인 시간 기록
-            login_time = datetime.now(timezone.utc)
-            login_time_str = login_time.strftime("%Y_%m_%d_%H_%M_%S")
-            login_key = f"{position}*{name}*login*{login_time_str}"
-            
-            # Firebase에 로그인 정보 저장 - 폴더가 없으면 생성
-            try:
-                log_login_ref = db.reference('log_login')
-                # 폴더가 없는지 확인
-                if log_login_ref.get() is None:
-                    # 초기 구조 생성
-                    log_login_ref.set({})
-                
-                # 로그인 정보 저장
-                log_login_ref.child(login_key).set({
-                    'position': position,
-                    'name': name,
-                    'time': login_time.isoformat(),
-                    'event': 'login'
-                })
-                st.session_state['login_key'] = login_key  # 로그인 키 저장
-            except Exception as e:
-                st.error(f"로그인 정보 저장 중 오류 발생: {str(e)}")
-
             # Supabase로 로그인 기록 추가
             supabase_url = st.secrets["supabase_url"]
             supabase_key = st.secrets["supabase_key"]
@@ -173,7 +149,8 @@ def handle_login(email, password, name, position):
                 "Authorization": f"Bearer {supabase_key}"
             }
 
-            st.session_state['login_time'] = login_time  # 로그인 시간 저장
+            login_time = datetime.now(timezone.utc)
+            st.session_state['login_time'] = login_time.astimezone()  # Update login_time to be timezone-aware
             login_data = {
                 "position": position,
                 "name": name,
@@ -211,161 +188,34 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     st.sidebar.write(f"**직책**: {st.session_state.get('position', '직책 미지정')}")
     
     if st.sidebar.button("Logout"):
-        try:
-            # 로그아웃 시간과 duration 계산
-            logout_time = datetime.now(timezone.utc)
-            login_time = st.session_state.get('login_time')
-            position = st.session_state.get('position')
-            name = st.session_state.get('name')
-            
-            # 디버깅 정보 출력
-            st.write(f"로그아웃 시간: {logout_time}")
-            st.write(f"로그인 시간: {login_time}")
-            st.write(f"직책: {position}")
-            st.write(f"이름: {name}")
-            
-            # Firebase에 로그아웃 정보 저장
-            logout_time_str = logout_time.strftime("%Y_%m_%d_%H_%M_%S")
-            logout_key = f"{position}*{name}*logout*{logout_time_str}"
-            
-            # log_logout 폴더 확인 및 생성
-            log_logout_ref = db.reference('log_logout')
-            if log_logout_ref.get() is None:
-                log_logout_ref.set({})
-                
-            log_logout_ref.child(logout_key).set({
-                'position': position,
-                'name': name,
-                'time': logout_time.isoformat(),
-                'event': 'logout'
-            })
-            
-            # 사용 시간 계산 및 저장
-            if login_time:
-                # 경과 시간을 초 단위로 계산하고 정수로 변환
-                duration = int((logout_time - login_time).total_seconds())
-                st.write(f"계산된 사용 시간: {duration}초")
-                
-                # 키에 특수문자 제거 - Firebase 경로 문제 해결
-                safe_position = position.replace('.', '_').replace('#', '_').replace('$', '_').replace('[', '_').replace(']', '_')
-                safe_name = name.replace('.', '_').replace('#', '_').replace('$', '_').replace('[', '_').replace(']', '_')
-                
-                # 다양한 방법으로 데이터 저장 시도
-                try:
-                    # 방법 1: 기존 방식 - 직접 log_duration 폴더에 저장
-                    duration_key = f"{safe_position}_{safe_name}_{duration}_{logout_time_str}"
-                    duration_data = {
-                        'position': position,
-                        'name': name,
-                        'time': logout_time.isoformat(),
-                        'duration_seconds': duration
-                    }
-                    
-                    # 방법 2: 사용자 로그에 저장
-                    user_id = st.session_state.get('user_id')
-                    if user_id:
-                        user_ref = db.reference(f'/users/{user_id}')
-                        user_logs_ref = user_ref.child('logs')
-                        user_logs_ref.push({
-                            'event': 'duration',
-                            'position': position,
-                            'name': name,
-                            'time': logout_time.isoformat(),
-                            'duration_seconds': duration
-                        })
-                        st.write("사용자 로그에 데이터 저장됨")
-                    
-                    # 방법 3: 전체 로그 폴더에 저장
-                    logs_ref = db.reference('/all_logs')
-                    if logs_ref.get() is None:
-                        logs_ref.set({})
-                    
-                    logs_ref.push({
-                        'type': 'duration',
-                        'position': position,
-                        'name': name,
-                        'time': logout_time.isoformat(),
-                        'duration_seconds': duration
-                    })
-                    st.write("전체 로그에 데이터 저장됨")
-                    
-                    # 방법 4: 사용 시간 전용 폴더에 저장
-                    durations_ref = db.reference('/durations')
-                    if durations_ref.get() is None:
-                        durations_ref.set({})
-                    
-                    durations_ref.push({
-                        'position': position,
-                        'name': name,
-                        'time': logout_time.isoformat(),
-                        'seconds': duration
-                    })
-                    st.write("사용 시간 전용 폴더에 데이터 저장됨")
-                    
-                    # 방법 5: 원래 요청한 형식으로 다시 시도
-                    original_duration_ref = db.reference('/log_duration')
-                    if original_duration_ref.get() is None:
-                        original_duration_ref.set({})
-                    
-                    original_key = f"{position}*{name}*{duration}*{logout_time_str}"
-                    # push() 메서드 사용 - 자동 키 생성
-                    original_duration_ref.push({
-                        'key': original_key,  # 원래 키를 데이터 내부에 저장
-                        'position': position,
-                        'name': name,
-                        'time': logout_time.isoformat(),
-                        'duration_seconds': duration
-                    })
-                    st.write("원래 형식으로 데이터 저장 시도됨")
-                    
-                except Exception as e:
-                    st.error(f"데이터 저장 중 오류: {str(e)}")
-            else:
-                duration = 0
-                st.warning("로그인 시간 정보가 없어 사용 시간을 계산할 수 없습니다.")
-            
-            # 로그인/로그아웃 데이터 삭제 전에 확인
-            login_key = st.session_state.get('login_key')
-            st.write(f"삭제할 로그인 키: {login_key}")
-            
-            if login_key:
-                try:
-                    log_login_ref = db.reference(f'log_login/{login_key}')
-                    log_login_ref.delete()
-                    st.write("로그인 데이터 삭제 성공")
-                except Exception as e:
-                    st.warning(f"로그인 데이터 삭제 중 오류: {str(e)}")
-            
-            try:
-                log_logout_ref = db.reference(f'log_logout/{logout_key}')
-                log_logout_ref.delete()
-                st.write("로그아웃 데이터 삭제 성공")
-            except Exception as e:
-                st.warning(f"로그아웃 데이터 삭제 중 오류: {str(e)}")
+        # 로그아웃 시간과 duration 계산
+        logout_time = datetime.now(timezone.utc)
+        login_time = st.session_state.get('login_time')
+        if login_time:
+            # 경과 시간을 분 단위로 계산하고 반올림
+            duration = round((logout_time - login_time).total_seconds() / 60)
+        else:
+            duration = 0
 
-            # Supabase에 로그아웃 기록 전송
-            supabase_url = st.secrets["supabase_url"]
-            supabase_key = st.secrets["supabase_key"]
-            supabase_headers = {
-                "Content-Type": "application/json",
-                "apikey": supabase_key,
-                "Authorization": f"Bearer {supabase_key}"
-            }
-            
-            logout_data = {
-                "position": position,
-                "name": name,
-                "time": logout_time.isoformat(),
-                "event": "logout",
-                "duration": duration
-            }
-            
-            requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
-            
-            # 세션 상태 지우기 전에 확인
-            st.write("세션 상태 지우기 전")
-            st.session_state.clear()
-            st.write("세션 상태 지워짐")
-            st.success("로그아웃 되었습니다.")
-        except Exception as e:
-            st.error(f"로그아웃 처리 중 오류 발생: {str(e)}")
+        # 로그아웃 이벤트 기록
+        logout_data = {
+            "position": st.session_state.get('position'),
+            "name": st.session_state.get('name'),
+            "time": logout_time.isoformat(),
+            "event": "logout",
+            "duration": duration
+        }
+        
+        # Supabase에 로그아웃 기록 전송
+        supabase_url = st.secrets["supabase_url"]
+        supabase_key = st.secrets["supabase_key"]
+        supabase_headers = {
+            "Content-Type": "application/json",
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}"
+        }
+        
+        requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
+        
+        st.session_state.clear()
+        st.success("로그아웃 되었습니다.")
