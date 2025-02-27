@@ -140,33 +140,6 @@ def handle_login(email, password, name, position):
                 })
                 user_data['position'] = position
 
-            # 로그인 시간 기록
-            login_time = datetime.now(timezone.utc)
-            login_time_str = login_time.strftime("%Y_%m_%d_%H_%M_%S")
-            login_key = f"{position}*{name}*login*{login_time_str}"
-            
-            # Firebase에 로그인 정보 저장 - 여러 방법 시도
-            try:
-                # 방법 1: log_login 폴더에 직접 저장
-                log_login_ref = db.reference('/log_login')
-                if log_login_ref.get() is None:
-                    log_login_ref.set({})
-                
-                # 방법 2: push() 메서드 사용하여 자동 키 생성
-                log_login_ref.push({
-                    'key': login_key,  # 원래 키를 데이터 내부에 저장
-                    'position': position,
-                    'name': name,
-                    'time': login_time.isoformat(),
-                    'event': 'login'
-                })
-                
-                # 세션에 로그인 키와 시간 저장
-                st.session_state['login_key'] = login_key
-                st.session_state['login_time'] = login_time
-            except Exception as e:
-                st.error(f"로그인 정보 저장 중 오류 발생: {str(e)}")
-
             # Supabase로 로그인 기록 추가
             supabase_url = st.secrets["supabase_url"]
             supabase_key = st.secrets["supabase_key"]
@@ -176,6 +149,8 @@ def handle_login(email, password, name, position):
                 "Authorization": f"Bearer {supabase_key}"
             }
 
+            login_time = datetime.now(timezone.utc)
+            st.session_state['login_time'] = login_time.astimezone()  # Update login_time to be timezone-aware
             login_data = {
                 "position": position,
                 "name": name,
