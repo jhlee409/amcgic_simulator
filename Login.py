@@ -118,7 +118,7 @@ def handle_login(email, password, name, position):
             try:
                 # Firebase Storage에 파일 업로드
                 bucket = storage.bucket()
-                blob = bucket.blob(f"log_login/{current_time}.txt")
+                blob = bucket.blob(f"log_login/{current_time}")
                 blob.upload_from_filename(temp_file_path)
                 
                 # 임시 파일 삭제
