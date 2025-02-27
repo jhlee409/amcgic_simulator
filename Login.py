@@ -31,7 +31,7 @@ if not firebase_admin._apps:
         raise ValueError("FIREBASE_DATABASE_URL is not set in Streamlit secrets")
         
     # Firebase 스토리지 버킷 이름 가져오기
-    storage_bucket = st.secrets.get("FIREBASE_STORAGE_BUCKET")
+    storage_bucket = st.secrets.get("amcgi-bulletin.appspot.com")
     if not storage_bucket:
         raise ValueError("FIREBASE_STORAGE_BUCKET is not set in Streamlit secrets")
         
