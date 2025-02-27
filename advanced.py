@@ -4,13 +4,12 @@ import cv2
 import numpy as np
 from collections import deque
 import pandas as pd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
 from utils.auth import check_login, handle_logout
 from PIL import Image, ImageDraw, ImageFont
-import requests
 
 # Set page to wide mode
 st.set_page_config(page_title="Simualtor dvanced Training", layout="wide")
@@ -56,93 +55,8 @@ selected_option = st.sidebar.selectbox(
 
 st.sidebar.markdown("---")  # 구분선 추가
 
-# 로그아웃 버튼
-if "logged_in" in st.session_state and st.session_state['logged_in']:
-    if st.sidebar.button("Logout"):
-        try:
-            # 현재 시간 가져오기
-            logout_time = datetime.now(timezone.utc)
-            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-            
-            # Firebase Storage에서 로그인 로그 가져오기
-            bucket = storage.bucket()
-            login_blobs = list(bucket.list_blobs(prefix='log_login/'))
-            logout_blobs = list(bucket.list_blobs(prefix='log_logout/'))
-            
-            if login_blobs:
-                # 가장 최근 로그인 시간 찾기
-                latest_login_blob = max(login_blobs, key=lambda x: x.name)
-                login_time_str = latest_login_blob.name.split('/')[-1]
-                login_time = datetime.strptime(login_time_str, "%Y%m%d_%H%M%S")
-                
-                # 시간 차이 계산 (초 단위)
-                time_duration = int((logout_time - login_time.replace(tzinfo=timezone.utc)).total_seconds())
-                
-                # 사용자 정보 가져오기
-                name = st.session_state.get('name', '이름 없음')
-                position = st.session_state.get('position', '직책 미지정')
-                
-                # duration 로그 저장
-                duration_filename = f"{position}*{name}*{time_duration}*{current_time}"
-                
-                # 임시 파일 생성
-                with tempfile.NamedTemporaryFile(delete=False, mode='w') as temp_file:
-                    temp_file.write(f"Position: {position}\n")
-                    temp_file.write(f"Name: {name}\n")
-                    temp_file.write(f"Duration (seconds): {time_duration}\n")
-                    temp_file.write(f"Logout Time: {current_time}\n")
-                    temp_file_path = temp_file.name
-                
-                # Firebase Storage에 duration 로그 업로드
-                duration_blob = bucket.blob(f"log_duration/{duration_filename}")
-                duration_blob.upload_from_filename(temp_file_path)
-                
-                # 임시 파일 삭제
-                os.unlink(temp_file_path)
-                
-                # login과 logout 폴더의 모든 파일 삭제
-                for blob in login_blobs:
-                    blob.delete()
-                for blob in logout_blobs:
-                    blob.delete()
-                
-                # 폴더 자체 삭제
-                login_folder = bucket.blob('log_login/')
-                logout_folder = bucket.blob('log_logout/')
-                if login_folder.exists():
-                    login_folder.delete()
-                if logout_folder.exists():
-                    logout_folder.delete()
-
-                # Supabase에 로그아웃 기록 전송
-                logout_data = {
-                    "position": position,
-                    "name": name,
-                    "time": logout_time.isoformat(),
-                    "event": "logout",
-                    "duration": time_duration
-                }
-                
-                # Supabase 로그아웃 기록
-                supabase_url = st.secrets["supabase_url"]
-                supabase_key = st.secrets["supabase_key"]
-                supabase_headers = {
-                    "Content-Type": "application/json",
-                    "apikey": supabase_key,
-                    "Authorization": f"Bearer {supabase_key}"
-                }
-                
-                requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
-                
-                st.session_state.clear()
-                st.success("로그아웃 되었습니다.")
-                st.experimental_rerun()
-                
-            else:
-                st.error("로그인 기록을 찾을 수 없습니다.")
-                
-        except Exception as e:
-            st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
+# 로그아웃 처리
+handle_logout()
 
 # 선택된 옵션이 변경될 때 모든 비디오 플레이어 숨기기
 if 'previous_selection' not in st.session_state:
