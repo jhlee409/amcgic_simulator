@@ -218,6 +218,12 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             position = st.session_state.get('position')
             name = st.session_state.get('name')
             
+            # 디버깅 정보 출력
+            st.write(f"로그아웃 시간: {logout_time}")
+            st.write(f"로그인 시간: {login_time}")
+            st.write(f"직책: {position}")
+            st.write(f"이름: {name}")
+            
             # Firebase에 로그아웃 정보 저장
             logout_time_str = logout_time.strftime("%Y_%m_%d_%H_%M_%S")
             logout_key = f"{position}*{name}*logout*{logout_time_str}"
@@ -238,35 +244,52 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             if login_time:
                 # 경과 시간을 분 단위로 계산하고 반올림
                 duration = round((logout_time - login_time).total_seconds() / 60)
+                st.write(f"계산된 사용 시간: {duration}분")
                 
                 # log_duration 폴더 확인 및 생성
                 log_duration_ref = db.reference('log_duration')
                 if log_duration_ref.get() is None:
                     log_duration_ref.set({})
+                    st.write("log_duration 폴더 생성됨")
                 
                 # Firebase에 사용 시간 저장 - 키 형식 변경
                 duration_key = f"{position}*{name}*{duration}*{logout_time_str}"
-                log_duration_ref.child(duration_key).set({
+                st.write(f"생성된 키: {duration_key}")
+                
+                duration_data = {
                     'position': position,
                     'name': name,
                     'time': logout_time.isoformat(),
                     'duration_minutes': duration
-                })
+                }
+                st.write(f"저장할 데이터: {duration_data}")
+                
+                # 직접 데이터 저장 시도
+                try:
+                    log_duration_ref.child(duration_key).set(duration_data)
+                    st.write("log_duration에 데이터 저장 성공")
+                except Exception as e:
+                    st.error(f"log_duration 데이터 저장 중 오류: {str(e)}")
             else:
                 duration = 0
+                st.warning("로그인 시간 정보가 없어 사용 시간을 계산할 수 없습니다.")
             
-            # 로그인/로그아웃 데이터 삭제
+            # 로그인/로그아웃 데이터 삭제 전에 확인
             login_key = st.session_state.get('login_key')
+            st.write(f"삭제할 로그인 키: {login_key}")
+            
             if login_key:
                 try:
                     log_login_ref = db.reference(f'log_login/{login_key}')
                     log_login_ref.delete()
+                    st.write("로그인 데이터 삭제 성공")
                 except Exception as e:
                     st.warning(f"로그인 데이터 삭제 중 오류: {str(e)}")
             
             try:
                 log_logout_ref = db.reference(f'log_logout/{logout_key}')
                 log_logout_ref.delete()
+                st.write("로그아웃 데이터 삭제 성공")
             except Exception as e:
                 st.warning(f"로그아웃 데이터 삭제 중 오류: {str(e)}")
 
@@ -289,7 +312,10 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
             
             requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
             
+            # 세션 상태 지우기 전에 확인
+            st.write("세션 상태 지우기 전")
             st.session_state.clear()
+            st.write("세션 상태 지워짐")
             st.success("로그아웃 되었습니다.")
         except Exception as e:
             st.error(f"로그아웃 처리 중 오류 발생: {str(e)}")
