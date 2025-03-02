@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import firebase_admin
 from firebase_admin import credentials, storage
 import tempfile
@@ -106,7 +106,7 @@ if selected_option == "Sim orientation":
                 st.session_state.show_sim_video = not st.session_state.show_sim_video
                 
                 if st.session_state.show_sim_video:
-                    current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
                     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
                         log_content = f"Sim_orientation video watched by {name} ({position}) on {current_date}"
                         temp_file.write(log_content)
@@ -236,7 +236,7 @@ elif selected_option == "MT":
                     f.write(uploaded_file.getbuffer())
 
                 # Get current date
-                current_date = datetime.now().strftime("%Y-%m-%d")
+                current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
                 # Generate file names
                 extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension
@@ -320,7 +320,7 @@ elif selected_option == "SHT":
                     f.write(uploaded_file.getbuffer())
 
                 # Get current date
-                current_date = datetime.now().strftime("%Y-%m-%d")
+                current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
                 # Generate file names
                 extension = os.path.splitext(uploaded_file.name)[1]  # Extract file extension

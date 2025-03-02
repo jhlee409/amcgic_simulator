@@ -15,6 +15,11 @@ def handle_logout():
         # 로그아웃 시간과 duration 계산
         logout_time = datetime.now(timezone.utc)
         login_time = st.session_state.get('login_time')
+        
+        # login_time에 시간대 정보가 없는 경우 UTC로 설정
+        if login_time and login_time.tzinfo is None:
+            login_time = login_time.replace(tzinfo=timezone.utc)
+            
         duration = round((logout_time - login_time).total_seconds() / 60) if login_time else 0
 
         # 로그아웃 이벤트 기록

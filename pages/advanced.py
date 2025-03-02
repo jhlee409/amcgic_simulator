@@ -86,7 +86,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
         try:
             # 현재 시간 가져오기
             logout_time = datetime.now(timezone.utc)
-            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+            current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             
             # Firebase Storage에서 로그인 로그 가져오기
             bucket = storage.bucket()
@@ -97,10 +97,11 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # 가장 최근 로그인 시간 찾기
                 latest_login_blob = max(login_blobs, key=lambda x: x.name)
                 login_time_str = latest_login_blob.name.split('/')[-1]
-                login_time = datetime.strptime(login_time_str, "%Y%m%d_%H%M%S")
+                # UTC 시간으로 파싱하여 시간대 정보 추가
+                login_time = datetime.strptime(login_time_str, "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc)
                 
                 # 시간 차이 계산 (초 단위)
-                time_duration = int((logout_time - login_time.replace(tzinfo=timezone.utc)).total_seconds())
+                time_duration = int((logout_time - login_time).total_seconds())
                 
                 # 사용자 정보 가져오기
                 name = st.session_state.get('name', '이름 없음')
