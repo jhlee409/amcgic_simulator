@@ -448,6 +448,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # 세션 상태 초기화
                 st.session_state.clear()
                 st.success("로그아웃되었습니다.")
+                time.sleep(2)  # 메시지가 표시될 수 있도록 잠시 대기
                 st.rerun()
                 
             else:
