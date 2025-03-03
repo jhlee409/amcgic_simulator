@@ -6,10 +6,6 @@ from firebase_admin import credentials, db, auth, storage
 from datetime import datetime, timezone
 import tempfile
 import os
-import uuid
-import hashlib
-from typing import Optional, Tuple
-import time
 
 # Firebase 초기화 (아직 초기화되지 않은 경우에만)
 if not firebase_admin._apps:
@@ -90,82 +86,6 @@ if st.button("입력 확인"):  # 버튼 이름을 변경하여 ID 충돌 방지
         elif not is_korean_name(name):
             st.error("한글 이름을 입력해 주세요")
 
-# 유틸리티 함수들
-def generate_session_id() -> str:
-    """고유한 세션 ID를 생성합니다."""
-    return str(uuid.uuid4())
-
-def get_client_ip() -> str:
-    """클라이언트의 IP 주소를 가져옵니다."""
-    try:
-        return hashlib.sha256(st.experimental_get_query_params().get('client_ip', ['unknown'])[0].encode()).hexdigest()
-    except:
-        return 'unknown'
-
-def record_logout_event(user_id: str, session_id: str, reason: str = "user_logout"):
-    """로그아웃 이벤트를 기록합니다."""
-    try:
-        logout_ref = db.reference(f'sessions/{user_id}/logout_history')
-        logout_ref.push({
-            'session_id': session_id,
-            'timestamp': {'.sv': 'timestamp'},
-            'reason': reason,
-            'client_ip': get_client_ip()
-        })
-    except Exception as e:
-        st.error(f"로그아웃 이벤트 기록 중 오류 발생: {str(e)}")
-
-def check_active_session(user_id: str, current_session_id: str) -> Tuple[bool, Optional[str]]:
-    """현재 세션의 유효성을 검사합니다."""
-    try:
-        session_ref = db.reference(f'sessions/{user_id}/active_session')
-        active_session = session_ref.get()
-        
-        if active_session and active_session.get('session_id') != current_session_id:
-            return False, active_session.get('session_id')
-        return True, None
-    except Exception as e:
-        st.error(f"세션 검사 중 오류 발생: {str(e)}")
-        return False, None
-
-def terminate_existing_sessions(user_id: str):
-    """사용자의 기존 세션을 종료합니다."""
-    try:
-        session_ref = db.reference(f'sessions/{user_id}/active_session')
-        existing_session = session_ref.get()
-        
-        if existing_session:
-            record_logout_event(user_id, existing_session.get('session_id'), "new_login")
-            session_ref.delete()
-    except Exception as e:
-        st.error(f"기존 세션 종료 중 오류 발생: {str(e)}")
-
-def create_new_session(user_id: str) -> str:
-    """새로운 세션을 생성하고 저장합니다."""
-    session_id = generate_session_id()
-    try:
-        session_ref = db.reference(f'sessions/{user_id}/active_session')
-        session_ref.set({
-            'session_id': session_id,
-            'created_at': {'.sv': 'timestamp'},
-            'last_activity': {'.sv': 'timestamp'},
-            'client_ip': get_client_ip()
-        })
-        return session_id
-    except Exception as e:
-        st.error(f"새 세션 생성 중 오류 발생: {str(e)}")
-        return None
-
-def update_session_activity(user_id: str, session_id: str):
-    """세션의 마지막 활동 시간을 업데이트합니다."""
-    try:
-        session_ref = db.reference(f'sessions/{user_id}/active_session')
-        session_ref.update({
-            'last_activity': {'.sv': 'timestamp'}
-        })
-    except Exception as e:
-        st.error(f"세션 활동 업데이트 중 오류 발생: {str(e)}")
-
 def handle_login(email, password, name, position):
     try:
         # Streamlit secret에서 Firebase API 키 가져오기
@@ -181,26 +101,6 @@ def handle_login(email, password, name, position):
             # Firebase Authentication 성공 후 사용자 정보 가져오기
             user_id = response_data['localId']
             id_token = response_data['idToken']  # ID 토큰 저장
-            
-            # 기존 세션 종료
-            terminate_existing_sessions(user_id)
-            
-            # 새 세션 생성
-            session_id = create_new_session(user_id)
-            if not session_id:
-                st.error("세션 생성에 실패했습니다.")
-                return
-
-            # 세션 상태 저장
-            st.session_state.update({
-                'logged_in': True,
-                'user_email': email,
-                'name': name,
-                'position': position,
-                'user_id': user_id,
-                'session_id': session_id,
-                'last_activity': time.time()
-            })
             
             # Firebase Storage에서 기존 로그 폴더 삭제
             bucket = storage.bucket()
@@ -318,30 +218,11 @@ def handle_login(email, password, name, position):
             else:
                 st.error(f"Supabase에 로그인 기록을 추가하는 중 오류 발생: {supabase_response.text}")
 
-            # 세션 모니터링
-            if 'logged_in' in st.session_state and st.session_state['logged_in']:
-                # 60초마다 세션 체크
-                if time.time() - st.session_state.get('last_activity', 0) > 60:
-                    is_valid, other_session = check_active_session(
-                        st.session_state['user_id'],
-                        st.session_state['session_id']
-                    )
-                    
-                    if not is_valid:
-                        st.warning("다른 기기에서 로그인이 감지되어 자동으로 로그아웃됩니다.")
-                        record_logout_event(
-                            st.session_state['user_id'],
-                            st.session_state['session_id'],
-                            "other_device_login"
-                        )
-                        st.session_state.clear()
-                        st.experimental_rerun()
-                    else:
-                        update_session_activity(
-                            st.session_state['user_id'],
-                            st.session_state['session_id']
-                        )
-                        st.session_state['last_activity'] = time.time()
+            st.session_state['logged_in'] = True
+            st.session_state['user_email'] = email
+            st.session_state['name'] = name
+            st.session_state['position'] = position
+            st.session_state['user_id'] = user_id
         else:
             st.error(response_data["error"]["message"])
     except Exception as e:
@@ -360,16 +241,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
     
     if st.sidebar.button("Logout"):
         try:
-            # 로그아웃 이벤트 기록
-            record_logout_event(
-                st.session_state['user_id'],
-                st.session_state['session_id']
-            )
-            
-            # 세션 정보 삭제
-            session_ref = db.reference(f'sessions/{st.session_state["user_id"]}/active_session')
-            session_ref.delete()
-            
             # 현재 시간 가져오기
             logout_time = datetime.now(timezone.utc)
             current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -445,10 +316,8 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 
                 requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
                 
-                # 세션 상태 초기화
                 st.session_state.clear()
-                st.success("로그아웃되었습니다.")
-                st.experimental_rerun()
+                st.success("로그아웃 되었습니다.")
                 
             else:
                 st.error("로그인 기록을 찾을 수 없습니다.")
