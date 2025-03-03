@@ -335,7 +335,7 @@ def handle_login(email, password, name, position):
                             "other_device_login"
                         )
                         st.session_state.clear()
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         update_session_activity(
                             st.session_state['user_id'],
@@ -448,7 +448,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # 세션 상태 초기화
                 st.session_state.clear()
                 st.success("로그아웃되었습니다.")
-                st.experimental_rerun()
+                st.rerun()
                 
             else:
                 st.error("로그인 기록을 찾을 수 없습니다.")
