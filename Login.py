@@ -98,7 +98,7 @@ def generate_session_id() -> str:
 def get_client_ip() -> str:
     """클라이언트의 IP 주소를 가져옵니다."""
     try:
-        return hashlib.sha256(st.experimental_get_query_params().get('client_ip', ['unknown'])[0].encode()).hexdigest()
+        return hashlib.sha256(st.query_params.get('client_ip', ['unknown'])[0].encode()).hexdigest()
     except:
         return 'unknown'
 
