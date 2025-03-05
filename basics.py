@@ -391,40 +391,6 @@ elif selected_option == "SHT":
 
     st.write("---")
 
-    try:
-        bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_expert_demo.avi')
-        if demonstration_blob.exists():
-            demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            
-            # 동영상 시청 버튼
-            if st.button("동영상 시청"):
-                st.session_state.show_sht_video = not st.session_state.show_sht_video
-            
-            # 비디오 플레이어 표시
-            if st.session_state.show_sht_video:
-                video_html = f'''
-                <div style="display: flex; justify-content: center;">
-                    <video width="1300" controls controlsList="nodownload">
-                        <source src="{demonstration_url}" type="video/avi">
-                    </video>
-                </div>
-                <script>
-                var video_player = document.querySelector("video");
-                video_player.addEventListener('contextmenu', function(e) {{
-                    e.preventDefault();
-                }});
-                </script>
-                '''
-                st.markdown(video_html, unsafe_allow_html=True)
-        else:
-            st.error("SHT expert demo 동영상상 파일을 찾을 수 없습니다.")
-
-    except Exception as e:
-        st.error(f"SHT expert demo 동영상 파일 재생 중 오류가 발생했습니다: {e}")
-
-    st.write("---")
-
     # File upload
     uploaded_file = None
     st.subheader("SHT 수행 동영상 업로드")
