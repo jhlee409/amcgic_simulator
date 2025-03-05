@@ -356,7 +356,7 @@ elif selected_option == "MT":
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
 elif selected_option == "SHT":
-    st.subheader("SHT (Scope Handling Training)")
+    st.subheader("SHT (Scope Handling Training) orientation 동영상 시청")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_orientation.mp4')
@@ -397,6 +397,7 @@ elif selected_option == "SHT":
 
     st.write("---")
 
+    st.subheader("SHT expert demo 동영상 시청")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_expert_demo.avi')
