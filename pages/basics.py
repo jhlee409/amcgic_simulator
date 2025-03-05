@@ -400,8 +400,8 @@ elif selected_option == "SHT":
     st.subheader("SHT expert demo 동영상 시청")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_expert_demo.avi')
-        if demonstration_blob.exists():
+        demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_expert_demo.mp4')
+        if demonstration_blob.exists():S
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
             # 동영상 시청 버튼
@@ -419,7 +419,7 @@ elif selected_option == "SHT":
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1300" controls controlsList="nodownload">
-                        <source src="{demonstration_url}" type="video/avi">
+                        <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
                 <script>
