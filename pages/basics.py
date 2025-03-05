@@ -364,11 +364,17 @@ elif selected_option == "SHT":
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
             # 동영상 시청 버튼
-            if st.button("동영상 시청"):
-                st.session_state.show_sht_video = not st.session_state.show_sht_video
+            if st.button("동영상 시청", key="sht_orientation_video_button"):
+                if "show_sht_orientation_video" not in st.session_state:
+                    st.session_state.show_sht_orientation_video = True
+                else:
+                    st.session_state.show_sht_orientation_video = not st.session_state.show_sht_orientation_video
             
             # 비디오 플레이어 표시
-            if st.session_state.show_sht_video:
+            if "show_sht_orientation_video" not in st.session_state:
+                st.session_state.show_sht_orientation_video = False
+                
+            if st.session_state.show_sht_orientation_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1300" controls controlsList="nodownload">
@@ -398,11 +404,17 @@ elif selected_option == "SHT":
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
             # 동영상 시청 버튼
-            if st.button("동영상 시청"):
-                st.session_state.show_sht_video = not st.session_state.show_sht_video
+            if st.button("동영상 시청", key="sht_expert_demo_video_button"):
+                if "show_sht_expert_demo_video" not in st.session_state:
+                    st.session_state.show_sht_expert_demo_video = True
+                else:
+                    st.session_state.show_sht_expert_demo_video = not st.session_state.show_sht_expert_demo_video
             
             # 비디오 플레이어 표시
-            if st.session_state.show_sht_video:
+            if "show_sht_expert_demo_video" not in st.session_state:
+                st.session_state.show_sht_expert_demo_video = False
+                
+            if st.session_state.show_sht_expert_demo_video:
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1300" controls controlsList="nodownload">
