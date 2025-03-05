@@ -401,35 +401,35 @@ elif selected_option == "SHT":
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/SHT/SHT_expert_demo.mp4')
-        if demonstration_blob.exists():S
-        demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
+        if demonstration_blob.exists():
+            demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
-        # 동영상 시청 버튼
-        if st.button("동영상 시청", key="sht_expert_demo_video_button"):
+            # 동영상 시청 버튼
+            if st.button("동영상 시청", key="sht_expert_demo_video_button"):
+                if "show_sht_expert_demo_video" not in st.session_state:
+                    st.session_state.show_sht_expert_demo_video = True
+                else:
+                    st.session_state.show_sht_expert_demo_video = not st.session_state.show_sht_expert_demo_video
+            
+            # 비디오 플레이어 표시
             if "show_sht_expert_demo_video" not in st.session_state:
-                st.session_state.show_sht_expert_demo_video = True
-            else:
-                st.session_state.show_sht_expert_demo_video = not st.session_state.show_sht_expert_demo_video
-        
-        # 비디오 플레이어 표시
-        if "show_sht_expert_demo_video" not in st.session_state:
-            st.session_state.show_sht_expert_demo_video = False
-            
-        if st.session_state.show_sht_expert_demo_video:
-            video_html = f'''
-            <div style="display: flex; justify-content: center;">
-                <video width="1300" controls controlsList="nodownload">
-                    <source src="{demonstration_url}" type="video/mp4">
-                </video>
-            </div>
-            <script>
-            var video_player = document.querySelector("video");
-            video_player.addEventListener('contextmenu', function(e) {{
-                e.preventDefault();
-            }});
-            </script>
-            '''
-            st.markdown(video_html, unsafe_allow_html=True)
+                st.session_state.show_sht_expert_demo_video = False
+                
+            if st.session_state.show_sht_expert_demo_video:
+                video_html = f'''
+                <div style="display: flex; justify-content: center;">
+                    <video width="1300" controls controlsList="nodownload">
+                        <source src="{demonstration_url}" type="video/mp4">
+                    </video>
+                </div>
+                <script>
+                var video_player = document.querySelector("video");
+                video_player.addEventListener('contextmenu', function(e) {{
+                    e.preventDefault();
+                }});
+                </script>
+                '''
+                st.markdown(video_html, unsafe_allow_html=True)
         else:
             st.error("SHT expert demo 동영상상 파일을 찾을 수 없습니다.")
 
