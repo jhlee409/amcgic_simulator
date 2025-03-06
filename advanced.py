@@ -224,36 +224,13 @@ if selected_option == "LHT":
         st.write("전문가가 수행한 LHT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
         demonstration_blob = bucket.blob('Simulator_training/LHT/LHT_expert_demo.mp4')
         if demonstration_blob.exists():
-            demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
-            
-            # 동영상 시청 버튼
-            if st.button("동영상 시청", key="lht_expert_video"):
-                if "show_lht_expert_video" not in st.session_state:
-                    st.session_state.show_lht_expert_video = True
-                else:
-                    st.session_state.show_lht_expert_video = not st.session_state.show_lht_expert_video
-            
-            # 비디오 플레이어 표시
-            if "show_lht_expert_video" not in st.session_state:
-                st.session_state.show_lht_expert_video = False
-                
-            if st.session_state.show_lht_expert_video:
-                video_html = f'''
-                <div style="display: flex; justify-content: center;">
-                    <video width="1300" controls controlsList="nodownload">
-                        <source src="{demonstration_url}" type="video/mp4">
-                    </video>
-                </div>
-                <script>
-                var video_player = document.querySelector("video");
-                video_player.addEventListener('contextmenu', function(e) {{
-                    e.preventDefault();
-                }});
-                </script>
-                '''
-                st.markdown(video_html, unsafe_allow_html=True)
-        else:
-            st.error("LHT 전문가 시범 동영상 파일을 찾을 수 없습니다.")
+            if st.download_button(
+                label="동영상 다운로드",
+                data=demonstration_blob.download_as_bytes(),
+                file_name="LHT_expert_demo.mp4",
+                mime="video/mp4"
+            ):
+                st.write("")
 
         st.write("---")
 
