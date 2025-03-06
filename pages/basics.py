@@ -487,7 +487,7 @@ elif selected_option == "SHT":
             st.error(f"업로드 중 오류가 발생했습니다: {e}")
 
 elif selected_option == "EMT":
-    st.subheader("EMT (EGD Method Training)")
+    st.subheader("EMT (EGD Method Training) orientation 동영상 시청")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_orientation.mp4')
@@ -529,7 +529,7 @@ elif selected_option == "EMT":
     st.write("전문가가 수행한 EMT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-        demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_expert_demo.avi')
+        demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_expert_demo.mp4')
         if demonstration_blob.exists():
             demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
             
@@ -542,7 +542,7 @@ elif selected_option == "EMT":
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1300" controls controlsList="nodownload">
-                        <source src="{demonstration_url}" type="video/avi">
+                        <source src="{demonstration_url}" type="video/mp4">
                     </video>
                 </div>
                 <script>
