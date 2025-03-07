@@ -624,7 +624,6 @@ elif selected_option == "EMT":
                 progress_container = st.empty()
                 progress_container.progress(0)
 
-
                 try:
                     # 프레임 처리를 위한 변수 초기화
                     pts = []
@@ -766,12 +765,12 @@ elif selected_option == "EMT":
                     str3 = 'Pass'
                     st.write('EGD 수행이 적절하게 진행되어 EMT 과정에서 합격하셨습니다. 수고하셨습니다.')
                 else:
-                    str3 = 'Fail.'
+                    str3 = 'Fail'
                     st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
 
 
             # BMP 파일 처리 (한 번만 실행)
-            if has_bmp and duration is not None:
+            if has_bmp and 'duration' in locals():
                 # A4 크기 설정 (300 DPI 기준)
                 a4_width = 2480
                 a4_height = 3508
@@ -798,20 +797,19 @@ elif selected_option == "EMT":
                         y += single_width + padding
                 
                 # 텍스트 추가
-                font_size = 70  # 폰트 크기를 100으로 수정
+                font_size = 70
                 text_color = (0, 0, 0)  # 검은색
 
                 try:
-                    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # 볼드체 폰트 경로
+                    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
                     font = ImageFont.truetype(font_path, font_size)
                 except OSError:
                     try:
-                        font_path = "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf"  # 볼드체 폰트 경로
+                        font_path = "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf"
                         font = ImageFont.truetype(font_path, font_size)
                     except OSError:
-                        # Windows 시스템 폰트 경로 시도
                         try:
-                            font_path = "C:/Windows/Fonts/malgun.ttf"  # Windows의 맑은 고딕 폰트
+                            font_path = "C:/Windows/Fonts/malgun.ttf"
                             font = ImageFont.truetype(font_path, font_size)
                         except OSError:
                             font = ImageFont.load_default()
@@ -829,27 +827,25 @@ elif selected_option == "EMT":
                 text_height = text_bbox[3] - text_bbox[1]
 
                 # 텍스트 위치 계산 (왼쪽 정렬, 맨 아래 줄)
-                x = padding  # 왼쪽 정렬
-                y = a4_height - text_height - padding * 2  # 여백을 더 확보
+                x = padding
+                y = a4_height - text_height - padding * 2
 
                 # 텍스트 그리기
                 draw.text((x, y), text, fill=text_color, font=font, align="left")
                 st.divider()
                 st.subheader("이미지 전송 과정")
                 
-                # 임시 디렉토리 생성
-                os.makedirs('Simulator_training/EMT/EMT_result/', exist_ok=True)
-                os.makedirs('Simulator_training/EMT/log_EMT_result/', exist_ok=True)
-                
                 # 결과 이미지 크기 조정
                 width, height = result_image.size
                 result_image = result_image.resize((width // 2, height // 2), Image.Resampling.LANCZOS)
                 
                 # 결과 이미지 저장 - 하이픈(-)을 구분자로 사용
-                temp_image_path = f'Simulator_training/EMT/EMT_result/{position}-{name}-EMT_result.png'
+                temp_image_path = os.path.join(temp_dir, f'{position}-{name}-EMT_result.png')
                 result_image.save(temp_image_path, format='PNG')
                 
                 try:
+                    bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                    
                     if str3 == "Pass":
                         # Firebase Storage에 업로드
                         firebase_path = f'Simulator_training/EMT/EMT_result/{position}-{name}-EMT_result.png'
@@ -862,8 +858,8 @@ elif selected_option == "EMT":
                     st.image(temp_image_path, use_container_width=True)
                     
                     # 로그 파일 생성
-                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result'
+                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
                     with open(log_file_path, 'w') as f:
                         f.write(log_text)
                     log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
@@ -871,14 +867,21 @@ elif selected_option == "EMT":
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
                 finally:
-                    # 임시 파일 삭제
-                    if os.path.exists(temp_image_path):
-                        os.remove(temp_image_path)
-                    if os.path.exists(log_file_path):
-                        os.remove(log_file_path)
-                        
-        st.divider() 
-        st.success("평가가 완료되었습니다.")
+                    # 임시 파일 정리
+                    for file in os.listdir(temp_dir):
+                        file_path = os.path.join(temp_dir, file)
+                        try:
+                            if os.path.isfile(file_path):
+                                os.unlink(file_path)
+                        except Exception as e:
+                            st.error(f"파일 삭제 중 오류 발생: {str(e)}")
+                    try:
+                        os.rmdir(temp_dir)
+                    except:
+                        pass
+                    
+    st.divider() 
+    st.success("평가가 완료되었습니다.")
 
 else:
     st.warning('Please log in to read more.')
