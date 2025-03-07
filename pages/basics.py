@@ -880,8 +880,7 @@ elif selected_option == "EMT":
                     except:
                         pass
                     
-    st.divider() 
-    st.success("평가가 완료되었습니다.")
+                st.success("평가가 완료되었습니다.")
 
 else:
     st.warning('Please log in to read more.')
