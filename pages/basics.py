@@ -562,7 +562,7 @@ elif selected_option == "EMT":
     st.write("---")
     
    
-    st.subheader("수행 동영상 파일 업로드, 분석 및 최종 평가서 전송")
+    st.subheader("수행 동영상 및 이미지 파일일 업로드, 분석 및 최종 평가서 전송")
 
     uploaded_files = st.file_uploader("분석할 파일들(avi, mp4, bmp)을 탐색기에서 찾아 모두 선택해주세요 단 동영상은 한개만 선택할 수 있습니다.", 
                                     accept_multiple_files=True,
