@@ -846,31 +846,14 @@ elif selected_option == "EMT":
                 try:
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
                     
-                    # 동영상 파일 업로드 준비
-                    if len(avi_files) > 0:
-                        # 첫 번째 동영상 파일 사용
-                        video_file_path = avi_files[0]
-                        extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
-                        video_file_name = f"{position}*{name}*EMT_result{extension}"
-                        
-                        if str3 == "Pass":
-                            # Pass인 경우 - 이미지와 동영상 모두 업로드
-                            # 이미지 업로드
-                            firebase_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png'
-                            result_blob = bucket.blob(firebase_path)
-                            result_blob.upload_from_filename(temp_image_path, content_type='image/png')
-                            
-                            # 동영상 업로드
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
-                            st.success(f"이미지와 동영상이 성공적으로 전송되었습니다.")
-                        else:
-                            # Fail인 경우 - 동영상만 다른 폴더에 업로드
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
-                            st.warning("평가 결과가 'fail'이므로 동영상만 실패 폴더에 업로드했습니다.")
+                    if str3 == "Pass":
+                        # Firebase Storage에 업로드
+                        firebase_path = f'Simulator_training/EMT/EMT_result/{position}-{name}-EMT_result.png'
+                        result_blob = bucket.blob(firebase_path)
+                        result_blob.upload_from_filename(temp_image_path, content_type='image/png')
+                        st.success(f"이미지가 성공적으로 전송되었습니다.")
                     else:
-                        st.error("업로드할 동영상 파일이 없습니다.")
+                        st.warning("평가 결과가 'fail'이므로 업로드하지 않습니다.")
                     
                     st.image(temp_image_path, use_container_width=True)
                     
