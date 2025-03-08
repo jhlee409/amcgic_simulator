@@ -608,10 +608,13 @@ elif selected_option == "EMT":
 
             # 동영상 길이 확인 변수 초기화
             is_video_length_valid = True
-
+            video_duration = 0
+            video_file_path = None
+            
             # AVI 파일 처리
             total_avi_files = len(avi_files)
             for file_path in avi_files:
+                video_file_path = file_path  # 동영상 파일 경로 저장
                 camera = cv2.VideoCapture(file_path)
                 if not camera.isOpened():
                     st.error("동영상 파일을 열 수 없습니다.")
@@ -620,6 +623,7 @@ elif selected_option == "EMT":
                 length = int(camera.get(cv2.CAP_PROP_FRAME_COUNT))
                 frame_rate = camera.get(cv2.CAP_PROP_FPS)
                 duration = length / frame_rate
+                video_duration = duration  # 동영상 길이 저장
 
                 st.write(f"---\n동영상 길이: {int(duration // 60)} 분 {int(duration % 60)} 초")
                 if not (300 <= duration <= 330):
@@ -775,9 +779,37 @@ elif selected_option == "EMT":
                     str3 = 'Fail'
                     st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
 
+            # 동영상 파일 업로드 처리 - BMP 파일 처리와 별도로 실행
+            if video_file_path:
+                try:
+                    bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                    extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
+                    current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                    video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
+                    
+                    # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
+                    if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
+                        # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
+                        video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
+                        video_blob.upload_from_filename(video_file_path)
+                        st.success("동영상이 성공적으로 전송되었습니다.")
+                    else:
+                        # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
+                        video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
+                        video_blob.upload_from_filename(video_file_path)
+                        
+                        # 실패 이유 메시지 표시
+                        if str3 != "Pass":
+                            st.warning("평가 결과가 'fail'이므로 동영상은 실패 폴더에 업로드했습니다.")
+                        elif not is_photo_count_valid:
+                            st.warning("사진의 숫자가 62-66 범위를 벗어나므로 동영상은 실패 폴더에 업로드했습니다.")
+                        elif not is_video_length_valid:
+                            st.warning("동영상 길이가 5분-5분 30초 범위를 벗어나므로 동영상은 실패 폴더에 업로드했습니다.")
+                except Exception as e:
+                    st.error(f"동영상 전송 중 오류 발생: {str(e)}")
 
-            # BMP 파일 처리 (한 번만 실행)
-            if has_bmp and 'duration' in locals():
+            # BMP 파일 처리 (조건이 모두 충족될 때만 이미지 생성 및 업로드)
+            if has_bmp and video_duration > 0 and is_photo_count_valid and is_video_length_valid and str3 == "Pass":
                 # A4 크기 설정 (300 DPI 기준)
                 a4_width = 2480
                 a4_height = 3508
@@ -823,7 +855,7 @@ elif selected_option == "EMT":
                             st.write("시스템 폰트를 찾을 수 없어 기본 폰트를 사용합니다.")
 
                 # 동영상 길이 저장
-                video_length = f"{int(duration // 60)} min {int(duration % 60)} sec"
+                video_length = f"{int(video_duration // 60)} min {int(video_duration % 60)} sec"
 
                 # 추가할 텍스트
                 text = f"Photo number: {len(bmp_files)}\nDuration: {video_length}\nResult: {str3}\nSVM_value: {str4}"
@@ -853,67 +885,42 @@ elif selected_option == "EMT":
                 try:
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
                     
-                    # 동영상 파일 업로드 준비
-                    if len(avi_files) > 0:
-                        # 첫 번째 동영상 파일 사용
-                        video_file_path = avi_files[0]
-                        extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
-                        video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
-                        
-                        if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
-                            # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우 - 이미지와 동영상 모두 업로드
-                            # 이미지 업로드
-                            firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
-                            result_blob = bucket.blob(firebase_path)
-                            result_blob.upload_from_filename(temp_image_path, content_type='image/png')
-                            
-                            # 동영상 업로드
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
-                            
-                            # 로그 파일 생성 및 전송 (Pass인 경우에만)
-                            log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
-                            log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
-                            with open(log_file_path, 'w') as f:
-                                f.write(log_text)
-                            log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
-                            log_blob.upload_from_filename(log_file_path)
-                            
-                            st.success(f"이미지와 동영상이 성공적으로 전송되었습니다.")
-                        else:
-                            # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우 - 동영상만 실패 폴더에 업로드
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
-                            
-                            # 실패 이유 메시지 표시
-                            if str3 != "Pass":
-                                st.warning("평가 결과가 'fail'이므로 동영상만 실패 폴더에 업로드했습니다.")
-                            elif not is_photo_count_valid:
-                                st.warning("사진의 숫자가 62-66 범위를 벗어나므로 동영상만 실패 폴더에 업로드했습니다.")
-                            elif not is_video_length_valid:
-                                st.warning("동영상 길이가 5분-5분 30초 범위를 벗어나므로 동영상만 실패 폴더에 업로드했습니다.")
-                    else:
-                        st.error("업로드할 동영상 파일이 없습니다.")
+                    # 이미지 업로드 (Pass이고 모든 조건이 충족된 경우에만)
+                    firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
+                    result_blob = bucket.blob(firebase_path)
+                    result_blob.upload_from_filename(temp_image_path, content_type='image/png')
+                    
+                    # 로그 파일 생성 및 전송 (Pass인 경우에만)
+                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                    log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
+                    with open(log_file_path, 'w') as f:
+                        f.write(log_text)
+                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
+                    log_blob.upload_from_filename(log_file_path)
+                    
+                    st.success(f"이미지가 성공적으로 전송되었습니다.")
                     
                     st.image(temp_image_path, use_container_width=True)
                 except Exception as e:
-                    st.error(f"전송 도중 오류 발생: {str(e)}")
-                finally:
-                    # 임시 파일 정리
-                    for file in os.listdir(temp_dir):
-                        file_path = os.path.join(temp_dir, file)
-                        try:
-                            if os.path.isfile(file_path):
-                                os.unlink(file_path)
-                        except Exception as e:
-                            st.error(f"파일 삭제 중 오류 발생: {str(e)}")
+                    st.error(f"이미지 전송 중 오류 발생: {str(e)}")
+            
+            # 임시 파일 정리
+            try:
+                for file in os.listdir(temp_dir):
+                    file_path = os.path.join(temp_dir, file)
                     try:
-                        os.rmdir(temp_dir)
-                    except:
-                        pass
-                    
+                        if os.path.isfile(file_path):
+                            os.unlink(file_path)
+                    except Exception as e:
+                        st.error(f"파일 삭제 중 오류 발생: {str(e)}")
+                try:
+                    os.rmdir(temp_dir)
+                except:
+                    pass
+                
                 st.success("평가가 완료되었습니다.")
+            except Exception as e:
+                st.error(f"임시 파일 정리 중 오류 발생: {str(e)}")
 
 else:
     st.warning('Please log in to read more.')
