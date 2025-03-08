@@ -851,18 +851,28 @@ elif selected_option == "EMT":
                         # 첫 번째 동영상 파일 사용
                         video_file_path = avi_files[0]
                         extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
-                        video_file_name = f"{position}*{name}*EMT_result{extension}"
+                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
                         
                         if str3 == "Pass":
                             # Pass인 경우 - 이미지와 동영상 모두 업로드
                             # 이미지 업로드
-                            firebase_path = f'Simulator_training/EMT/EMT_result/{position}*{name}*EMT_result.png'
+                            firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
                             result_blob = bucket.blob(firebase_path)
                             result_blob.upload_from_filename(temp_image_path, content_type='image/png')
                             
                             # 동영상 업로드
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result/{video_file_name}")
+                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
                             video_blob.upload_from_filename(video_file_path)
+                            
+                            # 로그 파일 생성 및 전송 (Pass인 경우에만)
+                            log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
+                            with open(log_file_path, 'w') as f:
+                                f.write(log_text)
+                            log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
+                            log_blob.upload_from_filename(log_file_path)
+                            
                             st.success(f"이미지와 동영상이 성공적으로 전송되었습니다.")
                         else:
                             # Fail인 경우 - 동영상만 다른 폴더에 업로드
@@ -873,14 +883,6 @@ elif selected_option == "EMT":
                         st.error("업로드할 동영상 파일이 없습니다.")
                     
                     st.image(temp_image_path, use_container_width=True)
-                    
-                    # 로그 파일 생성
-                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
-                    with open(log_file_path, 'w') as f:
-                        f.write(log_text)
-                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
-                    log_blob.upload_from_filename(log_file_path)
                 except Exception as e:
                     st.error(f"전송 도중 오류 발생: {str(e)}")
                 finally:
