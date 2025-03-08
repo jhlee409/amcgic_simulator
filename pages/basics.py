@@ -562,7 +562,7 @@ elif selected_option == "EMT":
     st.write("---")
     
    
-    st.subheader("수행 동영상 및 이미지 파일일 업로드, 분석 및 최종 평가서 전송")
+    st.subheader("수행 동영상 및 이미지 파일 업로드, 분석 및 최종 평가서 전송")
 
     uploaded_files = st.file_uploader("분석할 파일들(avi, mp4, bmp)을 탐색기에서 찾아 모두 선택해주세요 단 동영상은 한개만 선택할 수 있습니다.", 
                                     accept_multiple_files=True,
@@ -601,7 +601,13 @@ elif selected_option == "EMT":
             # BMP 이미지 수 확인
             if not (62 <= len(bmp_files) <= 66):
                 st.error("사진의 숫자가 62장에서 66을 벗어납니다. 다시 시도해 주세요")
-                st.stop()
+                # 사진 숫자가 범위를 벗어나는 경우에도 동영상은 저장
+                is_photo_count_valid = False
+            else:
+                is_photo_count_valid = True
+
+            # 동영상 길이 확인 변수 초기화
+            is_video_length_valid = True
 
             # AVI 파일 처리
             total_avi_files = len(avi_files)
@@ -618,7 +624,8 @@ elif selected_option == "EMT":
                 st.write(f"---\n동영상 길이: {int(duration // 60)} 분 {int(duration % 60)} 초")
                 if not (300 <= duration <= 330):
                     st.error("동영상의 길이가 5분에서 5분30초를 벗어납니다. 다시 시도해 주세요")
-                    st.stop()
+                    # 동영상 길이가 범위를 벗어나는 경우 표시
+                    is_video_length_valid = False
 
                 st.write(f"비디오 정보 : 총 프레임 수 = {length} , 프레임 레이트 = {frame_rate:.2f}")
                 progress_container = st.empty()
@@ -854,8 +861,8 @@ elif selected_option == "EMT":
                         current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
                         video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
                         
-                        if str3 == "Pass":
-                            # Pass인 경우 - 이미지와 동영상 모두 업로드
+                        if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
+                            # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우 - 이미지와 동영상 모두 업로드
                             # 이미지 업로드
                             firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
                             result_blob = bucket.blob(firebase_path)
@@ -875,10 +882,17 @@ elif selected_option == "EMT":
                             
                             st.success(f"이미지와 동영상이 성공적으로 전송되었습니다.")
                         else:
-                            # Fail인 경우 - 동영상만 다른 폴더에 업로드
+                            # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우 - 동영상만 실패 폴더에 업로드
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
                             video_blob.upload_from_filename(video_file_path)
-                            st.warning("평가 결과가 'fail'이므로 동영상만 실패 폴더에 업로드했습니다.")
+                            
+                            # 실패 이유 메시지 표시
+                            if str3 != "Pass":
+                                st.warning("평가 결과가 'fail'이므로 동영상만 실패 폴더에 업로드했습니다.")
+                            elif not is_photo_count_valid:
+                                st.warning("사진의 숫자가 62-66 범위를 벗어나므로 동영상만 실패 폴더에 업로드했습니다.")
+                            elif not is_video_length_valid:
+                                st.warning("동영상 길이가 5분-5분 30초 범위를 벗어나므로 동영상만 실패 폴더에 업로드했습니다.")
                     else:
                         st.error("업로드할 동영상 파일이 없습니다.")
                     
