@@ -598,14 +598,6 @@ elif selected_option == "EMT":
 
             st.write(f"avi 파일 수 : {len([file for file in avi_files if file.endswith('.avi')])} , MP4 파일 수 : {len([file for file in avi_files if file.endswith('.mp4')])} , BMP 파일 수: {len(bmp_files)}")
 
-            # BMP 이미지 수 확인
-            if not (62 <= len(bmp_files) <= 66):
-                st.error("사진의 숫자가 62장에서 66을 벗어납니다. 다시 시도해 주세요")
-                # 사진 숫자가 범위를 벗어나는 경우에도 동영상은 저장
-                is_photo_count_valid = False
-            else:
-                is_photo_count_valid = True
-
             # 동영상 길이 확인 변수 초기화
             is_video_length_valid = True
             video_duration = 0
@@ -630,179 +622,196 @@ elif selected_option == "EMT":
                     st.error("동영상의 길이가 5분에서 5분30초를 벗어납니다. 다시 시도해 주세요")
                     # 동영상 길이가 범위를 벗어나는 경우 표시
                     is_video_length_valid = False
-
-                st.write(f"비디오 정보 : 총 프레임 수 = {length} , 프레임 레이트 = {frame_rate:.2f}")
-                progress_container = st.empty()
-                progress_container.progress(0)
-
-                try:
-                    # 프레임 처리를 위한 변수 초기화
-                    pts = []
-                    angle_g = np.array([])
-                    distance_g = np.array([])
-                    frame_count = 0
-
-                    # 진행률 표시를 위한 컨테이너 생성
-                    progress_bar = st.progress(0)
-                    progress_text = st.empty()
-
-                    while True:
-                        ret, frame = camera.read()
-                        if not ret:
-                            break
-
-                        # 프레임 카운트 증가
-                        frame_count += 1
-
-                        try:
-                            # 프레임 분석
-                            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                            
-                            # 색상 범위 설정 및 마스크 생성
-                            green_lower = np.array([40, 40, 40], np.uint8)
-                            green_upper = np.array([80, 255, 255], np.uint8)
-                            green = cv2.inRange(hsv, green_lower, green_upper)
-                            
-                            # 노이즈 제거를 위한 모폴로지 연산
-                            kernel = np.ones((5, 5), np.uint8)
-                            green = cv2.morphologyEx(green, cv2.MORPH_OPEN, kernel)
-                            green = cv2.morphologyEx(green, cv2.MORPH_CLOSE, kernel)
-
-                            # 윤곽선 검출
-                            contours, hierarchy = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                            
-                            # 크기가 200-8000 픽셀 사이인 윤곽선만 필터링
-                            filtered_contours = []
-                            for contour in contours:
-                                area = cv2.contourArea(contour)
-                                if 200 <= area <= 8000:  # 200-8000 픽셀 사이의 물체만 인식
-                                    filtered_contours.append(contour)
-                            
-                            if len(filtered_contours) > 0:
-                                # 가장 큰 윤곽선 찾기
-                                c = max(filtered_contours, key=cv2.contourArea)
-                                ga = cv2.contourArea(c)
-                                
-                                u = c
-                                pts.extend([frame_count, 2])
-
-                                # 중심점 계산
-                                M = cv2.moments(u)
-                                if M["m00"] != 0:
-                                    px = abs(int(M["m10"] / M["m00"]))
-                                    py = abs(int(M["m01"] / M["m00"]))
-                                else:
-                                    px, py = 0, 0
-
-                                pts.extend([px, py])
-
-                                # 최소 외접원 계산
-                                ((cx, cy), radius) = cv2.minEnclosingCircle(u)
-                                pts.append(int(radius))
-                            else:
-                                # 감지된 물체가 없는 경우
-                                u = np.array([[[0, 0]], [[1, 0]], [[2, 0]], [[2, 1]], [[2, 2]], [[1, 2]], [[0, 2]], [[0, 1]]])
-                                pts.extend([frame_count, 3, 0, 0, 0])
-
-                            # 진행률 업데이트 (5프레임마다)
-                            if frame_count % 5 == 0:
-                                progress = frame_count / length
-                                progress_container.progress(progress)
-
-                        except Exception as e:
-                            st.write(f"\n[ERROR] 프레임 {frame_count} 처리 중 오류 발생 : {str(e)}")
-                            continue
-
-                    # 진행률 표시 컨테이너 제거
-                    progress_bar.empty()
-                    progress_text.empty()
-
-                    st.write(f"처리된 총 프레임 수 :  {frame_count}")
-                    st.write(f"수집된 데이터 포인트 수 : {len(pts)}")
-                    st.write("\n-> 분석 완료")
-
-                except Exception as e:
-                    st.write(f"\n[ERROR] 비디오 처리 중 치명적 오류 발생 : {str(e)}")
-                finally:
-                    # 분석 완료 후 정리
                     camera.release()
+                    break  # 동영상 길이가 유효하지 않으면 분석 중단
 
-                k = list(pts)
-                array_k = np.array(k)
-
-                frame_no = array_k[0::5]
-                timesteps = len(frame_no)
-                frame_no2 = np.reshape(frame_no, (timesteps, 1))
-
-                color = array_k[1::5]
-                color2 = np.reshape(color, (timesteps, 1))
-
-                x_value = array_k[2::5]
-                x_value2 = np.reshape(x_value, (timesteps, 1))
-
-                y_value = array_k[3::5]
-                y_value2 = np.reshape(y_value, (timesteps, 1))
-
-                radius2 = array_k[4::5]
-                radius3 = np.reshape(radius2, (timesteps, 1))
-
-                points = np.hstack([frame_no2, color2, x_value2, y_value2, radius3])
-
-                # 프레임 레이트를 이용한 시간 간격 계산 (초 단위)
-                time_interval = 1.0 / frame_rate
-                
-                # 초당 이동거리 계산을 위한 배열
-                distance_g = np.array([])
-
-                for i in range(timesteps - 1):
-                    if (points[i][1] != 3 and points[i + 1][1] != 3) and (points[i][1] == 2 and points[i + 1][1] == 2):
-                        a = points[i + 1][2] - points[i][2]
-                        b = points[i + 1][3] - points[i][3]
-                        rr = points[i][4]
-                        
-                        # 초당 이동거리로 계산 (프레임 간 이동거리를 시간 간격으로 나누고 반지름으로 정규화)
-                        delta_g = (np.sqrt((a * a) + (b * b))) / rr / time_interval
-                        
-                        distance_g = np.append(distance_g, delta_g)
-                    else:
-                        distance_g = np.append(distance_g, 0)
-
-                # 초당 이동거리의 평균과 표준편차 계산
-                # 임계값도 프레임 레이트에 맞게 조정 (기존 6에서 프레임 레이트를 고려한 값으로)
-                # 30fps 기준으로 6이었다면, 초당 이동거리로는 6*30=180 정도가 됨
-                threshold = 180  # 조정된 임계값
-                
-                mean_g = np.mean([ggg for ggg in distance_g if ggg < threshold])
-                std_g = np.std([ggg for ggg in distance_g if ggg < threshold])
-                x_test = np.array([[mean_g, std_g]])
-
-                # 결과의 일관성을 위해 랜덤 시드 설정
-                np.random.seed(42)
-                
-                # 기존 훈련 데이터 로드
-                x_train = np.loadtxt('x_train.csv', delimiter=',')
-
-                # 고정된 정규화 범위 사용
-                scaler = MinMaxScaler(feature_range=(0, 1))
-                x_train_scaled = scaler.fit_transform(x_train)
-                x_test_scaled = scaler.transform(x_test)
-
-                # SVM 모델 생성
-                clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
-                clf.fit(x_train_scaled)
-
-                st.write("---")
-                st.subheader("최종 판정")
-
-                y_pred_test = clf.predict(x_test_scaled)
-                str4 = str(round(clf.decision_function(x_test_scaled)[0], 4))
-                st.write(f"판단 점수: {str4}")
-                if y_pred_test == 1:
-                    str3 = 'Pass'
-                    st.write('EGD 수행이 적절하게 진행되어 EMT 과정에서 합격하셨습니다. 수고하셨습니다.')
+                # BMP 이미지 수 확인
+                if not (62 <= len(bmp_files) <= 66):
+                    st.error("사진의 숫자가 62장에서 66장 범위를 벗어납니다. 다시 시도해 주세요")
+                    is_photo_count_valid = False
+                    camera.release()
+                    break  # BMP 파일 수가 유효하지 않으면 분석 중단
                 else:
-                    str3 = 'Fail'
-                    st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
+                    is_photo_count_valid = True
+
+                # 동영상 길이와 BMP 파일 수가 모두 유효한 경우에만 분석 진행
+                if is_video_length_valid and is_photo_count_valid:
+                    st.write(f"비디오 정보 : 총 프레임 수 = {length} , 프레임 레이트 = {frame_rate:.2f}")
+                    progress_container = st.empty()
+                    progress_container.progress(0)
+
+                    try:
+                        # 프레임 처리를 위한 변수 초기화
+                        pts = []
+                        angle_g = np.array([])
+                        distance_g = np.array([])
+                        frame_count = 0
+
+                        # 진행률 표시를 위한 컨테이너 생성
+                        progress_bar = st.progress(0)
+                        progress_text = st.empty()
+
+                        while True:
+                            ret, frame = camera.read()
+                            if not ret:
+                                break
+
+                            # 프레임 카운트 증가
+                            frame_count += 1
+
+                            try:
+                                # 프레임 분석
+                                hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+                                
+                                # 색상 범위 설정 및 마스크 생성
+                                green_lower = np.array([40, 40, 40], np.uint8)
+                                green_upper = np.array([80, 255, 255], np.uint8)
+                                green = cv2.inRange(hsv, green_lower, green_upper)
+                                
+                                # 노이즈 제거를 위한 모폴로지 연산
+                                kernel = np.ones((5, 5), np.uint8)
+                                green = cv2.morphologyEx(green, cv2.MORPH_OPEN, kernel)
+                                green = cv2.morphologyEx(green, cv2.MORPH_CLOSE, kernel)
+
+                                # 윤곽선 검출
+                                contours, hierarchy = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                
+                                # 크기가 200-8000 픽셀 사이인 윤곽선만 필터링
+                                filtered_contours = []
+                                for contour in contours:
+                                    area = cv2.contourArea(contour)
+                                    if 200 <= area <= 8000:  # 200-8000 픽셀 사이의 물체만 인식
+                                        filtered_contours.append(contour)
+                                
+                                if len(filtered_contours) > 0:
+                                    # 가장 큰 윤곽선 찾기
+                                    c = max(filtered_contours, key=cv2.contourArea)
+                                    ga = cv2.contourArea(c)
+                                    
+                                    u = c
+                                    pts.extend([frame_count, 2])
+
+                                    # 중심점 계산
+                                    M = cv2.moments(u)
+                                    if M["m00"] != 0:
+                                        px = abs(int(M["m10"] / M["m00"]))
+                                        py = abs(int(M["m01"] / M["m00"]))
+                                    else:
+                                        px, py = 0, 0
+
+                                    pts.extend([px, py])
+
+                                    # 최소 외접원 계산
+                                    ((cx, cy), radius) = cv2.minEnclosingCircle(u)
+                                    pts.append(int(radius))
+                                else:
+                                    # 감지된 물체가 없는 경우
+                                    u = np.array([[[0, 0]], [[1, 0]], [[2, 0]], [[2, 1]], [[2, 2]], [[1, 2]], [[0, 2]], [[0, 1]]])
+                                    pts.extend([frame_count, 3, 0, 0, 0])
+
+                                # 진행률 업데이트 (5프레임마다)
+                                if frame_count % 5 == 0:
+                                    progress = frame_count / length
+                                    progress_container.progress(progress)
+
+                            except Exception as e:
+                                st.write(f"\n[ERROR] 프레임 {frame_count} 처리 중 오류 발생 : {str(e)}")
+                                continue
+
+                        # 진행률 표시 컨테이너 제거
+                        progress_bar.empty()
+                        progress_text.empty()
+
+                        st.write(f"처리된 총 프레임 수 :  {frame_count}")
+                        st.write(f"수집된 데이터 포인트 수 : {len(pts)}")
+                        st.write("\n-> 분석 완료")
+
+                        k = list(pts)
+                        array_k = np.array(k)
+
+                        frame_no = array_k[0::5]
+                        timesteps = len(frame_no)
+                        frame_no2 = np.reshape(frame_no, (timesteps, 1))
+
+                        color = array_k[1::5]
+                        color2 = np.reshape(color, (timesteps, 1))
+
+                        x_value = array_k[2::5]
+                        x_value2 = np.reshape(x_value, (timesteps, 1))
+
+                        y_value = array_k[3::5]
+                        y_value2 = np.reshape(y_value, (timesteps, 1))
+
+                        radius2 = array_k[4::5]
+                        radius3 = np.reshape(radius2, (timesteps, 1))
+
+                        points = np.hstack([frame_no2, color2, x_value2, y_value2, radius3])
+
+                        # 프레임 레이트를 이용한 시간 간격 계산 (초 단위)
+                        time_interval = 1.0 / frame_rate
+                        
+                        # 초당 이동거리 계산을 위한 배열
+                        distance_g = np.array([])
+
+                        for i in range(timesteps - 1):
+                            if (points[i][1] != 3 and points[i + 1][1] != 3) and (points[i][1] == 2 and points[i + 1][1] == 2):
+                                a = points[i + 1][2] - points[i][2]
+                                b = points[i + 1][3] - points[i][3]
+                                rr = points[i][4]
+                                
+                                # 초당 이동거리로 계산 (프레임 간 이동거리를 시간 간격으로 나누고 반지름으로 정규화)
+                                delta_g = (np.sqrt((a * a) + (b * b))) / rr / time_interval
+                                
+                                distance_g = np.append(distance_g, delta_g)
+                            else:
+                                distance_g = np.append(distance_g, 0)
+
+                        # 초당 이동거리의 평균과 표준편차 계산
+                        # 임계값도 프레임 레이트에 맞게 조정 (기존 6에서 프레임 레이트를 고려한 값으로)
+                        # 30fps 기준으로 6이었다면, 초당 이동거리로는 6*30=180 정도가 됨
+                        threshold = 180  # 조정된 임계값
+                        
+                        mean_g = np.mean([ggg for ggg in distance_g if ggg < threshold])
+                        std_g = np.std([ggg for ggg in distance_g if ggg < threshold])
+                        x_test = np.array([[mean_g, std_g]])
+
+                        # 결과의 일관성을 위해 랜덤 시드 설정
+                        np.random.seed(42)
+                        
+                        # 기존 훈련 데이터 로드
+                        x_train = np.loadtxt('x_train.csv', delimiter=',')
+
+                        # 고정된 정규화 범위 사용
+                        scaler = MinMaxScaler(feature_range=(0, 1))
+                        x_train_scaled = scaler.fit_transform(x_train)
+                        x_test_scaled = scaler.transform(x_test)
+
+                        # SVM 모델 생성
+                        clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
+                        clf.fit(x_train_scaled)
+
+                        st.write("---")
+                        st.subheader("최종 판정")
+
+                        y_pred_test = clf.predict(x_test_scaled)
+                        str4 = str(round(clf.decision_function(x_test_scaled)[0], 4))
+                        st.write(f"판단 점수: {str4}")
+                        if y_pred_test == 1:
+                            str3 = 'Pass'
+                            st.write('EGD 수행이 적절하게 진행되어 EMT 과정에서 합격하셨습니다. 수고하셨습니다.')
+                        else:
+                            str3 = 'Fail'
+                            st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
+                    except Exception as e:
+                        st.write(f"\n[ERROR] 비디오 처리 중 치명적 오류 발생 : {str(e)}")
+                    finally:
+                        # 분석 완료 후 정리
+                        camera.release()
+                else:
+                    # 동영상 길이나 BMP 파일 수가 유효하지 않은 경우 메시지 표시
+                    st.warning("동영상 길이 또는 BMP 파일 수가 유효하지 않아 분석을 진행하지 않습니다.")
+                    str3 = 'Fail'  # 분석을 진행하지 않으면 Fail로 설정
+                    str4 = "0.0000"  # 기본값 설정
 
             # 동영상 파일 업로드 처리 - BMP 파일 처리와 별도로 실행
             if video_file_path:
