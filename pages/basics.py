@@ -808,15 +808,7 @@ elif selected_option == "EMT":
                             # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
                             video_blob.upload_from_filename(video_file_path)
-                            
-                            # 서명된 URL 생성 (다운로드 링크)
-                            video_download_url = video_blob.generate_signed_url(
-                                version="v4",
-                                expiration=timedelta(days=7),
-                                method="GET"
-                            )
                             st.success("동영상이 성공적으로 전송되었습니다.")
-                            st.markdown(f"[동영상 다운로드 링크]({video_download_url})")
                         else:
                             # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
@@ -904,7 +896,7 @@ elif selected_option == "EMT":
                 result_image = result_image.resize((width // 2, height // 2), Image.Resampling.LANCZOS)
                 
                 # 결과 이미지 저장 - 하이픈(-)을 구분자로 사용
-                temp_image_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.png')
+                temp_image_path = os.path.join(temp_dir, f'{position}-{name}-EMT_result.png')
                 result_image.save(temp_image_path, format='PNG')
                 
                 try:
@@ -915,27 +907,6 @@ elif selected_option == "EMT":
                     result_blob = bucket.blob(firebase_path)
                     result_blob.upload_from_filename(temp_image_path, content_type='image/png')
                     
-                    # 서명된 URL 생성 (다운로드 링크)
-                    download_url = result_blob.generate_signed_url(
-                        version="v4",
-                        expiration=timedelta(days=7),  # URL 유효기간 7일
-                        method="GET"
-                    )
-                    
-                    # 다운로드 링크 표시
-                    st.success(f"이미지가 성공적으로 전송되었습니다.")
-                    st.markdown(f"[결과 이미지 다운로드 링크]({download_url})")
-                    
-                    # 동영상 파일에 대한 다운로드 링크도 생성
-                    if video_file_path:
-                        video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
-                        video_download_url = video_blob.generate_signed_url(
-                            version="v4",
-                            expiration=timedelta(days=7),
-                            method="GET"
-                        )
-                        st.markdown(f"[동영상 파일 다운로드 링크]({video_download_url})")
-                    
                     # 로그 파일 생성 및 전송 (Pass인 경우에만)
                     log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
                     log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
@@ -943,6 +914,8 @@ elif selected_option == "EMT":
                         f.write(log_text)
                     log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
                     log_blob.upload_from_filename(log_file_path)
+                    
+                    st.success(f"이미지가 성공적으로 전송되었습니다.")
                     
                     st.image(temp_image_path, use_container_width=True)
                 except Exception as e:
