@@ -42,7 +42,9 @@ if not firebase_admin._apps:
         "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
         "client_x509_cert_url": st.secrets["client_x509_cert_url"]
     })
-    firebase_admin.initialize_app(cred)
+    # Firebase가 이미 초기화되어 있는지 확인
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app(cred, {"storageBucket": "amcgi-bulletin.appspot.com"})
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -815,11 +817,19 @@ elif selected_option == "EMT":
                             
                             # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
+                                # 파일에 내용 추가 (최소한의 내용이라도 필요)
+                                temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
                                 temp_progress_file_path = temp_progress_file.name
                             
-                            progress_blob.upload_from_filename(temp_progress_file_path)
-                            os.unlink(temp_progress_file_path)
-                            st.success("분석 결과가 기록되었습니다.")
+                            try:
+                                progress_blob.upload_from_filename(temp_progress_file_path)
+                                st.success("분석 결과가 기록되었습니다.")
+                            except Exception as upload_error:
+                                st.error(f"파일 업로드 중 오류 발생: {str(upload_error)}")
+                            finally:
+                                # 임시 파일 삭제
+                                if os.path.exists(temp_progress_file_path):
+                                    os.unlink(temp_progress_file_path)
                         except Exception as e:
                             st.error(f"분석 결과 기록 중 오류 발생: {str(e)}")
                         
@@ -975,6 +985,7 @@ elif selected_option == "EMT":
                         
                         # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
+                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
                             temp_progress_file_path = temp_progress_file.name
                         
                         progress_blob.upload_from_filename(temp_progress_file_path)
@@ -997,6 +1008,7 @@ elif selected_option == "EMT":
                         
                         # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
+                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
                             temp_progress_file_path = temp_progress_file.name
                         
                         progress_blob.upload_from_filename(temp_progress_file_path)
