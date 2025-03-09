@@ -662,21 +662,29 @@ elif selected_option == "EMT":
                             green_lower = np.array([40, 40, 40], np.uint8)
                             green_upper = np.array([80, 255, 255], np.uint8)
                             green = cv2.inRange(hsv, green_lower, green_upper)
+                            
+                            # 노이즈 제거를 위한 모폴로지 연산
+                            kernel = np.ones((5, 5), np.uint8)
+                            green = cv2.morphologyEx(green, cv2.MORPH_OPEN, kernel)
+                            green = cv2.morphologyEx(green, cv2.MORPH_CLOSE, kernel)
 
                             # 윤곽선 검출
-                            contours, hierarchy = cv2.findContours(green, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                            contours, hierarchy = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                             
-                            if len(contours) > 0:
+                            # 크기가 200-8000 픽셀 사이인 윤곽선만 필터링
+                            filtered_contours = []
+                            for contour in contours:
+                                area = cv2.contourArea(contour)
+                                if 200 <= area <= 8000:  # 200-8000 픽셀 사이의 물체만 인식
+                                    filtered_contours.append(contour)
+                            
+                            if len(filtered_contours) > 0:
                                 # 가장 큰 윤곽선 찾기
-                                c = max(contours, key=cv2.contourArea)
+                                c = max(filtered_contours, key=cv2.contourArea)
                                 ga = cv2.contourArea(c)
                                 
-                                if ga > 500:
-                                    u = c
-                                    pts.extend([frame_count, 2])
-                                else:
-                                    u = np.array([[[0, 0]], [[1, 0]], [[2, 0]], [[2, 1]], [[2, 2]], [[1, 2]], [[0, 2]], [[0, 1]]])
-                                    pts.extend([frame_count, 3])
+                                u = c
+                                pts.extend([frame_count, 2])
 
                                 # 중심점 계산
                                 M = cv2.moments(u)
@@ -691,6 +699,10 @@ elif selected_option == "EMT":
                                 # 최소 외접원 계산
                                 ((cx, cy), radius) = cv2.minEnclosingCircle(u)
                                 pts.append(int(radius))
+                            else:
+                                # 감지된 물체가 없는 경우
+                                u = np.array([[[0, 0]], [[1, 0]], [[2, 0]], [[2, 1]], [[2, 2]], [[1, 2]], [[0, 2]], [[0, 1]]])
+                                pts.extend([frame_count, 3, 0, 0, 0])
 
                             # 진행률 업데이트 (5프레임마다)
                             if frame_count % 5 == 0:
