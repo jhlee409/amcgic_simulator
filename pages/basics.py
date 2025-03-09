@@ -561,7 +561,6 @@ elif selected_option == "EMT":
 
     st.write("---")
     
-   
     st.subheader("수행 동영상 및 이미지 파일 업로드, 분석 및 최종 평가서 전송")
 
     uploaded_files = st.file_uploader("분석할 파일들(avi, mp4, bmp)을 탐색기에서 찾아 모두 선택해주세요 단 동영상은 한개만 선택할 수 있습니다.", 
@@ -592,10 +591,20 @@ elif selected_option == "EMT":
                 
                 if uploaded_file.name.endswith('.avi') or uploaded_file.name.endswith('.mp4'):
                     avi_files.append(temp_path)
+                    
+                    # 동영상 파일을 원본 이름으로 먼저 업로드
+                    try:
+                        bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                        original_blob = bucket.blob(f"Simulator_training/result/{uploaded_file.name}")
+                        original_blob.upload_from_filename(temp_path)
+                        st.success(f"원본 동영상 '{uploaded_file.name}'이 성공적으로 업로드되었습니다.")
+                    except Exception as e:
+                        st.error(f"원본 동영상 업로드 중 오류 발생: {str(e)}")
+                        
                 elif uploaded_file.name.endswith('.bmp'):
                     has_bmp = True
                     bmp_files.append(temp_path)
-
+            
             st.write(f"avi 파일 수 : {len([file for file in avi_files if file.endswith('.avi')])} , MP4 파일 수 : {len([file for file in avi_files if file.endswith('.mp4')])} , BMP 파일 수: {len(bmp_files)}")
 
             # BMP 이미지 수 확인
@@ -808,20 +817,11 @@ elif selected_option == "EMT":
                             # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
                             video_blob.upload_from_filename(video_file_path)
-                            
-                            # 추가: 동영상을 Simulator_training/result/ 폴더에도 저장
-                            additional_video_blob = bucket.blob(f"Simulator_training/result/{video_file_name}")
-                            additional_video_blob.upload_from_filename(video_file_path)
-                            
                             st.success("동영상이 성공적으로 전송되었습니다.")
                         else:
                             # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
                             video_blob.upload_from_filename(video_file_path)
-                            
-                            # 추가: 실패한 동영상도 Simulator_training/result/ 폴더에 저장
-                            additional_video_blob = bucket.blob(f"Simulator_training/result/failed_{video_file_name}")
-                            additional_video_blob.upload_from_filename(video_file_path)
                             
                             # 실패 이유 메시지 표시
                             if str3 != "Pass":
@@ -915,11 +915,6 @@ elif selected_option == "EMT":
                     firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
                     result_blob = bucket.blob(firebase_path)
                     result_blob.upload_from_filename(temp_image_path, content_type='image/png')
-                    
-                    # 추가: 결과 이미지를 Simulator_training/result/ 폴더에도 저장
-                    additional_path = f'Simulator_training/result/{position}*{name}*EMT_result.png'
-                    additional_blob = bucket.blob(additional_path)
-                    additional_blob.upload_from_filename(temp_image_path, content_type='image/png')
                     
                     # 로그 파일 생성 및 전송 (Pass인 경우에만)
                     log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
