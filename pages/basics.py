@@ -620,17 +620,14 @@ elif selected_option == "EMT":
                 st.write(f"---\n동영상 길이: {int(duration // 60)} 분 {int(duration % 60)} 초")
                 if not (300 <= duration <= 330):
                     st.error("동영상의 길이가 5분에서 5분30초를 벗어납니다. 다시 시도해 주세요")
-                    # 동영상 길이가 범위를 벗어나는 경우 표시
                     is_video_length_valid = False
-                    camera.release()
-                    break  # 동영상 길이가 유효하지 않으면 분석 중단
+                else:
+                    is_video_length_valid = True
 
                 # BMP 이미지 수 확인
                 if not (62 <= len(bmp_files) <= 66):
                     st.error("사진의 숫자가 62장에서 66장 범위를 벗어납니다. 다시 시도해 주세요")
                     is_photo_count_valid = False
-                    camera.release()
-                    break  # BMP 파일 수가 유효하지 않으면 분석 중단
                 else:
                     is_photo_count_valid = True
 
@@ -796,22 +793,41 @@ elif selected_option == "EMT":
                         y_pred_test = clf.predict(x_test_scaled)
                         str4 = str(round(clf.decision_function(x_test_scaled)[0], 4))
                         st.write(f"판단 점수: {str4}")
-                        if y_pred_test == 1:
+                        
+                        # 분석 결과는 정상적으로 계산하되, 제한 위배 시 자동으로 Fail 처리
+                        if y_pred_test == 1 and is_video_length_valid and is_photo_count_valid:
                             str3 = 'Pass'
                             st.write('EGD 수행이 적절하게 진행되어 EMT 과정에서 합격하셨습니다. 수고하셨습니다.')
                         else:
                             str3 = 'Fail'
-                            st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
+                            if not is_video_length_valid or not is_photo_count_valid:
+                                st.write('동영상 길이 또는 사진 수가 요구사항을 충족하지 않아 불합격입니다.')
+                            else:
+                                st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
+                        
+                        # 모든 경우에 progress 폴더에 결과 기록
+                        try:
+                            bucket = storage.bucket('amcgi-bulletin.appspot.com')
+                            current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                            video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
+                            progress_filename = f"{position}*{name}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
+                            progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
+                            
+                            # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
+                            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
+                                temp_progress_file_path = temp_progress_file.name
+                            
+                            progress_blob.upload_from_filename(temp_progress_file_path)
+                            os.unlink(temp_progress_file_path)
+                            st.success("분석 결과가 기록되었습니다.")
+                        except Exception as e:
+                            st.error(f"분석 결과 기록 중 오류 발생: {str(e)}")
+                        
                     except Exception as e:
                         st.write(f"\n[ERROR] 비디오 처리 중 치명적 오류 발생 : {str(e)}")
                     finally:
                         # 분석 완료 후 정리
                         camera.release()
-                else:
-                    # 동영상 길이나 BMP 파일 수가 유효하지 않은 경우 메시지 표시
-                    st.warning("동영상 길이 또는 BMP 파일 수가 유효하지 않아 분석을 진행하지 않습니다.")
-                    str3 = 'Fail'  # 분석을 진행하지 않으면 Fail로 설정
-                    str4 = "0.0000"  # 기본값 설정
 
             # 동영상 파일 업로드 처리 - BMP 파일 처리와 별도로 실행
             if video_file_path:
