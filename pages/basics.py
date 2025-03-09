@@ -661,6 +661,12 @@ elif selected_option == "EMT":
                 prep_progress.empty()
                 prep_status.empty()
                 
+                # 데이터 처리 단계 진행 바 추가
+                processing_progress = st.progress(0)
+                processing_status = st.empty()
+                processing_status.write("데이터 처리 초기화 중...")
+                
+                # 프레임 분석 진행 바
                 progress_container = st.empty()
                 progress_container.progress(0)
 
@@ -670,10 +676,21 @@ elif selected_option == "EMT":
                     angle_g = np.array([])
                     distance_g = np.array([])
                     frame_count = 0
+                    
+                    # 데이터 처리 진행 상태 업데이트 (25%)
+                    processing_progress.progress(0.25)
+                    processing_status.write("프레임 분석 준비 중...")
+                    time.sleep(0.5)
 
                     # 진행률 표시를 위한 컨테이너 생성
                     progress_bar = st.progress(0)
                     progress_text = st.empty()
+                    
+                    # 데이터 처리 진행 상태 업데이트 (50%)
+                    processing_progress.progress(0.5)
+                    processing_status.write("프레임 분석 시작...")
+                    time.sleep(0.5)
+                    
                     progress_text.write("프레임 분석 중...")
 
                     while True:
@@ -743,12 +760,27 @@ elif selected_option == "EMT":
                             st.write(f"\n[ERROR] 프레임 {frame_count} 처리 중 오류 발생 : {str(e)}")
                             continue
 
+                    # 데이터 처리 진행 상태 업데이트 (75%)
+                    processing_progress.progress(0.75)
+                    processing_status.write("프레임 분석 완료, 데이터 후처리 중...")
+                    time.sleep(0.5)
+                    
                     # 진행률 표시 컨테이너 제거
                     progress_bar.empty()
                     progress_text.empty()
 
                     st.write(f"처리된 총 프레임 수 :  {frame_count}")
                     st.write(f"수집된 데이터 포인트 수 : {len(pts)}")
+                    
+                    # 데이터 처리 진행 상태 업데이트 (100%)
+                    processing_progress.progress(1.0)
+                    processing_status.write("데이터 처리 완료!")
+                    time.sleep(1)
+                    
+                    # 데이터 처리 진행 바 제거
+                    processing_progress.empty()
+                    processing_status.empty()
+                    
                     st.write("\n-> 분석 완료")
 
                 except Exception as e:
@@ -756,6 +788,16 @@ elif selected_option == "EMT":
                 finally:
                     # 분석 완료 후 정리
                     camera.release()
+
+                # 결과 계산 진행 바 추가
+                result_progress = st.progress(0)
+                result_status = st.empty()
+                result_status.write("분석 결과 계산 중...")
+                
+                # 결과 계산 진행 상태 업데이트 (25%)
+                result_progress.progress(0.25)
+                result_status.write("데이터 변환 중...")
+                time.sleep(0.5)
 
                 k = list(pts)
                 array_k = np.array(k)
@@ -776,6 +818,11 @@ elif selected_option == "EMT":
                 radius2 = array_k[4::5]
                 radius3 = np.reshape(radius2, (timesteps, 1))
 
+                # 결과 계산 진행 상태 업데이트 (50%)
+                result_progress.progress(0.5)
+                result_status.write("데이터 포인트 계산 중...")
+                time.sleep(0.5)
+
                 points = np.hstack([frame_no2, color2, x_value2, y_value2, radius3])
 
                 for i in range(timesteps - 1):
@@ -788,6 +835,11 @@ elif selected_option == "EMT":
                         distance_g = np.append(distance_g, delta_g)
                     else:
                         distance_g = np.append(distance_g, 0)
+
+                # 결과 계산 진행 상태 업데이트 (75%)
+                result_progress.progress(0.75)
+                result_status.write("SVM 모델 적용 중...")
+                time.sleep(0.5)
 
                 mean_g = np.mean([ggg for ggg in distance_g if ggg < 6])
                 std_g = np.std([ggg for ggg in distance_g if ggg < 6])
@@ -807,6 +859,15 @@ elif selected_option == "EMT":
                 # SVM 모델 생성
                 clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
                 clf.fit(x_train_scaled)
+                
+                # 결과 계산 진행 상태 업데이트 (100%)
+                result_progress.progress(1.0)
+                result_status.write("결과 계산 완료!")
+                time.sleep(1)
+                
+                # 결과 계산 진행 바 제거
+                result_progress.empty()
+                result_status.empty()
 
                 st.write("---")
                 st.subheader("최종 판정")
