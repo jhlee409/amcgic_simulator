@@ -748,19 +748,32 @@ elif selected_option == "EMT":
 
                 points = np.hstack([frame_no2, color2, x_value2, y_value2, radius3])
 
+                # 프레임 레이트를 이용한 시간 간격 계산 (초 단위)
+                time_interval = 1.0 / frame_rate
+                
+                # 초당 이동거리 계산을 위한 배열
+                distance_g = np.array([])
+
                 for i in range(timesteps - 1):
                     if (points[i][1] != 3 and points[i + 1][1] != 3) and (points[i][1] == 2 and points[i + 1][1] == 2):
                         a = points[i + 1][2] - points[i][2]
                         b = points[i + 1][3] - points[i][3]
-                        angle_g = np.append(angle_g, degrees(atan2(a, b)))
                         rr = points[i][4]
-                        delta_g = (np.sqrt((a * a) + (b * b))) / rr
+                        
+                        # 초당 이동거리로 계산 (프레임 간 이동거리를 시간 간격으로 나누고 반지름으로 정규화)
+                        delta_g = (np.sqrt((a * a) + (b * b))) / rr / time_interval
+                        
                         distance_g = np.append(distance_g, delta_g)
                     else:
                         distance_g = np.append(distance_g, 0)
 
-                mean_g = np.mean([ggg for ggg in distance_g if ggg < 6])
-                std_g = np.std([ggg for ggg in distance_g if ggg < 6])
+                # 초당 이동거리의 평균과 표준편차 계산
+                # 임계값도 프레임 레이트에 맞게 조정 (기존 6에서 프레임 레이트를 고려한 값으로)
+                # 30fps 기준으로 6이었다면, 초당 이동거리로는 6*30=180 정도가 됨
+                threshold = 180  # 조정된 임계값
+                
+                mean_g = np.mean([ggg for ggg in distance_g if ggg < threshold])
+                std_g = np.std([ggg for ggg in distance_g if ggg < threshold])
                 x_test = np.array([[mean_g, std_g]])
 
                 # 결과의 일관성을 위해 랜덤 시드 설정
@@ -881,7 +894,7 @@ elif selected_option == "EMT":
                 video_length = f"{int(video_duration // 60)} min {int(video_duration % 60)} sec"
 
                 # 추가할 텍스트
-                text = f"Photo number: {len(bmp_files)}\nDuration: {video_length}\nResult: {str3}\nSVM_value: {str4}"
+                text = f"Photo number: {len(bmp_files)}\nDuration: {video_length}\nResult: {str3}\nSVM_value: {str4}\nMean distance: {mean_g:.4f}\nStd distance: {std_g:.4f}"
 
                 # 텍스트 크기 계산
                 text_bbox = draw.textbbox((0, 0), text, font=font)
