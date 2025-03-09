@@ -807,12 +807,30 @@ elif selected_option == "EMT":
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
                             # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
+                            
+                            # 파일 확장자에 따라 적절한 MIME 타입 지정
+                            if video_file_path.lower().endswith('.avi'):
+                                content_type = 'video/x-msvideo'
+                            elif video_file_path.lower().endswith('.mp4'):
+                                content_type = 'video/mp4'
+                            else:
+                                content_type = 'application/octet-stream'  # 기본 바이너리 타입
+                            
+                            video_blob.upload_from_filename(video_file_path, content_type=content_type)
                             st.success("동영상이 성공적으로 전송되었습니다.")
                         else:
                             # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
-                            video_blob.upload_from_filename(video_file_path)
+                            
+                            # 파일 확장자에 따라 적절한 MIME 타입 지정
+                            if video_file_path.lower().endswith('.avi'):
+                                content_type = 'video/x-msvideo'
+                            elif video_file_path.lower().endswith('.mp4'):
+                                content_type = 'video/mp4'
+                            else:
+                                content_type = 'application/octet-stream'  # 기본 바이너리 타입
+                            
+                            video_blob.upload_from_filename(video_file_path, content_type=content_type)
                             
                             # 실패 이유 메시지 표시
                             if str3 != "Pass":
