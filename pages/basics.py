@@ -791,15 +791,6 @@ elif selected_option == "EMT":
                     str3 = 'Fail'
                     st.write('EGD 수행이 적절하게 진행되지 못해 불합격입니다. 다시 도전해 주세요.')
 
-            # 파일 업로드 진행 상황을 모니터링하는 콜백 함수 정의
-            def upload_progress_callback(progress_bar, status_text):
-                def callback(bytes_transferred, total_bytes):
-                    if total_bytes > 0:
-                        progress = bytes_transferred / total_bytes
-                        progress_bar.progress(progress)
-                        status_text.text(f"업로드 진행 중: {bytes_transferred/1024/1024:.2f} MB / {total_bytes/1024/1024:.2f} MB ({progress*100:.1f}%)")
-                return callback
-
             # 동영상 파일 업로드 처리 - BMP 파일 처리와 별도로 실행
             if video_file_path:
                 try:
@@ -812,41 +803,16 @@ elif selected_option == "EMT":
                         current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
                         video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
                         
-                        # 업로드 진행 상황을 모니터링하는 컴포넌트
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-                        
-                        # 파일 확장자에 따라 content_type 설정
-                        content_type = 'video/mp4' if video_file_path.lower().endswith('.mp4') else 'video/x-msvideo'
-                        
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
                             # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
-                            
-                            # 콜백 함수를 사용하여 업로드 진행 상황 모니터링
-                            video_blob.upload_from_filename(
-                                video_file_path, 
-                                content_type=content_type,
-                                callback=upload_progress_callback(progress_bar, status_text)
-                            )
-                            
-                            # 업로드 완료 메시지
-                            status_text.text("동영상 업로드가 완료되었습니다!")
+                            video_blob.upload_from_filename(video_file_path)
                             st.success("동영상이 성공적으로 전송되었습니다.")
                         else:
                             # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
                             video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
-                            
-                            # 콜백 함수를 사용하여 업로드 진행 상황 모니터링
-                            video_blob.upload_from_filename(
-                                video_file_path, 
-                                content_type=content_type,
-                                callback=upload_progress_callback(progress_bar, status_text)
-                            )
-                            
-                            # 업로드 완료 메시지
-                            status_text.text("동영상 업로드가 완료되었습니다!")
+                            video_blob.upload_from_filename(video_file_path)
                             
                             # 실패 이유 메시지 표시
                             if str3 != "Pass":
