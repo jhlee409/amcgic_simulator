@@ -626,10 +626,10 @@ elif selected_option == "EMT":
                 video_duration = duration  # 동영상 길이 저장
 
                 st.write(f"---\n동영상 길이: {int(duration // 60)} 분 {int(duration % 60)} 초")
-                if not (300 <= duration <= 330):
-                    st.error("동영상의 길이가 5분에서 5분30초를 벗어납니다. 다시 시도해 주세요")
-                    # 동영상 길이가 범위를 벗어나는 경우 표시
-                    is_video_length_valid = False
+                # if not (300 <= duration <= 330):
+                #     st.error("동영상의 길이가 5분에서 5분30초를 벗어납니다. 다시 시도해 주세요")
+                #     # 동영상 길이가 범위를 벗어나는 경우 표시
+                #     is_video_length_valid = False
 
                 st.write(f"비디오 정보 : 총 프레임 수 = {length} , 프레임 레이트 = {frame_rate:.2f}")
                 progress_container = st.empty()
