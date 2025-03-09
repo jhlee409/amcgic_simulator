@@ -936,16 +936,6 @@ elif selected_option == "EMT":
                     pass
                 
                 st.success("평가가 완료되었습니다.")
-                
-                # 새로고침 버튼 추가
-                st.write("---")
-                if st.button("새로고침", key="refresh_emt"):
-                    # 세션 상태 업데이트
-                    st.session_state.previous_selection = "EMT"
-                    st.session_state.show_emt_video = False
-                    st.session_state.show_expert_video = False
-                    # 페이지 새로고침
-                    st.rerun()
             except Exception as e:
                 st.error(f"임시 파일 정리 중 오류 발생: {str(e)}")
 
