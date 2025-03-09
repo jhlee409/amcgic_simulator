@@ -916,7 +916,6 @@ elif selected_option == "EMT":
                             temp_image_path,
                             content_type='image/png'  # MIME-Type 명시
                         )
-                        st.success("이미지가 Pass 폴더로 정상적으로 전송되었습니다.")
 
                         # 로그 파일 생성 및 전송 (Pass인 경우에만)
                         log_text = (
