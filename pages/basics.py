@@ -902,7 +902,7 @@ elif selected_option == "EMT":
                 result_image = result_image.resize((width // 2, height // 2), Image.Resampling.LANCZOS)
                 
                 # 결과 이미지 저장 - 하이픈(-)을 구분자로 사용
-                temp_image_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.png')
+                temp_image_path = os.path.join(temp_dir, f'{position}-{name}-EMT_result.png')
                 result_image.save(temp_image_path, format='PNG')
                 
                 try:
@@ -910,7 +910,7 @@ elif selected_option == "EMT":
 
                     # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
                     if str3 == "Pass" and is_photo_count_valid:
-                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png"
+                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result.png"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
@@ -922,7 +922,7 @@ elif selected_option == "EMT":
                             f"EMT_result image uploaded by {name} ({position}) "
                             f"on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
                         )
-                        log_file_path = os.path.join(temp_dir, f"{position}*{name}*EMT_result.txt")
+                        log_file_path = os.path.join(temp_dir, f"{position}-{name}-EMT_result.txt")
                         with open(log_file_path, 'w') as f:
                             f.write(log_text)
 
@@ -931,7 +931,7 @@ elif selected_option == "EMT":
 
                     else:
                         # Fail(또는 조건이 충족되지 않은 경우) -> EMT_result_failed 폴더
-                        firebase_path = f"Simulator_training/EMT/EMT_result_failed/{position}*{name}*EMT_result.png"
+                        firebase_path = f"Simulator_training/EMT/EMT_result_failed/{position}-{name}-EMT_result.png"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
