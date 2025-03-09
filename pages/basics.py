@@ -907,19 +907,48 @@ elif selected_option == "EMT":
                 
                 try:
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                    
-                    # 이미지 업로드 (Pass이고 모든 조건이 충족된 경우에만)
-                    firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
-                    result_blob = bucket.blob(firebase_path)
-                    result_blob.upload_from_filename(temp_image_path, content_type='image/png')
-                    
-                    # 로그 파일 생성 및 전송 (Pass인 경우에만)
-                    log_text = f"EMT_result image uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
-                    log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_result.txt')
-                    with open(log_file_path, 'w') as f:
-                        f.write(log_text)
-                    log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result')
-                    log_blob.upload_from_filename(log_file_path)
+
+                    # 예시 조건 (Pass/Fail 여부, 이미지가 유효한지 등)
+                    str3 = "Pass"  # 실제 로직에 맞춰서 설정
+                    is_photo_count_valid = True  # 실제 로직에 맞춰서 설정
+                    position = "position_example"  
+                    name = "name_example"
+
+                    # 임시 PNG 이미지 파일 경로
+                    temp_image_path = "/path/to/local/EMT_result.png"
+
+                    # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
+                    if str3 == "Pass" and is_photo_count_valid:
+                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png"
+                        result_blob = bucket.blob(firebase_path)
+                        result_blob.upload_from_filename(
+                            temp_image_path,
+                            content_type='image/png'  # MIME-Type 명시
+                        )
+                        st.success("이미지가 Pass 폴더로 정상적으로 전송되었습니다.")
+
+                        # 로그 파일 생성 및 전송 (Pass인 경우에만)
+                        log_text = (
+                            f"EMT_result image uploaded by {name} ({position}) "
+                            f"on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                        )
+                        temp_dir = os.path.dirname(temp_image_path)
+                        log_file_path = os.path.join(temp_dir, f"{position}*{name}*EMT_result.txt")
+                        with open(log_file_path, 'w') as f:
+                            f.write(log_text)
+
+                        log_blob = bucket.blob(f"Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result")
+                        log_blob.upload_from_filename(log_file_path)
+
+                    else:
+                        # Fail(또는 조건이 충족되지 않은 경우) -> EMT_result_failed 폴더
+                        firebase_path = f"Simulator_training/EMT/EMT_result_failed/{position}*{name}*EMT_result.png"
+                        result_blob = bucket.blob(firebase_path)
+                        result_blob.upload_from_filename(
+                            temp_image_path,
+                            content_type='image/png'  # MIME-Type 명시
+                        )
+                        st.warning("이미지가 Fail 폴더로 전송되었습니다.")
                     
                     st.success(f"이미지가 성공적으로 전송되었습니다.")
                     
