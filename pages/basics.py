@@ -903,7 +903,7 @@ elif selected_option == "EMT":
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
                     
                     # 이미지 업로드 (Pass이고 모든 조건이 충족된 경우에만)
-                    firebase_path = f'Simulator_training/EMT/EMT_result_passed/EMT_result.png'
+                    firebase_path = f'Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png'
                     result_blob = bucket.blob(firebase_path)
                     result_blob.upload_from_filename(temp_image_path, content_type='image/png')
                     
