@@ -799,38 +799,80 @@ elif selected_option == "EMT":
                         st.error(f"파일을 찾을 수 없습니다: {video_file_path}")
                     else:
                         bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                        extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
+                        extension = os.path.splitext(video_file_path)[1].lower()  # 파일 확장자 추출 (소문자로 변환)
                         current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
-                        video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
+                        
+                        # 원래 파일 이름 형식 (로그용)
+                        original_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
+                        
+                        # 업로드용 안전한 파일 이름 (특수문자 '_'로 대체)
+                        safe_file_name = f"{position}_{name}_EMT_result_{current_date}{extension}"
+                        
+                        # 파일 확장자에 따라 적절한 MIME 타입 지정
+                        if extension == '.avi':
+                            content_type = 'video/x-msvideo'
+                        elif extension == '.mp4':
+                            content_type = 'video/mp4'
+                        else:
+                            content_type = 'application/octet-stream'  # 기본 바이너리 타입
+                        
+                        # 메타데이터 설정
+                        metadata = {
+                            'contentType': content_type,
+                            'contentDisposition': f'attachment; filename="{safe_file_name}"'
+                        }
                         
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
                             # Pass이고 사진 숫자와 동영상 길이가 모두 유효한 경우
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{video_file_name}")
+                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_passed/{safe_file_name}")
                             
-                            # 파일 확장자에 따라 적절한 MIME 타입 지정
-                            if video_file_path.lower().endswith('.avi'):
-                                content_type = 'video/x-msvideo'
-                            elif video_file_path.lower().endswith('.mp4'):
-                                content_type = 'video/mp4'
-                            else:
-                                content_type = 'application/octet-stream'  # 기본 바이너리 타입
+                            # 메타데이터와 함께 업로드
+                            with open(video_file_path, 'rb') as video_file:
+                                video_blob.upload_from_file(video_file, content_type=content_type)
                             
-                            video_blob.upload_from_filename(video_file_path, content_type=content_type)
+                            # 메타데이터 업데이트
+                            video_blob.metadata = metadata
+                            video_blob.patch()
+                            
                             st.success("동영상이 성공적으로 전송되었습니다.")
+                            
+                            # 로그 파일 생성 (원래 형식 유지)
+                            log_text = f"EMT_result video uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            log_text += f"Original filename: {original_file_name}\n"
+                            log_text += f"Uploaded as: {safe_file_name}"
+                            
+                            log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_video_log.txt')
+                            with open(log_file_path, 'w') as f:
+                                f.write(log_text)
+                            
+                            # 로그 파일 업로드 (원래 형식 유지)
+                            log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_video_log')
+                            log_blob.upload_from_filename(log_file_path)
                         else:
                             # Fail이거나 사진 숫자 또는 동영상 길이가 유효하지 않은 경우
-                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{video_file_name}")
+                            video_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_failed/{safe_file_name}")
                             
-                            # 파일 확장자에 따라 적절한 MIME 타입 지정
-                            if video_file_path.lower().endswith('.avi'):
-                                content_type = 'video/x-msvideo'
-                            elif video_file_path.lower().endswith('.mp4'):
-                                content_type = 'video/mp4'
-                            else:
-                                content_type = 'application/octet-stream'  # 기본 바이너리 타입
+                            # 메타데이터와 함께 업로드
+                            with open(video_file_path, 'rb') as video_file:
+                                video_blob.upload_from_file(video_file, content_type=content_type)
                             
-                            video_blob.upload_from_filename(video_file_path, content_type=content_type)
+                            # 메타데이터 업데이트
+                            video_blob.metadata = metadata
+                            video_blob.patch()
+                            
+                            # 로그 파일 생성 (원래 형식 유지)
+                            log_text = f"EMT_result video (FAILED) uploaded by {name} ({position}) on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            log_text += f"Original filename: {original_file_name}\n"
+                            log_text += f"Uploaded as: {safe_file_name}"
+                            
+                            log_file_path = os.path.join(temp_dir, f'{position}*{name}*EMT_video_log_failed.txt')
+                            with open(log_file_path, 'w') as f:
+                                f.write(log_text)
+                            
+                            # 로그 파일 업로드 (원래 형식 유지)
+                            log_blob = bucket.blob(f'Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_video_log_failed')
+                            log_blob.upload_from_filename(log_file_path)
                             
                             # 실패 이유 메시지 표시
                             if str3 != "Pass":
