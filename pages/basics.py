@@ -24,6 +24,7 @@ from firebase_admin import credentials, storage
 import tempfile
 import wave
 import requests
+import time
 
 # Set page to wide mode
 st.set_page_config(page_title="Simulator basic training", layout="wide")
@@ -613,17 +614,35 @@ elif selected_option == "EMT":
             
             # AVI 파일 처리
             total_avi_files = len(avi_files)
+            
+            # 분석 준비 진행 상태 표시
+            prep_progress = st.progress(0)
+            prep_status = st.empty()
+            prep_status.write("동영상 분석 준비 중...")
+            
+            # 준비 단계 진행 상태 업데이트 (25%)
+            prep_progress.progress(0.25)
+            prep_status.write("동영상 파일 로드 중...")
+            
             for file_path in avi_files:
                 video_file_path = file_path  # 동영상 파일 경로 저장
                 camera = cv2.VideoCapture(file_path)
                 if not camera.isOpened():
                     st.error("동영상 파일을 열 수 없습니다.")
                     continue
+                
+                # 준비 단계 진행 상태 업데이트 (50%)
+                prep_progress.progress(0.5)
+                prep_status.write("동영상 정보 분석 중...")
 
                 length = int(camera.get(cv2.CAP_PROP_FRAME_COUNT))
                 frame_rate = camera.get(cv2.CAP_PROP_FPS)
                 duration = length / frame_rate
                 video_duration = duration  # 동영상 길이 저장
+
+                # 준비 단계 진행 상태 업데이트 (75%)
+                prep_progress.progress(0.75)
+                prep_status.write("분석 변수 초기화 중...")
 
                 st.write(f"---\n동영상 길이: {int(duration // 60)} 분 {int(duration % 60)} 초")
                 if not (300 <= duration <= 330):
@@ -632,6 +651,16 @@ elif selected_option == "EMT":
                     is_video_length_valid = False
 
                 st.write(f"비디오 정보 : 총 프레임 수 = {length} , 프레임 레이트 = {frame_rate:.2f}")
+                
+                # 준비 단계 진행 상태 업데이트 (100%)
+                prep_progress.progress(1.0)
+                prep_status.write("분석 준비 완료! 프레임 처리를 시작합니다...")
+                
+                # 잠시 대기 후 준비 진행 바 제거
+                time.sleep(1)
+                prep_progress.empty()
+                prep_status.empty()
+                
                 progress_container = st.empty()
                 progress_container.progress(0)
 
@@ -645,6 +674,7 @@ elif selected_option == "EMT":
                     # 진행률 표시를 위한 컨테이너 생성
                     progress_bar = st.progress(0)
                     progress_text = st.empty()
+                    progress_text.write("프레임 분석 중...")
 
                     while True:
                         ret, frame = camera.read()
