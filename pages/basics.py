@@ -908,15 +908,6 @@ elif selected_option == "EMT":
                 try:
                     bucket = storage.bucket('amcgi-bulletin.appspot.com')
 
-                    # 예시 조건 (Pass/Fail 여부, 이미지가 유효한지 등)
-                    str3 = "Pass"  # 실제 로직에 맞춰서 설정
-                    is_photo_count_valid = True  # 실제 로직에 맞춰서 설정
-                    position = "position_example"  
-                    name = "name_example"
-
-                    # 임시 PNG 이미지 파일 경로
-                    temp_image_path = "/path/to/local/EMT_result.png"
-
                     # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
                     if str3 == "Pass" and is_photo_count_valid:
                         firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}*{name}*EMT_result.png"
@@ -932,7 +923,6 @@ elif selected_option == "EMT":
                             f"EMT_result image uploaded by {name} ({position}) "
                             f"on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
                         )
-                        temp_dir = os.path.dirname(temp_image_path)
                         log_file_path = os.path.join(temp_dir, f"{position}*{name}*EMT_result.txt")
                         with open(log_file_path, 'w') as f:
                             f.write(log_text)
