@@ -561,6 +561,7 @@ elif selected_option == "EMT":
 
     st.write("---")
     
+   
     st.subheader("수행 동영상 및 이미지 파일 업로드, 분석 및 최종 평가서 전송")
 
     uploaded_files = st.file_uploader("분석할 파일들(avi, mp4, bmp)을 탐색기에서 찾아 모두 선택해주세요 단 동영상은 한개만 선택할 수 있습니다.", 
@@ -591,20 +592,10 @@ elif selected_option == "EMT":
                 
                 if uploaded_file.name.endswith('.avi') or uploaded_file.name.endswith('.mp4'):
                     avi_files.append(temp_path)
-                    
-                    # 동영상 파일을 원본 이름으로 먼저 업로드
-                    try:
-                        bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                        original_blob = bucket.blob(f"Simulator_training/result/{uploaded_file.name}")
-                        original_blob.upload_from_filename(temp_path)
-                        st.success(f"원본 동영상 '{uploaded_file.name}'이 성공적으로 업로드되었습니다.")
-                    except Exception as e:
-                        st.error(f"원본 동영상 업로드 중 오류 발생: {str(e)}")
-                        
                 elif uploaded_file.name.endswith('.bmp'):
                     has_bmp = True
                     bmp_files.append(temp_path)
-            
+
             st.write(f"avi 파일 수 : {len([file for file in avi_files if file.endswith('.avi')])} , MP4 파일 수 : {len([file for file in avi_files if file.endswith('.mp4')])} , BMP 파일 수: {len(bmp_files)}")
 
             # BMP 이미지 수 확인
