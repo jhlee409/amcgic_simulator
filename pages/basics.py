@@ -604,6 +604,10 @@ elif selected_option == "EMT":
             is_video_length_valid = True
             video_duration = 0
             video_file_path = None
+            str3 = 'Fail'  # 기본값으로 Fail 설정
+            str4 = "0.0000"  # 기본값 설정
+            mean_g = 0.0000  # 기본값 설정
+            std_g = 0.0000   # 기본값 설정
             
             # AVI 파일 처리
             total_avi_files = len(avi_files)
