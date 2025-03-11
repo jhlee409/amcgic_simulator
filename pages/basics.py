@@ -544,7 +544,7 @@ elif selected_option == "EMT":
                 video_html = f'''
                 <div style="display: flex; justify-content: center;">
                     <video width="1300" controls controlsList="nodownload">
-                        <source src="{demonstration_url}" type="video/x-msvideo">
+                        <source src="{demonstration_url}" type="video/avi">
                     </video>
                 </div>
                 <script>
