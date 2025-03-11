@@ -814,15 +814,15 @@ elif selected_option == "EMT":
                         # 모든 경우에 progress 폴더에 결과 기록
                         try:
                             bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                            current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                            current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                             video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
-                            progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
+                            progress_filename = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                             progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
                             
                             # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
                                 # 파일에 내용 추가 (최소한의 내용이라도 필요)
-                                temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
+                                temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_time}")
                                 temp_progress_file_path = temp_progress_file.name
                             
                             try:
@@ -852,8 +852,8 @@ elif selected_option == "EMT":
                     else:
                         bucket = storage.bucket('amcgi-bulletin.appspot.com')
                         extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
-                        video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
+                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                        video_file_name = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{str4}*{str3}{extension}"
                         
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
@@ -962,7 +962,10 @@ elif selected_option == "EMT":
 
                     # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
                     if str3 == "Pass" and is_photo_count_valid:
-                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result.png"
+                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                        video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
+                        image_file_name = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{str4}*{str3}.png"
+                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{image_file_name}"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
@@ -982,14 +985,14 @@ elif selected_option == "EMT":
                         log_blob.upload_from_filename(log_file_path)
 
                         # 추가: EMT_result_progress 폴더에 진행 상황 기록
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                         video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
-                        progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
+                        progress_filename = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                         progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
                         
                         # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
-                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
+                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_time}")
                             temp_progress_file_path = temp_progress_file.name
                         
                         progress_blob.upload_from_filename(temp_progress_file_path)
@@ -997,7 +1000,10 @@ elif selected_option == "EMT":
 
                     else:
                         # Fail(또는 조건이 충족되지 않은 경우) -> EMT_result_failed 폴더
-                        firebase_path = f"Simulator_training/EMT/EMT_result_failed/{position}-{name}-EMT_result.png"
+                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                        video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
+                        image_file_name = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{str4}*{str3}.png"
+                        firebase_path = f"Simulator_training/EMT/EMT_result_failed/{image_file_name}"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
@@ -1005,14 +1011,14 @@ elif selected_option == "EMT":
                         )
                         
                         # 추가: EMT_result_progress 폴더에 진행 상황 기록 (실패한 경우에도)
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                         video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
-                        progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
+                        progress_filename = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                         progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
                         
                         # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
-                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
+                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_time}")
                             temp_progress_file_path = temp_progress_file.name
                         
                         progress_blob.upload_from_filename(temp_progress_file_path)
