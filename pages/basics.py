@@ -821,19 +821,12 @@ elif selected_option == "EMT":
                             
                             # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
                             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
-                                # 파일에 내용 추가 (최소한의 내용이라도 필요)
                                 temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
                                 temp_progress_file_path = temp_progress_file.name
                             
-                            try:
-                                progress_blob.upload_from_filename(temp_progress_file_path)
-                                st.success("분석 결과가 기록되었습니다.")
-                            except Exception as upload_error:
-                                st.error(f"파일 업로드 중 오류 발생: {str(upload_error)}")
-                            finally:
-                                # 임시 파일 삭제
-                                if os.path.exists(temp_progress_file_path):
-                                    os.unlink(temp_progress_file_path)
+                            progress_blob.upload_from_filename(temp_progress_file_path)
+                            os.unlink(temp_progress_file_path)
+                            st.success("분석 결과가 기록되었습니다.")
                         except Exception as e:
                             st.error(f"분석 결과 기록 중 오류 발생: {str(e)}")
                         
@@ -879,6 +872,24 @@ elif selected_option == "EMT":
                                 st.warning("사진의 숫자가 62-66 범위를 벗어나므로 동영상은 실패 폴더에 업로드했습니다.")
                             elif not is_video_length_valid:
                                 st.warning("동영상 길이가 5분-5분 30초 범위를 벗어나므로 동영상은 실패 폴더에 업로드했습니다.")
+                        
+                        # 동영상 업로드 후 progress 정보 기록 (성공/실패 모두)
+                        try:
+                            current_date = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+                            video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
+                            progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
+                            progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
+                            
+                            # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
+                            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
+                                temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_date}")
+                                temp_progress_file_path = temp_progress_file.name
+                            
+                            progress_blob.upload_from_filename(temp_progress_file_path)
+                            os.unlink(temp_progress_file_path)
+                            st.success("분석 결과가 기록되었습니다.")
+                        except Exception as e:
+                            st.error(f"분석 결과 기록 중 오류 발생: {str(e)}")
                 except Exception as e:
                     st.error(f"동영상 전송 중 오류 발생: {str(e)}")
                     st.error(f"파일 경로: {video_file_path}")
