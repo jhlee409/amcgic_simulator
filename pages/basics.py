@@ -814,7 +814,7 @@ elif selected_option == "EMT":
                         # 모든 경우에 progress 폴더에 결과 기록
                         try:
                             bucket = storage.bucket('amcgi-bulletin.appspot.com')
-                            current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                            current_date = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                             video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
                             progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                             progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
@@ -852,7 +852,7 @@ elif selected_option == "EMT":
                     else:
                         bucket = storage.bucket('amcgi-bulletin.appspot.com')
                         extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                         video_file_name = f"{position}*{name}*EMT_result*{current_date}{extension}"
                         
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
@@ -982,7 +982,7 @@ elif selected_option == "EMT":
                         log_blob.upload_from_filename(log_file_path)
 
                         # 추가: EMT_result_progress 폴더에 진행 상황 기록
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                         video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
                         progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                         progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
@@ -1005,7 +1005,7 @@ elif selected_option == "EMT":
                         )
                         
                         # 추가: EMT_result_progress 폴더에 진행 상황 기록 (실패한 경우에도)
-                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+                        current_date = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
                         video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
                         progress_filename = f"{name}*{position}*{current_date}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
                         progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
