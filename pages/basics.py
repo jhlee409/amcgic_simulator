@@ -981,20 +981,6 @@ elif selected_option == "EMT":
                         log_blob = bucket.blob(f"Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result")
                         log_blob.upload_from_filename(log_file_path)
 
-                        # 추가: EMT_result_progress 폴더에 진행 상황 기록
-                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-                        video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
-                        progress_filename = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
-                        progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
-                        
-                        # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
-                        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
-                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_time}")
-                            temp_progress_file_path = temp_progress_file.name
-                        
-                        progress_blob.upload_from_filename(temp_progress_file_path)
-                        os.unlink(temp_progress_file_path)
-
                     else:
                         # Fail(또는 조건이 충족되지 않은 경우) -> EMT_result_failed 폴더
                         firebase_path = f"Simulator_training/EMT/EMT_result_failed/{position}-{name}-EMT_result.png"
@@ -1003,20 +989,6 @@ elif selected_option == "EMT":
                             temp_image_path,
                             content_type='image/png'  # MIME-Type 명시
                         )
-                        
-                        # 추가: EMT_result_progress 폴더에 진행 상황 기록 (실패한 경우에도)
-                        current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-                        video_duration_str = f"{int(video_duration // 60)}분{int(video_duration % 60)}초"
-                        progress_filename = f"{name}*{position}*{current_time}*{video_duration_str}*{mean_g:.4f}*{std_g:.4f}*{str4}*{str3}"
-                        progress_blob = bucket.blob(f"Simulator_training/EMT/EMT_result_progress/{progress_filename}")
-                        
-                        # 빈 파일 생성하여 업로드 (파일명에 모든 정보 포함)
-                        with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_progress_file:
-                            temp_progress_file.write(f"EMT 훈련 결과: {position}, {name}, {current_time}")
-                            temp_progress_file_path = temp_progress_file.name
-                        
-                        progress_blob.upload_from_filename(temp_progress_file_path)
-                        os.unlink(temp_progress_file_path)
                         
                         st.warning("이미지가 Fail 폴더로 전송되었습니다.")
                     
