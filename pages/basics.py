@@ -853,7 +853,7 @@ elif selected_option == "EMT":
                         bucket = storage.bucket('amcgi-bulletin.appspot.com')
                         extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
                         current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-                        video_file_name = f"{position}*{name}*EMT_result*{current_time}{extension}"
+                        video_file_name = f"{position}*{name}*EMT_result*{current_time}{str4}{extension}"
                         
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
@@ -962,7 +962,7 @@ elif selected_option == "EMT":
 
                     # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
                     if str3 == "Pass" and is_photo_count_valid:
-                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result.png"
+                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result-{str4}-{str4}{extension}".png"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
