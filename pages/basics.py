@@ -962,7 +962,7 @@ elif selected_option == "EMT":
 
                     # Pass이고 모든 조건이 충족된 경우 -> EMT_result_passed 폴더
                     if str3 == "Pass" and is_photo_count_valid:
-                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result-{str4}-{str4}{extension}".png
+                        firebase_path = f"Simulator_training/EMT/EMT_result_passed/{position}-{name}-EMT_result-{str4}-{str4}.png"
                         result_blob = bucket.blob(firebase_path)
                         result_blob.upload_from_filename(
                             temp_image_path,
