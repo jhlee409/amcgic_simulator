@@ -853,7 +853,7 @@ elif selected_option == "EMT":
                         bucket = storage.bucket('amcgi-bulletin.appspot.com')
                         extension = os.path.splitext(video_file_path)[1]  # 파일 확장자 추출
                         current_time = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-                        video_file_name = f"{position}*{name}*EMT_result*{current_time}{str4}{extension}"
+                        video_file_name = f"{position}*{name}*EMT_result*{current_time}*{str4}{extension}"
                         
                         # 동영상 업로드 - 조건에 따라 다른 폴더에 저장
                         if str3 == "Pass" and is_photo_count_valid and is_video_length_valid:
