@@ -97,6 +97,13 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                 # 가장 최근 로그인 시간 찾기
                 latest_login_blob = max(login_blobs, key=lambda x: x.name)
                 login_time_str = latest_login_blob.name.split('/')[-1]
+                
+                # 파일 이름에서 시간 부분만 추출
+                # 파일 이름 형식이 'Staff이진혁login*2025_03_13_21_22_49'와 같은 경우
+                # '*' 기호로 분리하여 마지막 부분(시간)만 가져옴
+                if '*' in login_time_str:
+                    login_time_str = login_time_str.split('*')[-1]
+                
                 # UTC 시간으로 파싱하여 시간대 정보 추가
                 login_time = datetime.strptime(login_time_str, "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc)
                 
