@@ -527,8 +527,8 @@ elif selected_option == "EMT":
 
     st.write("---")
 
-    st.subheader("전문가 시범 동영상")
-    st.write("전문가가 수행한 EMT 시범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
+    st.subheader("EMT 수행 모범 동영상")
+    st.write("EMT 수행 모범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
     try:
         bucket = storage.bucket('amcgi-bulletin.appspot.com')
         demonstration_blob = bucket.blob('Simulator_training/EMT/EMT_expert_demo.mp4')
