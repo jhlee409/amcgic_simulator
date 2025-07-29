@@ -403,24 +403,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     login_folder.delete()
                 if logout_folder.exists():
                     logout_folder.delete()
-
-                # Supabase에 로그아웃 기록 전송
-                logout_data = {
-                    "position": position,
-                    "name": name,
-                    "time": logout_time.isoformat(),
-                    "event": "logout",
-                    "duration": time_duration  # 초 단위의 정수값 사용
-                }
-                # Supabase 로그아웃 기록
-                supabase_url = st.secrets["supabase_url"]
-                supabase_key = st.secrets["supabase_key"]
-                supabase_headers = {
-                    "Content-Type": "application/json",
-                    "apikey": supabase_key,
-                    "Authorization": f"Bearer {supabase_key}"
-                }
-                requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
                 # 세션 상태 초기화
                 st.session_state.clear()
                 st.success("로그아웃되었습니다.")
