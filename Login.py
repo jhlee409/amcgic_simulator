@@ -292,31 +292,9 @@ def handle_login(email, password, name, position):
                 })
                 user_data['position'] = position
 
-            # Supabase로 로그인 기록 추가
-            supabase_url = st.secrets["supabase_url"]
-            supabase_key = st.secrets["supabase_key"]
-            supabase_headers = {
-                "Content-Type": "application/json",
-                "apikey": supabase_key,
-                "Authorization": f"Bearer {supabase_key}"
-            }
-
             login_time = datetime.now(timezone.utc)
             st.session_state['login_time'] = login_time.astimezone()  # Update login_time to be timezone-aware
-            login_data = {
-                "position": position,
-                "name": name,
-                "time": login_time.isoformat(),
-                "event": "login",
-                "duration": 0
-            }
-
-            supabase_response = requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=login_data)
-
-            if supabase_response.status_code == 201:
-                st.success(f"환영합니다, {user_data.get('name', email)}님! ({user_data.get('position', '직책 미지정')})")
-            else:
-                st.error(f"Supabase에 로그인 기록을 추가하는 중 오류 발생: {supabase_response.text}")
+            # (Supabase 기록 추가 코드 삭제)
 
             # 세션 모니터링
             if 'logged_in' in st.session_state and st.session_state['logged_in']:
@@ -433,7 +411,6 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     "event": "logout",
                     "duration": time_duration  # 초 단위의 정수값 사용
                 }
-                
                 # Supabase 로그아웃 기록
                 supabase_url = st.secrets["supabase_url"]
                 supabase_key = st.secrets["supabase_key"]
@@ -442,9 +419,7 @@ if "logged_in" in st.session_state and st.session_state['logged_in']:
                     "apikey": supabase_key,
                     "Authorization": f"Bearer {supabase_key}"
                 }
-                
                 requests.post(f"{supabase_url}/rest/v1/login", headers=supabase_headers, json=logout_data)
-                
                 # 세션 상태 초기화
                 st.session_state.clear()
                 st.success("로그아웃되었습니다.")
