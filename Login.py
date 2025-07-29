@@ -201,6 +201,7 @@ def handle_login(email, password, name, position):
                 'session_id': session_id,
                 'last_activity': time.time()
             })
+            st.success("로그인에 성공했습니다!")
             
             # Firebase Storage에서 기존 로그 폴더 삭제
             bucket = storage.bucket()
