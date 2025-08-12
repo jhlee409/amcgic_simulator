@@ -179,7 +179,7 @@ if selected_option == "Sim orientation":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/Sim/log_Sim/{position}*{name}*Sim")
+                    log_blob = bucket.blob(f"log/{position}*{name}*Sim")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -324,7 +324,7 @@ elif selected_option == "MT":
                     temp_file_path = temp_file.name
 
                 # Firebase Storage upload for log file
-                log_blob = bucket.blob(f"Simulator_training/MT/log_MT/{log_file_name}")
+                log_blob = bucket.blob(f"log/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
 
                 # Remove temporary log file
@@ -455,7 +455,7 @@ elif selected_option == "SHT":
                     temp_file_path = temp_file.name
 
                 # Firebase Storage upload for log file
-                log_blob = bucket.blob(f"Simulator_training/SHT/log_SHT/{log_file_name}")
+                log_blob = bucket.blob(f"log/{log_file_name}")
                 log_blob.upload_from_filename(temp_file_path)
 
                 # Remove temporary log file
@@ -957,7 +957,7 @@ elif selected_option == "EMT":
                         with open(log_file_path, 'w') as f:
                             f.write(log_text)
 
-                        log_blob = bucket.blob(f"Simulator_training/EMT/log_EMT_result/{position}*{name}*EMT_result")
+                        log_blob = bucket.blob(f"log/{position}*{name}*EMT_result")
                         log_blob.upload_from_filename(log_file_path)
 
                     else:

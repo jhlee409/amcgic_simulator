@@ -266,7 +266,7 @@ if selected_option == "LHT":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/LHT/log_LHT/{log_file_name}")
+                    log_blob = bucket.blob(f"log/{log_file_name}")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
 
@@ -302,7 +302,7 @@ elif selected_option == "EVL":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/EVL/log_EVL/{position}*{name}*EVL")
+                    log_blob = bucket.blob(f"log/{position}*{name}*EVL")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -348,7 +348,7 @@ elif selected_option == "Hemoclip":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/Hemoclip/log_Hemoclip/{position}*{name}*Hemoclip")
+                    log_blob = bucket.blob(f"log/{position}*{name}*Hemoclip")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -394,7 +394,7 @@ elif selected_option == "Injection":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/Injection/log_Injection/{position}*{name}*Injection")
+                    log_blob = bucket.blob(f"log/{position}*{name}*Injection")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -441,7 +441,7 @@ elif selected_option == "NexPowder":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/NexPowder/log_NexPowder/{position}*{name}*NexPowder")
+                    log_blob = bucket.blob(f"log/{position}*{name}*NexPowder")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -487,7 +487,7 @@ elif selected_option == "APC":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/APC/log_APC/{position}*{name}*APC")
+                    log_blob = bucket.blob(f"log/{position}*{name}*APC")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
@@ -533,7 +533,7 @@ elif selected_option == "PEG":
                         temp_file.write(log_content)
                         temp_file_path = temp_file.name
 
-                    log_blob = bucket.blob(f"Simulator_training/PEG/log_PEG/{position}*{name}*PEG")
+                    log_blob = bucket.blob(f"log/{position}*{name}*PEG")
                     log_blob.upload_from_filename(temp_file_path)
                     os.unlink(temp_file_path)
             
