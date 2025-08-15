@@ -4,7 +4,7 @@ import streamlit as st
 # 이 sidebar_page디자인.py 파일을 root 디렉토리에 복사한 후 이전 main 실행 화일의 이름으로 변경해야 한다.
 
 # Create pages
-login_page = st.Page("pages/Login_page.py", title="로그인 페이지", icon=":domain:")
+login_page = st.Page("pages/Login_page.py", title="로그인 페이지", icon=":material/domain:")
 page_1 = st.Page("pages/1 Sim_orientation.py", title="1 Sim_orientation", icon=":material/domain:")
 page_2 = st.Page("pages/2 Memory Training.py", title="2 Memory Training", icon=":material/domain:")
 page_3 = st.Page("pages/3 SHT.py", title="3 SHT", icon=":material/domain:")
