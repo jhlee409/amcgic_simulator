@@ -46,8 +46,6 @@ with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하�
     st.markdown("이 페이지는 Simulation Center EGD basic course orientation 동영상을 시청하기 위한 페이지입니다.")
     st.markdown("끝낼 때는 반드시 로그아웃 버튼을 눌러 종결하세요. 그냥 종결하면 출석체크가 안됩니다.")
 
-st.markdown("---")
-
 # Sim orientation 동영상 시청
 st.subheader("Simulation Center EGD basic course orientation 파일 시청")
 try:

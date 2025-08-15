@@ -7,7 +7,7 @@ from firebase_admin import credentials, storage
 from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
-st.set_page_config(page_title="EVL Simulator Training", layout="wide")
+st.set_page_config(page_title="APC Simulator Training", layout="wide")
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -38,15 +38,14 @@ if not firebase_admin._apps:
 bucket = storage.bucket('amcgi-bulletin.appspot.com')
 
 # 세션 상태 초기화
-if 'show_evl_video' not in st.session_state:
-    st.session_state.show_evl_video = False
+if 'show_apc_video' not in st.session_state:
+    st.session_state.show_apc_video = False
 
-# 사이드바에 사용자 정보와 로그아웃 버튼 배치
+# 사이드바에 로그아웃 버튼 배치
 st.sidebar.markdown("---")  # 구분선 추가
-st.sidebar.info(f"**사용자**: {name} ({position})")
 
 # 로그아웃 버튼
-if st.sidebar.button("로그아웃", key="evl_logout"):
+if st.sidebar.button("로그아웃", key="apc_logout"):
     try:
         # 현재 시간 가져오기
         logout_time = datetime.now(timezone.utc)
@@ -114,38 +113,37 @@ if st.sidebar.button("로그아웃", key="evl_logout"):
         st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
 
 # Title
-st.title("EVL Simulator Training")
+st.title("APC Simulator Training")
 
 st.markdown("---")  # 구분선 추가
 
-st.header("EVL simulator training")
+st.header("APC simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-    st.markdown("이 페이지는 EVL simulator을 대상으로 한 EVL 검사 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-    st.write("우리 병원에서는 Cook medical에서 생산되는 6 shooter multiband를  사용하고 있습니다.")
-    st.write("이 multiband 사용 방법과 마지막에 expert의 시범 동영상을 예습하세요.")
+    st.markdown("이 페이지는 APC simulator을 대상으로 한 APC 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+    st.write("APC simulator 실습 전에 'APC_orientation.mp4' 동영상을 예습하세요.")
 st.write("---")
 
-st.subheader("EVL multiband 사용방법 및 demo")
+st.subheader("APC simulator orientation")
 try:
-    demonstration_blob = bucket.blob('Simulator_training/EVL/EVL multiband 사용방법 및 demo.mp4')
+    demonstration_blob = bucket.blob('Simulator_training/APC/APC_orientation.mp4')
     if demonstration_blob.exists():
         demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
         
-        if st.button("동영상 시청", key="evl_video"):
-            st.session_state.show_evl_video = not st.session_state.show_evl_video
+        if st.button("동영상 시청", key="apc_video"):
+            st.session_state.show_apc_video = not st.session_state.show_apc_video
             
-            if st.session_state.show_evl_video:
+            if st.session_state.show_apc_video:
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"EVL_orientation video watched by {name} ({position}) on {current_date}"
+                    log_content = f"APC_orientation video watched by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
-                log_blob = bucket.blob(f"log/{position}*{name}*EVL")
+                log_blob = bucket.blob(f"log/{position}*{name}*APC")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
         
-        if st.session_state.show_evl_video:
+        if st.session_state.show_apc_video:
             video_html = f'''
             <div style="display: flex; justify-content: center;">
                 <video width="1300" controls controlsList="nodownload">
@@ -162,4 +160,4 @@ try:
             st.markdown(video_html, unsafe_allow_html=True)
 
 except Exception as e:
-    st.error(f"EVL 시범 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+    st.error(f"APC orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")

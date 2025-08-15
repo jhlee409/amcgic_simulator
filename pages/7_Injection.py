@@ -7,7 +7,7 @@ from firebase_admin import credentials, storage
 from utils.auth import check_login, handle_logout
 
 # Set page to wide mode
-st.set_page_config(page_title="Hemoclip Simulator Training", layout="wide")
+st.set_page_config(page_title="Injection Simulator Training", layout="wide")
 
 # 로그인 상태 확인
 if "logged_in" not in st.session_state or not st.session_state['logged_in']:
@@ -38,15 +38,14 @@ if not firebase_admin._apps:
 bucket = storage.bucket('amcgi-bulletin.appspot.com')
 
 # 세션 상태 초기화
-if 'show_hemoclip_video' not in st.session_state:
-    st.session_state.show_hemoclip_video = False
+if 'show_injection_video' not in st.session_state:
+    st.session_state.show_injection_video = False
 
-# 사이드바에 사용자 정보와 로그아웃 버튼 배치
+# 사이드바에 로그아웃 버튼 배치
 st.sidebar.markdown("---")  # 구분선 추가
-st.sidebar.info(f"**사용자**: {name} ({position})")
 
 # 로그아웃 버튼
-if st.sidebar.button("로그아웃", key="hemoclip_logout"):
+if st.sidebar.button("로그아웃", key="injection_logout"):
     try:
         # 현재 시간 가져오기
         logout_time = datetime.now(timezone.utc)
@@ -114,37 +113,37 @@ if st.sidebar.button("로그아웃", key="hemoclip_logout"):
         st.error(f"로그아웃 처리 중 오류가 발생했습니다: {str(e)}")
 
 # Title
-st.title("Hemoclip Simulator Training")
+st.title("Injection Simulator Training")
 
 st.markdown("---")  # 구분선 추가
 
-st.header("Hemoclip simulator training")
+st.header("Injection simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
-    st.markdown("이 페이지는 Hemoclip simulator을 대상으로 한 Hemoclip 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
-    st.write("Hemoclip simulator 실습 전에 'hemoclip_orientation.mp4' 동영상을 예습하세요.")
+    st.markdown("이 페이지는 Injection simulator을 대상으로 한 Injection 수행에 도움이 되는 자료를 제공하는 페이지입니다.")
+    st.write("Injection simulator 실습 전에 'Injection_orientation.mp4' 동영상을 예습하세요.")
 st.write("---")
 
-st.subheader("Hemoclip simulator orientation")
+st.subheader("Injection simulator orientation")
 try:
-    demonstration_blob = bucket.blob('Simulator_training/Hemoclip/hemoclip_orientation.mp4')
+    demonstration_blob = bucket.blob('Simulator_training/Injection/Injection_orientation.mp4')
     if demonstration_blob.exists():
         demonstration_url = demonstration_blob.generate_signed_url(expiration=timedelta(minutes=15))
         
-        if st.button("동영상 시청", key="hemoclip_video"):
-            st.session_state.show_hemoclip_video = not st.session_state.show_hemoclip_video
+        if st.button("동영상 시청", key="injection_video"):
+            st.session_state.show_injection_video = not st.session_state.show_injection_video
             
-            if st.session_state.show_hemoclip_video:
+            if st.session_state.show_injection_video:
                 current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
-                    log_content = f"Hemoclip_orientation video watched by {name} ({position}) on {current_date}"
+                    log_content = f"Injection_orientation video watched by {name} ({position}) on {current_date}"
                     temp_file.write(log_content)
                     temp_file_path = temp_file.name
 
-                log_blob = bucket.blob(f"log/{position}*{name}*Hemoclip")
+                log_blob = bucket.blob(f"log/{position}*{name}*Injection")
                 log_blob.upload_from_filename(temp_file_path)
                 os.unlink(temp_file_path)
         
-        if st.session_state.show_hemoclip_video:
+        if st.session_state.show_injection_video:
             video_html = f'''
             <div style="display: flex; justify-content: center;">
                 <video width="1300" controls controlsList="nodownload">
@@ -161,4 +160,4 @@ try:
             st.markdown(video_html, unsafe_allow_html=True)
 
 except Exception as e:
-    st.error(f"Hemoclip orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")
+    st.error(f"Injection orientation 동영상 파일 재생 중 오류가 발생했습니다: {e}")

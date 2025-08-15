@@ -53,8 +53,6 @@ with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하�
     st.markdown("이 페이지는 EMT (EGD Method Training) 관련 동영상 시청 및 수행 동영상 업로드, 분석 및 최종 평가서 전송을 위한 페이지입니다.")
     st.markdown("끝낼 때는 반드시 로그아웃 버튼을 눌러 종결하세요. 그냥 종결하면 출석체크가 안됩니다.")
 
-st.markdown("---")
-
 st.subheader("EMT (EGD Method Training) orientation 동영상 시청")
 try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')
