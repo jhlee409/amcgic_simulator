@@ -119,8 +119,6 @@ try:
 except Exception as e:
     st.error(f"MT demo 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
-st.write("---")
-
 # File uploader
 uploaded_file = None
 st.subheader("암기 영상 업로드")

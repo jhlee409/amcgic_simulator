@@ -81,8 +81,6 @@ try:
 except Exception as e:
     st.error(f"SHT 설명 동영상 파일 재생 중 오류가 발생했습니다: {e}")
 
-st.write("---")
-
 st.subheader("SHT expert demo 동영상 시청")
 try:
     bucket = storage.bucket('amcgi-bulletin.appspot.com')

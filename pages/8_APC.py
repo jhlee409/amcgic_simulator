@@ -115,8 +115,6 @@ if st.sidebar.button("로그아웃", key="apc_logout"):
 # Title
 st.title("APC Simulator Training")
 
-st.markdown("---")  # 구분선 추가
-
 st.header("APC simulator training")
 with st.expander(" 필독!!! 먼저 여기를 눌러 사용방법을 확인하세요."):
     st.markdown("이 페이지는 APC simulator을 대상으로 한 APC 수행에 도움이 되는 자료를 제공하는 페이지입니다.")

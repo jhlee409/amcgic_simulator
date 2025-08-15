@@ -91,7 +91,6 @@ except Exception as e:
     st.error(f"simulation center 오리엔테이션 파일 로드 중 오류가 발생했습니다.: {e}")
 
 # 로그아웃 버튼
-st.sidebar.markdown("---")
 if "logged_in" in st.session_state and st.session_state['logged_in']:
     if st.sidebar.button("Logout"):
         try:

@@ -42,8 +42,6 @@ if 'show_nexpowder_video' not in st.session_state:
     st.session_state.show_nexpowder_video = False
 
 # 사이드바에 로그아웃 버튼 배치
-st.sidebar.markdown("---")  # 구분선 추가
-
 # 로그아웃 버튼
 if st.sidebar.button("로그아웃", key="nexpowder_logout"):
     try:

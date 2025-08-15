@@ -89,8 +89,6 @@ try:
 except Exception as e:
     st.error(f"EMT_orientation 동영상 재생 중 오류가 발생했습니다: {e}")
 
-st.write("---")
-
 st.subheader("EMT 수행 모범 동영상")
 st.write("EMT 수행 모범 동영상입니다. 잘보고 어떤 점에서 초심자와 차이가 나는지 연구해 보세요.")
 try:
