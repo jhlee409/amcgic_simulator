@@ -17,12 +17,20 @@ page_9 = st.Page("pages/9 NexPowder.py", title="9 NexPowder", icon=":material/do
 page_10 = st.Page("pages/10 EVL.py", title="10 EVL", icon=":material/domain:")
 page_11 = st.Page("pages/11 PEG.py", title="11 PEG", icon=":material/domain:")
 
+# position에 따라 Sim_orientation 페이지 표시 여부 결정
+allowed_positions = ["Staff", "F1", "F2", "R3", "Student"]
+current_position = st.session_state.get('position', '')
+
+# Basic Course 페이지 리스트 구성
+basic_course_pages = [page_2, page_3, page_4]  # 기본적으로 page_2, page_3, page_4 포함
+if current_position in allowed_positions:
+    basic_course_pages = [page_1, page_2, page_3, page_4]  # 허용된 position일 경우 page_1 추가
 
 # Set up navigation with sections
 pg = st.navigation(
     {
         "로그인 페이지": [login_page],
-        "Basic Course": [page_1, page_2, page_3, page_4],
+        "Basic Course": basic_course_pages,
         "Advanced Course": [page_5, page_6, page_7, page_8, page_9, page_10, page_11],
     },
 )
