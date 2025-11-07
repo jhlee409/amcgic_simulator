@@ -1,1 +1,0 @@
-# amcgic-simulator
