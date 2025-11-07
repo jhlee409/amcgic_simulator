@@ -22,9 +22,7 @@ allowed_positions = ["Staff", "F1", "F2", "R3", "Student"]
 current_position = st.session_state.get('position', '')
 
 # Basic Course 페이지 리스트 구성
-basic_course_pages = [page_2, page_3, page_4]  # 기본적으로 page_2, page_3, page_4 포함
-if current_position in allowed_positions:
-    basic_course_pages = [page_1, page_2, page_3, page_4]  # 허용된 position일 경우 page_1 추가
+basic_course_pages = [page_1, page_2, page_3, page_4]  # 기본적으로 page_2, page_3, page_4 포함
 
 # Set up navigation with sections
 pg = st.navigation(
